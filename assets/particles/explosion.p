@@ -1,6 +1,9 @@
 explosion
 - Delay -
 active: false
+- Duration -
+lowMin: 100.0
+lowMax: 100.0
 - Count -
 min: 20
 max: 20
