@@ -8,18 +8,29 @@ class Tank(
     var angle: Float = 0f,
     val isPlayer: Boolean = false,
     var color: Color = Color(0.2f, 0.8f, 1f, 1f),
-    var speed: Float = 90f,
+    speed: Float = 90f,
     var health: Int = 3,
     var fireCooldown: Float = 0f,
-    var fireRate: Float = 0.35f,
+    fireRate: Float = 0.35f,
     var radius: Float = 14f
 ) {
     var alive = true
     var aiFireTimer = 0f
+    private var baseSpeed = speed
+    var speed = speed
+        set(value) {
+            field = value
+            if (overdriveTimer <= 0f) baseSpeed = value
+        }
+    private var baseFireRate = fireRate
+    var fireRate = fireRate
+        set(value) {
+            field = value
+            if (rapidFireTimer <= 0f) baseFireRate = value
+        }
     private var rapidFireTimer = 0f
     private var spreadTimer = 0f
     private var overdriveTimer = 0f
-    private val baseFireRate = fireRate
     var invulnerabilityTimer = 0f
         private set
     var shieldTimer = 0f
@@ -41,16 +52,19 @@ class Tank(
     }
 
     fun grantOverdrive(duration: Float = GameConfig.PowerUps.OVERDRIVE_DURATION) {
-        speed *= 1.35f
+        if (overdriveTimer <= 0f) baseSpeed = speed
+        speed = baseSpeed * 1.35f
         overdriveTimer = maxOf(overdriveTimer, duration)
     }
 
     fun hasSpreadShot(): Boolean = spreadTimer > 0f
     fun isShielded(): Boolean = shieldTimer > 0f
+
     fun update(delta: Float) {
         fireCooldown = (fireCooldown - delta).coerceAtLeast(0f)
         invulnerabilityTimer = (invulnerabilityTimer - delta).coerceAtLeast(0f)
         shieldTimer = (shieldTimer - delta).coerceAtLeast(0f)
+
         if (rapidFireTimer > 0f) {
             rapidFireTimer -= delta
             if (rapidFireTimer <= 0f) fireRate = baseFireRate
@@ -58,7 +72,7 @@ class Tank(
         if (spreadTimer > 0f) spreadTimer -= delta
         if (overdriveTimer > 0f) {
             overdriveTimer -= delta
-            if (overdriveTimer <= 0f) speed = GameConfig.Player.SPEED
+            if (overdriveTimer <= 0f) speed = baseSpeed
         }
     }
 
@@ -74,7 +88,7 @@ class Tank(
         alive = true
         health = GameConfig.Player.START_HP
         speed = GameConfig.Player.SPEED
-        fireRate = baseFireRate
+        fireRate = GameConfig.Player.FIRE_RATE
         fireCooldown = 0f
         invulnerabilityTimer = 0f
         shieldTimer = 0f
