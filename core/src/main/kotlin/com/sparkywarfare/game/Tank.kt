@@ -3,9 +3,6 @@ package com.sparkywarfare.game
 import com.badlogic.gdx.graphics.Color
 import com.badlogic.gdx.math.Vector2
 
-/**
- * A glowing energy tank. Rendering is handled by GlowRenderer.
- */
 class Tank(
     val position: Vector2,
     var angle: Float = 0f,
@@ -17,32 +14,72 @@ class Tank(
     var fireRate: Float = 0.35f,
     var radius: Float = 14f
 ) {
-    var alive: Boolean = true
-    var aiFireTimer: Float = 0f
-    private var rapidFireTimer: Float = 0f
+    var alive = true
+    var aiFireTimer = 0f
+    private var rapidFireTimer = 0f
+    private var spreadTimer = 0f
+    private var overdriveTimer = 0f
     private val baseFireRate = fireRate
+    var invulnerabilityTimer = 0f
+        private set
+    var shieldTimer = 0f
+        private set
 
     fun canFire(): Boolean = alive && fireCooldown <= 0f
 
-    fun grantRapidFire(duration: Float = 6f) {
+    fun grantRapidFire(duration: Float = GameConfig.PowerUps.RAPID_FIRE_DURATION) {
         fireRate = baseFireRate * 0.35f
-        rapidFireTimer = duration
+        rapidFireTimer = maxOf(rapidFireTimer, duration)
     }
 
+    fun grantShield(duration: Float = GameConfig.PowerUps.SHIELD_DURATION) {
+        shieldTimer = maxOf(shieldTimer, duration)
+    }
+
+    fun grantSpreadShot(duration: Float = GameConfig.PowerUps.SPREAD_DURATION) {
+        spreadTimer = maxOf(spreadTimer, duration)
+    }
+
+    fun grantOverdrive(duration: Float = GameConfig.PowerUps.OVERDRIVE_DURATION) {
+        speed *= 1.35f
+        overdriveTimer = maxOf(overdriveTimer, duration)
+    }
+
+    fun hasSpreadShot(): Boolean = spreadTimer > 0f
+    fun isShielded(): Boolean = shieldTimer > 0f
     fun update(delta: Float) {
         fireCooldown = (fireCooldown - delta).coerceAtLeast(0f)
+        invulnerabilityTimer = (invulnerabilityTimer - delta).coerceAtLeast(0f)
+        shieldTimer = (shieldTimer - delta).coerceAtLeast(0f)
         if (rapidFireTimer > 0f) {
             rapidFireTimer -= delta
-            if (rapidFireTimer <= 0f) {
-                rapidFireTimer = 0f
-                fireRate = baseFireRate
-            }
+            if (rapidFireTimer <= 0f) fireRate = baseFireRate
+        }
+        if (spreadTimer > 0f) spreadTimer -= delta
+        if (overdriveTimer > 0f) {
+            overdriveTimer -= delta
+            if (overdriveTimer <= 0f) speed = GameConfig.Player.SPEED
         }
     }
 
-    fun hit() {
-        if (!alive) return
+    fun hit(): Boolean {
+        if (!alive || invulnerabilityTimer > 0f || shieldTimer > 0f) return false
         health = (health - 1).coerceAtLeast(0)
+        invulnerabilityTimer = GameConfig.Player.HIT_IFRAMES
         if (health == 0) alive = false
+        return true
+    }
+
+    fun resetForPlayer() {
+        alive = true
+        health = GameConfig.Player.START_HP
+        speed = GameConfig.Player.SPEED
+        fireRate = baseFireRate
+        fireCooldown = 0f
+        invulnerabilityTimer = 0f
+        shieldTimer = 0f
+        rapidFireTimer = 0f
+        spreadTimer = 0f
+        overdriveTimer = 0f
     }
 }
