@@ -69,34 +69,27 @@ val extractGdxNatives = tasks.register("extractGdxNatives") {
         destination.deleteRecursively()
         destination.mkdirs()
 
-        val abis = setOf("armeabi-v7a", "arm64-v8a", "x86", "x86_64")
+        val abis = listOf("armeabi-v7a", "arm64-v8a", "x86", "x86_64")
         val nativeFiles: Set<File> = configurations.getByName("gdxNatives").files
 
         for (jarFile in nativeFiles) {
+            val abi = abis.firstOrNull { abiName ->
+                jarFile.name.contains("natives-" + abiName + ".jar")
+            } ?: error("Unknown LibGDX native JAR: " + jarFile.name)
+
             ZipFile(jarFile).use { zipFile ->
                 val entries = zipFile.entries()
                 while (entries.hasMoreElements()) {
                     val entry = entries.nextElement()
                     if (entry.isDirectory || !entry.name.endsWith(".so")) continue
 
-                    var abi: String? = null
-                    for (abiName in abis) {
-                        if (entry.name.contains("/" + abiName + "/") ||
-                            entry.name.contains(abiName + "/")) {
-                            abi = abiName
-                            break
-                        }
-                    }
-
-                    if (abi != null) {
-                        val output = destination.resolve(
-                            abi + "/" + entry.name.substringAfterLast("/")
-                        )
-                        output.parentFile.mkdirs()
-                        zipFile.getInputStream(entry).use { input ->
-                            output.outputStream().use { outputStream ->
-                                input.copyTo(outputStream)
-                            }
+                    val output = destination.resolve(
+                        abi + "/" + entry.name.substringAfterLast("/")
+                    )
+                    output.parentFile.mkdirs()
+                    zipFile.getInputStream(entry).use { input ->
+                        output.outputStream().use { outputStream ->
+                            input.copyTo(outputStream)
                         }
                     }
                 }
