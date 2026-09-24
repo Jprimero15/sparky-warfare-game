@@ -12,6 +12,7 @@ import com.badlogic.gdx.graphics.g2d.freetype.FreeTypeFontGenerator
 import com.badlogic.gdx.graphics.g2d.GlyphLayout
 import com.badlogic.gdx.graphics.g2d.SpriteBatch
 import com.badlogic.gdx.graphics.glutils.ShapeRenderer
+import com.sparkywarfare.game.ui.SafeArea
 import com.badlogic.gdx.math.Intersector
 import com.badlogic.gdx.math.MathUtils
 import com.badlogic.gdx.math.Rectangle
@@ -72,7 +73,7 @@ class GameScreen : Screen, InputAdapter() {
     private val enemySpawner = EnemySpawner()
     private val pools = EntityPools()
     private lateinit var hud: HudRenderer
-    private lateinit var safeArea: SafeArea
+    private var safeArea = SafeArea(0f, 0f, Gdx.graphics.width.toFloat(), Gdx.graphics.height.toFloat())
     private val singleButton = Rectangle()
     private val multiButton = Rectangle()
     private val settingsButton = Rectangle()
@@ -113,7 +114,7 @@ class GameScreen : Screen, InputAdapter() {
         font = fontGenerator.generateFont(fontParameter)
         fontGenerator.dispose()
         layout = GlyphLayout()
-        hud = HudRenderer(shapeRenderer, batch, font, layout, hudCamera)
+        hud = HudRenderer(font, batch, layout)
         highScore = prefs.getInteger("highScore", 0)
         bestWave = prefs.getInteger("bestWave", 0)
         totalKills = prefs.getInteger("totalKills", 0)
@@ -648,7 +649,7 @@ class GameScreen : Screen, InputAdapter() {
     private fun drawHud() {
         val w = Gdx.graphics.width.toFloat()
         val h = Gdx.graphics.height.toFloat()
-        safeArea = hud.safeArea(w, h)
+        safeArea = SafeArea.fromScreen(w, h)
         val panelW = (w * 0.43f).coerceIn(280f, 430f)
         val panelH = 92f
         val left = safeArea.left
@@ -1033,7 +1034,7 @@ class GameScreen : Screen, InputAdapter() {
     override fun resize(width: Int, height: Int) {
         viewport.update(width, height, true)
         hudCamera.setToOrtho(false, width.toFloat(), height.toFloat())
-        safeArea = hud.safeArea(width.toFloat(), height.toFloat())
+        safeArea = SafeArea.fromScreen(width.toFloat(), height.toFloat())
         centerCamera(true)
     }
 
