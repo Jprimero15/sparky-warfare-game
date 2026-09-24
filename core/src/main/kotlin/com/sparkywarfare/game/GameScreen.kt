@@ -71,6 +71,9 @@ class GameScreen : Screen, InputAdapter() {
 
     private val input = InputController()
     private val enemySpawner = EnemySpawner()
+    private val combat = CombatSystem()
+    private val powerUpManager = PowerUpManager()
+    private val waveManager = WaveManager()
     private val pools = EntityPools()
     private lateinit var hud: HudRenderer
     private var safeArea = com.sparkywarfare.game.ui.SafeArea(0f, 0f, Gdx.graphics.width.toFloat(), Gdx.graphics.height.toFloat())
@@ -375,6 +378,20 @@ class GameScreen : Screen, InputAdapter() {
     private fun outOfBounds(position: Vector2): Boolean =
         position.x < TILE || position.y < TILE ||
             position.x > WORLD_WIDTH - TILE || position.y > WORLD_HEIGHT - TILE
+
+    private fun tryMoveTank(tank: Tank, dx: Float, dy: Float) {
+        val oldX = tank.position.x
+        val oldY = tank.position.y
+        tank.position.x += dx
+        if (walls.any { it.alive && CollisionSystem.circleIntersectsRectangle(tank.position, tank.radius, it.bounds) }) tank.position.x = oldX
+        tank.position.y += dy
+        if (walls.any { it.alive && CollisionSystem.circleIntersectsRectangle(tank.position, tank.radius, it.bounds) }) tank.position.y = oldY
+        tank.position.x = tank.position.x.coerceIn(tank.radius + TILE, WORLD_WIDTH - tank.radius - TILE)
+        tank.position.y = tank.position.y.coerceIn(tank.radius + TILE, WORLD_HEIGHT - tank.radius - TILE)
+    }
+
+    private fun hasLineOfSight(from: Tank, to: Tank): Boolean =
+        combat.hasLineOfSight(from, to, walls)
 
     private fun fireLaser(tank: Tank) {
         val rad = Math.toRadians(tank.angle.toDouble())
