@@ -74,6 +74,7 @@ class GameScreen : Screen, InputAdapter() {
     private val powerUpManager = PowerUpManager()
     private val waveManager = WaveManager()
     private val pools = EntityPools()
+    private lateinit var particles: ParticleDebris
     private lateinit var hud: HudRenderer
     private var safeArea = SafeArea(0f, Gdx.graphics.width.toFloat(), 0f, Gdx.graphics.height.toFloat())
     private val singleButton = Rectangle()
@@ -98,6 +99,7 @@ class GameScreen : Screen, InputAdapter() {
         shapeRenderer = ShapeRenderer()
         glow = GlowRenderer(shapeRenderer)
         batch = SpriteBatch()
+        particles = ParticleDebris(batch)
         val fontGenerator = FreeTypeFontGenerator(Gdx.files.internal("fonts/Orbitron-Medium.ttf"))
         val fontParameter = FreeTypeFontGenerator.FreeTypeFontParameter().apply {
             size = 30
@@ -141,8 +143,10 @@ class GameScreen : Screen, InputAdapter() {
         lasers.clear()
         bursts.forEach { pools.freeBurst(it) }
         bursts.clear()
+        particles.clear()
         domainBursts.forEach { pools.freeBurst(it) }
         domainBursts.clear()
+        particles.clear()
         pools.clear()
         score = 0
         wave = 0
@@ -301,6 +305,7 @@ class GameScreen : Screen, InputAdapter() {
         laserRemove.forEach { pools.freeLaser(it) }
         lasers.removeAll(laserRemove)
 
+        particles.update(delta)
         for (burst in bursts) burst.t += delta * 1.6f
         laserRemove.clear()
         for (burst in bursts) if (burst.t >= 1f) {
@@ -511,6 +516,7 @@ class GameScreen : Screen, InputAdapter() {
 
     private fun spawnBurst(position: Vector2, color: Color) {
         bursts.add(pools.obtainBurst(position, color))
+        particles.spawn(position)
     }
 
     private fun centerCamera(instant: Boolean) {
@@ -548,6 +554,7 @@ class GameScreen : Screen, InputAdapter() {
         powerUps.forEach { glow.drawPowerUp(it.position, it.pulse, it.color) }
         domainBursts.forEach { glow.drawDomainBurst(it.position, it.t, it.color) }
         glow.end()
+        particles.draw(camera.combined)
         Gdx.gl.glDisable(GL20.GL_BLEND)
         drawTouchControls()
     }
@@ -1080,6 +1087,7 @@ class GameScreen : Screen, InputAdapter() {
         batch.dispose()
         font.dispose()
         pools.clear()
+        particles.dispose()
         FeedbackAudio.dispose()
     }
 }
