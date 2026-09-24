@@ -1,3 +1,6 @@
+import java.io.File
+import java.util.zip.ZipFile
+
 // Android-only application module for Sparky Warfare.
 plugins {
     id("com.android.application")
@@ -67,37 +70,43 @@ val extractGdxNatives = tasks.register("extractGdxNatives") {
         destination.mkdirs()
 
         val abis = setOf("armeabi-v7a", "arm64-v8a", "x86", "x86_64")
+        val nativeFiles: Set<File> = configurations.getByName("gdxNatives").files
 
-        configurations.named("gdxNatives").get().files.forEach { jarFile ->
-            java.util.zip.ZipFile(jarFile).use { zipFile ->
-                zipFile.entries().asSequence()
-                    .filter { entry -> !entry.isDirectory && entry.name.endsWith(".so") }
-                    .forEach { entry ->
-                        val abi = abis.firstOrNull { abiName ->
-                            entry.name.contains("/" + abiName + "/")
-                        } ?: abis.firstOrNull { abiName ->
-                            entry.name.contains(abiName + "/")
+        for (jarFile in nativeFiles) {
+            ZipFile(jarFile).use { zipFile ->
+                val entries = zipFile.entries()
+                while (entries.hasMoreElements()) {
+                    val entry = entries.nextElement()
+                    if (entry.isDirectory || !entry.name.endsWith(".so")) continue
+
+                    var abi: String? = null
+                    for (abiName in abis) {
+                        if (entry.name.contains("/" + abiName + "/") ||
+                            entry.name.contains(abiName + "/")) {
+                            abi = abiName
+                            break
                         }
+                    }
 
-                        if (abi != null) {
-                            val output = destination.resolve(
-                                abi + "/" + entry.name.substringAfterLast("/")
-                            )
-                            output.parentFile.mkdirs()
-                            zipFile.getInputStream(entry).use { input ->
-                                output.outputStream().use { outputStream ->
-                                    input.copyTo(outputStream)
-                                }
+                    if (abi != null) {
+                        val output = destination.resolve(
+                            abi + "/" + entry.name.substringAfterLast("/")
+                        )
+                        output.parentFile.mkdirs()
+                        zipFile.getInputStream(entry).use { input ->
+                            output.outputStream().use { outputStream ->
+                                input.copyTo(outputStream)
                             }
                         }
                     }
+                }
             }
         }
 
-        check(abis.all { abiName ->
-            destination.resolve(abiName + "/libgdx.so").isFile
-        }) {
-            "LibGDX native libraries were not extracted correctly"
+        for (abiName in abis) {
+            check(destination.resolve(abiName + "/libgdx.so").isFile) {
+                "Missing LibGDX native library for ABI: " + abiName
+            }
         }
     }
 }
