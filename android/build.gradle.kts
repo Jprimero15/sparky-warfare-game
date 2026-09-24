@@ -1,4 +1,4 @@
-// This module is the actual product: Sparky Warfare targets Android only.
+// Android-only application module for Sparky Warfare.
 plugins {
     id("com.android.application")
     kotlin("android")
@@ -29,8 +29,7 @@ android {
 
     sourceSets {
         getByName("main") {
-            assets.srcDirs("../assets")
-            jniLibs.srcDirs("libs")
+            assets.srcDirs(rootProject.file("assets"))
         }
     }
 
@@ -47,6 +46,7 @@ android {
 
 dependencies {
     implementation(project(":core"))
+    implementation("com.badlogicgames.gdx:gdx:$gdxVersion")
     implementation("com.badlogicgames.gdx:gdx-backend-android:$gdxVersion")
     implementation("com.badlogicgames.gdx:gdx-platform:$gdxVersion:natives-armeabi-v7a")
     implementation("com.badlogicgames.gdx:gdx-platform:$gdxVersion:natives-arm64-v8a")

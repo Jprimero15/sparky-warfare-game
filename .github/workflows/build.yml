@@ -2,8 +2,7 @@ name: Android Debug APK
 
 on:
   push:
-    branches:
-      - main
+    branches: [main]
   pull_request:
   workflow_dispatch:
 
@@ -12,6 +11,7 @@ permissions:
 
 jobs:
   build:
+    name: Build Android APK
     runs-on: ubuntu-24.04
 
     steps:
@@ -45,16 +45,29 @@ jobs:
 
           test -n "$SDKMANAGER"
           "$SDKMANAGER" --version
-
           yes | "$SDKMANAGER" --licenses >/dev/null || true
-          "$SDKMANAGER"             "platform-tools"             "platforms;android-34"             "build-tools;34.0.0"
+          "$SDKMANAGER" \
+            "platform-tools" \
+            "platforms;android-34" \
+            "build-tools;34.0.0"
+
+      - name: Verify Android-only project
+        shell: bash
+        run: |
+          set -euxo pipefail
+          test -f settings.gradle.kts
+          test -f android/build.gradle.kts
+          test ! -e desktop
+          grep -q 'include("core", "android")' settings.gradle.kts
+          ! grep -RniE 'lwjgl|DesktopLauncher|include\\([^)]*desktop|project\\(\":desktop\"\\)' \
+            build.gradle.kts settings.gradle.kts core android
 
       - name: Build Android debug APK
         shell: bash
         run: |
           set -euxo pipefail
           gradle --version
-          gradle :android:assembleDebug --no-daemon --stacktrace
+          gradle :android:clean :android:assembleDebug --no-daemon --stacktrace
 
       - name: Verify APK
         shell: bash

@@ -1,6 +1,6 @@
 # Sparky Warfare
 
-A top-down Android tank-combat game built with **LibGDX + Kotlin**. The game uses glowing energy tanks, laser fire, destructible walls, waves, power-ups, and Android touch controls.
+An Android-only top-down tank-combat game built with **LibGDX + Kotlin**. The game uses glowing energy tanks, laser fire, destructible walls, waves, power-ups, and Android touch controls.
 
 ## Status
 
@@ -21,41 +21,34 @@ Recent stability fixes harden the gameplay loop:
 - Enemy firing is timer-based instead of frame-rate-dependent random firing.
 - Waves cap the enemy count while increasing speed, health, and firing difficulty.
 - Laser collision uses the travelled segment, preventing fast shots from skipping targets or walls.
-- Restart clears joystick and fire-pointer state so an old touch cannot remain stuck.
+- Restart clears joystick and all active fire pointers.
+- Multiple Android fire touches are tracked independently.
 - Large frame deltas are capped to avoid physics jumps after a stalled frame.
 - Power-ups avoid walls, the player spawn area, and duplicate live pickups.
 - Input is cleared when the screen is disposed.
 
-## Project layout
+## Android-only project layout
 
 ```
-core/           # Game logic and rendering
-android/        # Android application
+core/           # Shared LibGDX game logic and rendering
+android/        # Only application target and Android launcher
 assets/         # Shaders and particle resources
-.github/        # GitHub Actions CI
+.github/        # Android-only GitHub Actions CI
 ```
 
-Important gameplay files are under `core/src/main/kotlin/com/sparkywarfare/game/`:
+The desktop/LWJGL module has been removed. There is no desktop launcher, desktop dependency, or desktop Gradle target.
 
-- `GameScreen.kt` — states, waves, AI, movement, collisions, touch input and HUD
-- `Tank.kt` — health, cooldowns and rapid-fire state
-- `Laser.kt` — laser movement and swept-collision history
-- `VirtualJoystick.kt` — multitouch movement control
-- `GlowRenderer.kt` — tank, laser and burst rendering
+Important gameplay files are under `core/src/main/kotlin/com/sparkywarfare/game/`.
 
-## Controls
-
-On Android:
+## Android controls
 
 - Drag on the **left half** of the screen to move.
 - Tap/hold the **right half** to fire.
+- Multiple fire touches are handled safely.
 - Tap anywhere on the menu to start.
-- Tap anywhere after game over to restart.
+- Tap anywhere after game over to retry.
 
-Keyboard fallback:
-
-- WASD / arrow keys to move.
-- SPACE to fire or start/restart.
+There is no desktop keyboard-control path.
 
 ## Building
 
@@ -73,22 +66,24 @@ android/build/outputs/apk/debug/
 
 ## GitHub Actions
 
-`.github/workflows/build.yml` builds the Android debug APK on pushes to `main`, pull requests, and manual runs.
+`.github/workflows/build.yml` builds only the Android debug APK on pushes to `main`, pull requests, and manual runs.
 
 CI uses:
 
 - JDK 17
 - Android platform API 34
 - Android build-tools 34.0.0
-- Gradle Actions setup v4
+- Gradle 8.7
+- Android Gradle Plugin 8.5.0
+- Kotlin 1.9.24
 
-The workflow deliberately installs specific SDK packages rather than relying on the obsolete `tools` SDK package that previously caused setup failures.
+The workflow installs the required Android SDK packages directly and does not use the obsolete SDK `tools` package.
 
 The generated `sparky-warfare-debug` artifact contains the debug APK.
 
 ## Rendering
 
-`GlowRenderer` provides the shared layered glow style for tanks, lasers, power-ups and bursts. The included shader and particle resources remain available for a future framebuffer bloom/particle pass.
+`GlowRenderer` provides the shared layered glow style for tanks, lasers, power-ups and bursts. The included shader and particle resources remain available for future visual improvements.
 
 ## Future work
 

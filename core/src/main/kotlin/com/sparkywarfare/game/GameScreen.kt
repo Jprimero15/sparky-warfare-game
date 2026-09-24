@@ -411,7 +411,7 @@ class GameScreen : Screen, InputAdapter() {
         font.data.setScale(3f)
         font.draw(batch, "SPARKY WARFARE", Gdx.graphics.width / 2f - 220f, Gdx.graphics.height / 2f + 60f)
         font.data.setScale(2f)
-        font.draw(batch, "Tap anywhere or press SPACE to start", Gdx.graphics.width / 2f - 220f, Gdx.graphics.height / 2f)
+        font.draw(batch, "Tap anywhere to start", Gdx.graphics.width / 2f - 220f, Gdx.graphics.height / 2f)
         batch.end()
     }
 
@@ -424,7 +424,7 @@ class GameScreen : Screen, InputAdapter() {
         font.color = Color.WHITE
         font.data.setScale(2f)
         font.draw(batch, "Score: " + score + "  (Wave " + wave + ")", Gdx.graphics.width / 2f - 150f, Gdx.graphics.height / 2f)
-        font.draw(batch, "Tap anywhere or press SPACE to retry", Gdx.graphics.width / 2f - 220f, Gdx.graphics.height / 2f - 40f)
+        font.draw(batch, "Tap anywhere to retry", Gdx.graphics.width / 2f - 220f, Gdx.graphics.height / 2f - 40f)
         batch.end()
     }
 
