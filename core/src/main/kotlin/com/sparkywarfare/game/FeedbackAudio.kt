@@ -3,12 +3,6 @@ package com.sparkywarfare.game
 import com.badlogic.gdx.Gdx
 import com.badlogic.gdx.audio.Sound
 
-/**
- * Real bundled game SFX using open-source Kenney CC0 audio.
- *
- * If audio cannot initialize on a particular device, gameplay continues
- * silently rather than failing the game.
- */
 object FeedbackAudio {
     enum class Cue { UI, LASER, HIT, EXPLOSION, POWER_UP }
 
@@ -16,6 +10,7 @@ object FeedbackAudio {
     private var hit: Sound? = null
     private var explosion: Sound? = null
     private var available = true
+    private var muted = false
 
     fun init() {
         if (!available || laser != null) return
@@ -29,8 +24,11 @@ object FeedbackAudio {
         }
     }
 
+    fun setMuted(value: Boolean) { muted = value }
+    fun isMuted(): Boolean = muted
+
     fun play(cue: Cue) {
-        if (!available) return
+        if (!available || muted) return
         init()
         try {
             when (cue) {
