@@ -117,3 +117,6 @@ The Android presentation uses immersive full-screen mode. HUD and controls are r
 3. Additional arena layouts and deeper enemy behavior.
 4. Optional mini-boss encounters as a future stretch feature.
 5. Multiplayer remains intentionally out of scope for this pass.
+
+
+<!-- final audit 5 -->
