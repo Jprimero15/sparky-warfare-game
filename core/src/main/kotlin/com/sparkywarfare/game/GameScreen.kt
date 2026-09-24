@@ -116,6 +116,8 @@ class GameScreen : Screen, InputAdapter() {
         font = fontGenerator.generateFont(fontParameter)
         fontGenerator.dispose()
         layout = GlyphLayout()
+        hudCamera = OrthographicCamera()
+        hudCamera.setToOrtho(false, Gdx.graphics.width.toFloat(), Gdx.graphics.height.toFloat())
         hud = HudRenderer(shapeRenderer, batch, font, layout, hudCamera)
         highScore = prefs.getInteger("highScore", 0)
         bestWave = prefs.getInteger("bestWave", 0)
@@ -123,8 +125,6 @@ class GameScreen : Screen, InputAdapter() {
         FeedbackAudio.setMuted(prefs.getBoolean("muteSfx", false))
         hapticsMuted = prefs.getBoolean("muteHaptics", false)
         FeedbackAudio.init()
-        hudCamera = OrthographicCamera()
-        hudCamera.setToOrtho(false, Gdx.graphics.width.toFloat(), Gdx.graphics.height.toFloat())
         safeArea = hud.safeArea(Gdx.graphics.width.toFloat(), Gdx.graphics.height.toFloat())
         Gdx.input.inputProcessor = this
         resetGame()
