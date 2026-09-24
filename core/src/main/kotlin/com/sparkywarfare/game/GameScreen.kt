@@ -140,7 +140,6 @@ class GameScreen : Screen, InputAdapter() {
                 drawHud()
             }
             GameState.GAME_OVER -> {
-                handleMenuKeyboard()
                 draw()
                 drawGameOverOverlay()
             }
