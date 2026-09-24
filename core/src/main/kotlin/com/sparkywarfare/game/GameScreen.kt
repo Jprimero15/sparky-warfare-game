@@ -1,7 +1,6 @@
 package com.sparkywarfare.game
 
 import com.badlogic.gdx.Gdx
-import com.badlogic.gdx.Input
 import com.badlogic.gdx.InputAdapter
 import com.badlogic.gdx.Screen
 import com.badlogic.gdx.graphics.Color
@@ -45,7 +44,7 @@ class GameScreen : Screen, InputAdapter() {
     private var wave = 0
 
     private val joystick = VirtualJoystick()
-    private var firePointer = -1
+    private val firePointers = mutableSetOf<Int>()
     private var firing = false
 
     private companion object {
@@ -73,8 +72,8 @@ class GameScreen : Screen, InputAdapter() {
         powerUps.clear(); domainBursts.clear()
         score = 0
         wave = 0
+        firePointers.clear()
         firing = false
-        firePointer = -1
         joystick.reset()
 
         player = Tank(
@@ -132,7 +131,6 @@ class GameScreen : Screen, InputAdapter() {
     override fun render(delta: Float) {
         when (state) {
             GameState.MENU -> {
-                handleMenuKeyboard()
                 drawWorldIdle()
                 drawMenuOverlay()
             }
@@ -146,12 +144,6 @@ class GameScreen : Screen, InputAdapter() {
                 draw()
                 drawGameOverOverlay()
             }
-        }
-    }
-
-    private fun handleMenuKeyboard() {
-        if (Gdx.input.isKeyJustPressed(Input.Keys.SPACE) || Gdx.input.isKeyJustPressed(Input.Keys.ENTER)) {
-            startOrRestart()
         }
     }
 
@@ -212,18 +204,13 @@ class GameScreen : Screen, InputAdapter() {
         if (joystick.active) {
             moveX = joystick.direction.x
             moveY = joystick.direction.y
-        } else {
-            if (Gdx.input.isKeyPressed(Input.Keys.LEFT) || Gdx.input.isKeyPressed(Input.Keys.A)) moveX -= 1f
-            if (Gdx.input.isKeyPressed(Input.Keys.RIGHT) || Gdx.input.isKeyPressed(Input.Keys.D)) moveX += 1f
-            if (Gdx.input.isKeyPressed(Input.Keys.UP) || Gdx.input.isKeyPressed(Input.Keys.W)) moveY += 1f
-            if (Gdx.input.isKeyPressed(Input.Keys.DOWN) || Gdx.input.isKeyPressed(Input.Keys.S)) moveY -= 1f
         }
         if (moveX != 0f || moveY != 0f) {
             val dir = Vector2(moveX, moveY).nor()
             player.angle = dir.angleDeg()
             tryMoveTank(player, dir, player.speed * delta)
         }
-        val wantsFire = firing || Gdx.input.isKeyPressed(Input.Keys.SPACE)
+        val wantsFire = firing
         if (wantsFire && player.canFire()) fireLaser(player)
     }
 
@@ -435,7 +422,7 @@ class GameScreen : Screen, InputAdapter() {
         }
         if (screenX < Gdx.graphics.width / 2) joystick.tryActivate(screenX.toFloat(), screenY.toFloat(), pointer)
         else {
-            firePointer = pointer
+            firePointers.add(pointer)
             firing = true
         }
         return true
@@ -448,9 +435,8 @@ class GameScreen : Screen, InputAdapter() {
 
     override fun touchUp(screenX: Int, screenY: Int, pointer: Int, button: Int): Boolean {
         joystick.release(pointer)
-        if (pointer == firePointer) {
-            firing = false
-            firePointer = -1
+        if (firePointers.remove(pointer)) {
+            firing = firePointers.isNotEmpty()
         }
         return true
     }
