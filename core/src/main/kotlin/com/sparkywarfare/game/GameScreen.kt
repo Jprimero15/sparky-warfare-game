@@ -58,8 +58,7 @@ class GameScreen : Screen, InputAdapter() {
     private val multiButton = Rectangle()
 
     private companion object {
-        const val TANK_RADIUS = 14f
-        const val TANK_SEPARATION = 28f
+        const val TANK_SEPARATION = 30f
     }
 
     private data class Burst(val position: Vector2, val color: Color, var t: Float = 0f)
@@ -125,18 +124,49 @@ class GameScreen : Screen, InputAdapter() {
         val spawnY = (player.position.y + VIEW_HEIGHT * 0.65f).coerceAtMost(WORLD_HEIGHT - 70f)
         val left = (player.position.x - VIEW_WIDTH * 0.9f).coerceAtLeast(70f)
         val right = (player.position.x + VIEW_WIDTH * 0.9f).coerceAtMost(WORLD_WIDTH - 70f)
-        val spacing = ((right - left) / (count + 1)).coerceAtLeast(42f)
+        val spacing = ((right - left) / (count + 1)).coerceAtLeast(48f)
         for (i in 0 until count) {
             val x = (left + spacing * (i + 1)).coerceIn(60f, WORLD_WIDTH - 60f)
-            val enemy = Tank(
-                position = Vector2(x, spawnY),
-                angle = 270f,
-                color = Color(1f, 0.25f, 0.35f, 1f),
-                speed = (55f + wave * 3f).coerceAtMost(95f),
-                health = 1 + (wave - 1) / 4,
-                fireRate = (1.15f - wave * 0.035f).coerceAtLeast(0.55f)
-            )
-            enemy.aiFireTimer = MathUtils.random(0.35f, 1.25f)
+            val role = (i + wave) % 4
+            val enemy = when (role) {
+                0 -> Tank(
+                    position = Vector2(x, spawnY),
+                    angle = 270f,
+                    color = Color(1f, 0.25f, 0.35f, 1f),
+                    speed = (78f + wave * 2f).coerceAtMost(112f),
+                    health = 1 + (wave - 1) / 5,
+                    fireRate = (1.35f - wave * 0.025f).coerceAtLeast(0.7f),
+                    radius = 11f
+                )
+                1 -> Tank(
+                    position = Vector2(x, spawnY),
+                    angle = 270f,
+                    color = Color(1f, 0.42f, 0.18f, 1f),
+                    speed = (58f + wave * 2.5f).coerceAtMost(92f),
+                    health = 1 + (wave - 1) / 4,
+                    fireRate = (1.1f - wave * 0.03f).coerceAtLeast(0.55f),
+                    radius = 14f
+                )
+                2 -> Tank(
+                    position = Vector2(x, spawnY),
+                    angle = 270f,
+                    color = Color(0.95f, 0.16f, 0.55f, 1f),
+                    speed = (42f + wave * 1.5f).coerceAtMost(68f),
+                    health = 3 + (wave - 1) / 3,
+                    fireRate = (1.45f - wave * 0.025f).coerceAtLeast(0.8f),
+                    radius = 18f
+                )
+                else -> Tank(
+                    position = Vector2(x, spawnY),
+                    angle = 270f,
+                    color = Color(0.72f, 0.28f, 1f, 1f),
+                    speed = (48f + wave * 1.5f).coerceAtMost(75f),
+                    health = 2 + (wave - 1) / 4,
+                    fireRate = (0.95f - wave * 0.02f).coerceAtLeast(0.5f),
+                    radius = 12f
+                )
+            }
+            enemy.aiFireTimer = MathUtils.random(0.45f, 1.35f)
             enemies.add(enemy)
         }
     }
@@ -145,6 +175,7 @@ class GameScreen : Screen, InputAdapter() {
         walls.clear()
         val cols = (WORLD_WIDTH / TILE).toInt()
         val rows = (WORLD_HEIGHT / TILE).toInt()
+
         for (c in 0 until cols) {
             walls.add(wallAt(c, 0, WallType.STEEL))
             walls.add(wallAt(c, rows - 1, WallType.STEEL))
@@ -153,9 +184,39 @@ class GameScreen : Screen, InputAdapter() {
             walls.add(wallAt(0, r, WallType.STEEL))
             walls.add(wallAt(cols - 1, r, WallType.STEEL))
         }
-        for (r in 4..8) {
-            walls.add(wallAt(6, r, WallType.BRICK))
-            walls.add(wallAt(cols - 7, r, WallType.BRICK))
+
+        // Mixed cover: brick clusters, reinforced brick, concrete blocks and metal barriers.
+        addWallBlock(5, 5, 4, 1, WallType.BRICK)
+        addWallBlock(5, 6, 1, 3, WallType.RED_BRICK)
+        addWallBlock(8, 8, 3, 1, WallType.CONCRETE)
+
+        addWallBlock(cols - 9, 5, 4, 1, WallType.RED_BRICK)
+        addWallBlock(cols - 6, 6, 1, 3, WallType.BRICK)
+        addWallBlock(cols - 11, 8, 3, 1, WallType.METAL)
+
+        addWallBlock(17, 10, 2, 3, WallType.CONCRETE)
+        addWallBlock(19, 12, 3, 1, WallType.BRICK)
+        addWallBlock(cols - 22, 10, 2, 3, WallType.CONCRETE)
+        addWallBlock(cols - 21, 12, 3, 1, WallType.RED_BRICK)
+
+        addWallBlock(28, 15, 4, 1, WallType.METAL)
+        addWallBlock(30, 16, 1, 2, WallType.BRICK)
+        addWallBlock(cols - 32, 15, 4, 1, WallType.METAL)
+        addWallBlock(cols - 31, 16, 1, 2, WallType.BRICK)
+
+        // Keep the player's starting lane open.
+        walls.removeAll { it.bounds.overlaps(Rectangle(WORLD_WIDTH / 2f - 90f, 80f, 180f, 120f)) }
+    }
+
+    private fun addWallBlock(col: Int, row: Int, width: Int, height: Int, type: WallType) {
+        for (x in col until col + width) {
+            for (y in row until row + height) {
+                if (x in 1 until (WORLD_WIDTH / TILE).toInt() - 1 &&
+                    y in 1 until (WORLD_HEIGHT / TILE).toInt() - 1
+                ) {
+                    walls.add(wallAt(x, y, type))
+                }
+            }
         }
     }
 
@@ -271,10 +332,10 @@ class GameScreen : Screen, InputAdapter() {
     }
 
     private fun canOccupy(tank: Tank, position: Vector2): Boolean {
-        if (walls.any { it.alive && circleIntersectsRectangle(position, TANK_RADIUS, it.bounds) }) return false
-        if (enemies.any { it !== tank && it.alive && it.position.dst2(position) < TANK_SEPARATION * TANK_SEPARATION }) return false
+        if (walls.any { it.alive && circleIntersectsRectangle(position, tank.radius, it.bounds) }) return false
+        if (enemies.any { it !== tank && it.alive && (it.radius + tank.radius) * (it.radius + tank.radius) > it.position.dst2(position) }) return false
         return tank === player || !player.alive ||
-            player.position.dst2(position) >= TANK_SEPARATION * TANK_SEPARATION
+            player.position.dst2(position) >= (player.radius + tank.radius) * (player.radius + tank.radius)
     }
 
     private fun circleIntersectsRectangle(center: Vector2, radius: Float, rect: Rectangle): Boolean {
@@ -291,7 +352,7 @@ class GameScreen : Screen, InputAdapter() {
     private fun fireLaser(tank: Tank) {
         val rad = Math.toRadians(tank.angle.toDouble())
         val dir = Vector2(Math.cos(rad).toFloat(), Math.sin(rad).toFloat()).nor()
-        val start = Vector2(tank.position).mulAdd(dir, TANK_RADIUS + 3f)
+        val start = Vector2(tank.position).mulAdd(dir, tank.radius + 3f)
         lasers.add(Laser(start, dir, Color(tank.color), firedByPlayer = tank.isPlayer))
         tank.fireCooldown = tank.fireRate
         if (tank.isPlayer) FeedbackAudio.play(FeedbackAudio.Cue.LASER)
@@ -312,16 +373,16 @@ class GameScreen : Screen, InputAdapter() {
             if (laser in toRemove) continue
             if (laser.firedByPlayer) {
                 for (enemy in enemies) {
-                    if (enemy.alive && segmentHitsCircle(laser.previousPosition, laser.position, enemy.position, TANK_RADIUS)) {
+                    if (enemy.alive && segmentHitsCircle(laser.previousPosition, laser.position, enemy.position, enemy.radius)) {
                         enemy.hit()
                         spawnBurst(laser.position, laser.color)
                         FeedbackAudio.play(if (enemy.alive) FeedbackAudio.Cue.HIT else FeedbackAudio.Cue.EXPLOSION)
                         toRemove.add(laser)
-                        if (!enemy.alive) { score += 100; haptic(Input.VibrationType.MEDIUM) } else haptic(Input.VibrationType.LIGHT)
+                        if (!enemy.alive) { score += if (enemy.radius >= 18f) 250 else if (enemy.radius <= 11f) 125 else 175; haptic(Input.VibrationType.MEDIUM) } else haptic(Input.VibrationType.LIGHT)
                         break
                     }
                 }
-            } else if (player.alive && segmentHitsCircle(laser.previousPosition, laser.position, player.position, TANK_RADIUS)) {
+            } else if (player.alive && segmentHitsCircle(laser.previousPosition, laser.position, player.position, player.radius)) {
                 player.hit()
                 FeedbackAudio.play(FeedbackAudio.Cue.HIT)
                 haptic(Input.VibrationType.MEDIUM)
@@ -404,8 +465,8 @@ class GameScreen : Screen, InputAdapter() {
         shapeRenderer.projectionMatrix = camera.combined
         drawArenaBackdrop()
         drawWalls()
-        if (player.alive) glow.drawTank(player.position, player.angle, player.color)
-        enemies.forEach { glow.drawTank(it.position, it.angle, it.color) }
+        if (player.alive) glow.drawTank(player.position, player.angle, player.color, player.radius)
+        enemies.forEach { glow.drawTank(it.position, it.angle, it.color, it.radius) }
         lasers.forEach { glow.drawLaser(it) }
         bursts.forEach { glow.drawBurst(it.position, it.t, it.color) }
         powerUps.forEach { glow.drawPowerUp(it.position, it.pulse, it.color) }
@@ -418,9 +479,8 @@ class GameScreen : Screen, InputAdapter() {
         shapeRenderer.begin(ShapeRenderer.ShapeType.Filled)
         shapeRenderer.color = Color(0.003f, 0.005f, 0.008f, 1f)
         shapeRenderer.rect(0f, 0f, WORLD_WIDTH, WORLD_HEIGHT)
-        shapeRenderer.color = Color(0.08f, 0.12f, 0.15f, 0.16f)
-        for (x in 32 until WORLD_WIDTH.toInt() step 32) shapeRenderer.rect(x.toFloat(), 0f, 1f, WORLD_HEIGHT)
-        for (y in 32 until WORLD_HEIGHT.toInt() step 32) shapeRenderer.rect(0f, y.toFloat(), WORLD_WIDTH, 1f)
+        shapeRenderer.color = Color(0.018f, 0.028f, 0.036f, 1f)
+        shapeRenderer.rect(TILE, TILE, WORLD_WIDTH - TILE * 2f, 3f)
         shapeRenderer.end()
     }
 
@@ -438,9 +498,36 @@ class GameScreen : Screen, InputAdapter() {
     private fun drawWalls() {
         shapeRenderer.begin(ShapeRenderer.ShapeType.Filled)
         for (wall in walls) {
-            shapeRenderer.color = if (wall.type == WallType.STEEL)
-                Color(0.11f, 0.13f, 0.16f, 1f) else Color(0.18f, 0.075f, 0.045f, 1f)
+            shapeRenderer.color = wall.color
             shapeRenderer.rect(wall.bounds.x, wall.bounds.y, wall.bounds.width, wall.bounds.height)
+
+            val x = wall.bounds.x
+            val y = wall.bounds.y
+            val w = wall.bounds.width
+            val h = wall.bounds.height
+            shapeRenderer.color = Color(1f, 1f, 1f, 0.045f)
+            shapeRenderer.rect(x + 2f, y + h - 4f, w - 4f, 2f)
+            shapeRenderer.color = Color(0f, 0f, 0f, 0.14f)
+            shapeRenderer.rect(x + 2f, y + 2f, w - 4f, 2f)
+        }
+        shapeRenderer.end()
+
+        shapeRenderer.begin(ShapeRenderer.ShapeType.Line)
+        for (wall in walls) {
+            val x = wall.bounds.x
+            val y = wall.bounds.y
+            val w = wall.bounds.width
+            val h = wall.bounds.height
+            shapeRenderer.color = when (wall.type) {
+                WallType.STEEL -> Color(0.28f, 0.42f, 0.5f, 0.38f)
+                WallType.BRICK, WallType.RED_BRICK -> Color(0.75f, 0.32f, 0.18f, 0.28f)
+                WallType.CONCRETE -> Color(0.55f, 0.6f, 0.64f, 0.24f)
+                WallType.METAL -> Color(0.22f, 0.62f, 0.7f, 0.28f)
+            }
+            shapeRenderer.rect(x + 1f, y + 1f, w - 2f, h - 2f)
+            if (wall.type == WallType.BRICK || wall.type == WallType.RED_BRICK) {
+                shapeRenderer.line(x, y + h / 2f, x + w, y + h / 2f)
+            }
         }
         shapeRenderer.end()
     }
