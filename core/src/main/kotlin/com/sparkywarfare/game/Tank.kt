@@ -4,25 +4,24 @@ import com.badlogic.gdx.graphics.Color
 import com.badlogic.gdx.math.Vector2
 
 /**
- * A glowing energy tank. Instead of a sprite, it's drawn as a soft
- * additive-blended core + rim glow (see GlowRenderer). Swap in a
- * texture later without changing this class's contract.
+ * A glowing energy tank. Rendering is handled by GlowRenderer.
  */
 class Tank(
     val position: Vector2,
-    var angle: Float = 0f,          // facing direction, degrees
+    var angle: Float = 0f,
     val isPlayer: Boolean = false,
-    var color: Color = Color(0.2f, 0.8f, 1f, 1f), // default: cyan energy
-    var speed: Float = 90f,          // units per second
+    var color: Color = Color(0.2f, 0.8f, 1f, 1f),
+    var speed: Float = 90f,
     var health: Int = 3,
     var fireCooldown: Float = 0f,
-    var fireRate: Float = 0.35f      // seconds between shots
+    var fireRate: Float = 0.35f
 ) {
     var alive: Boolean = true
+    var aiFireTimer: Float = 0f
     private var rapidFireTimer: Float = 0f
     private val baseFireRate = fireRate
 
-    fun canFire(): Boolean = fireCooldown <= 0f
+    fun canFire(): Boolean = alive && fireCooldown <= 0f
 
     fun grantRapidFire(duration: Float = 6f) {
         fireRate = baseFireRate * 0.35f
@@ -30,15 +29,19 @@ class Tank(
     }
 
     fun update(delta: Float) {
-        if (fireCooldown > 0f) fireCooldown -= delta
+        fireCooldown = (fireCooldown - delta).coerceAtLeast(0f)
         if (rapidFireTimer > 0f) {
             rapidFireTimer -= delta
-            if (rapidFireTimer <= 0f) fireRate = baseFireRate
+            if (rapidFireTimer <= 0f) {
+                rapidFireTimer = 0f
+                fireRate = baseFireRate
+            }
         }
     }
 
     fun hit() {
-        health -= 1
-        if (health <= 0) alive = false
+        if (!alive) return
+        health = (health - 1).coerceAtLeast(0)
+        if (health == 0) alive = false
     }
 }
