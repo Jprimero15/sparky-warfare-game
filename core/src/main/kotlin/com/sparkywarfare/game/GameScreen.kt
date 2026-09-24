@@ -12,7 +12,6 @@ import com.badlogic.gdx.graphics.g2d.freetype.FreeTypeFontGenerator
 import com.badlogic.gdx.graphics.g2d.GlyphLayout
 import com.badlogic.gdx.graphics.g2d.SpriteBatch
 import com.badlogic.gdx.graphics.glutils.ShapeRenderer
-import com.sparkywarfare.game.ui.SafeArea
 import com.badlogic.gdx.math.Intersector
 import com.badlogic.gdx.math.MathUtils
 import com.badlogic.gdx.math.Rectangle
@@ -76,7 +75,7 @@ class GameScreen : Screen, InputAdapter() {
     private val waveManager = WaveManager()
     private val pools = EntityPools()
     private lateinit var hud: HudRenderer
-    private var safeArea = com.sparkywarfare.game.ui.SafeArea(0f, 0f, Gdx.graphics.width.toFloat(), Gdx.graphics.height.toFloat())
+    private var safeArea = SafeArea(0f, Gdx.graphics.width.toFloat(), 0f, Gdx.graphics.height.toFloat())
     private val singleButton = Rectangle()
     private val multiButton = Rectangle()
     private val settingsButton = Rectangle()
@@ -666,7 +665,7 @@ class GameScreen : Screen, InputAdapter() {
     private fun drawHud() {
         val w = Gdx.graphics.width.toFloat()
         val h = Gdx.graphics.height.toFloat()
-        safeArea = com.sparkywarfare.game.ui.SafeArea.fromScreen(w, h)
+        safeArea = hud.safeArea(w, h)
         val panelW = (w * 0.43f).coerceIn(280f, 430f)
         val panelH = 92f
         val left = safeArea.left
