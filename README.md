@@ -20,8 +20,10 @@ The complete gameplay loop is playable, with a redesigned mobile presentation:
 - Upgraded HUD with aligned tactical typography, shadowed text, fixed-width HUD glyphs, and responsive panels
 - Deep-black battlefield with restrained grid lines and high-contrast combat lighting
 - Layered glow, impact bursts, hit flash, and screen shake
-- Synthesized combat/menu sound cues through LibGDX audio
+- Bundled CC0 sci-fi SFX for lasers, hits, explosions, power-ups, and UI feedback
 - Android haptic feedback for firing, hits, explosions, pickups, and menu actions
+- Futuristic Orbitron typography generated from the bundled OFL-1.1 font at runtime through LibGDX FreeType
+- Bundled CC0 Kenney sci-fi OGG effects for offline gameplay
 
 Recent stability fixes harden the gameplay loop:
 
@@ -107,7 +109,7 @@ The Android presentation uses immersive full-screen mode. HUD and controls are r
 
 1. Real bloom via the included framebuffer shader.
 2. Particle debris using the included LibGDX particle resource.
-3. Replace synthesized prototype cues with authored WAV/OGG sound assets when the final sound direction is ready.
+3. Tune the bundled sci-fi SFX mix and add additional CC0 UI/combat cues as needed.
 4. Additional arena layouts and power-up types.
 5. Persistent high scores.
 6. More advanced enemy behavior.
