@@ -4,14 +4,14 @@ An Android-only top-down tank-combat game built with **LibGDX + Kotlin**. The ga
 
 ## Status
 
-The complete gameplay loop is playable, with a redesigned mobile presentation:
+The complete single-player gameplay loop is playable and hardened for modern Android, with a modular gameplay pipeline and redesigned mobile presentation:
 
 - Menu → play → game over → retry
 - Player movement and continuous firing
 - Enemy chase-and-fire AI
 - Destructible brick, reinforced brick, concrete, and metal barriers plus indestructible steel walls
 - Wave progression and scoring
-- Rapid-fire and score power-ups
+- Rapid-fire, score, shield, spread-shot, and overdrive power-ups
 - Android multitouch movement/fire controls
 - Dedicated translucent virtual joystick and fire button
 - Full-screen immersive Android presentation
@@ -21,23 +21,26 @@ The complete gameplay loop is playable, with a redesigned mobile presentation:
 - Deep-black battlefield with clean open floor space and high-contrast combat lighting
 - Layered glow, impact bursts, hit flash, and screen shake
 - Bundled CC0 sci-fi SFX for lasers, hits, explosions, power-ups, and UI feedback
-- Android haptic feedback for firing, hits, explosions, pickups, and menu actions
+- Optional Android haptic feedback for firing, hits, explosions, pickups, and menu actions
 - Futuristic Orbitron typography generated from the bundled OFL-1.1 font at runtime through LibGDX FreeType
 - Bundled CC0 Kenney sci-fi OGG effects for offline gameplay
+- Persistent SFX/haptics settings, safe-area-aware controls, pause/resume, and a Main Menu game-over path
+- Validated enemy spawning that avoids cover/player overlap and line-of-sight-gated enemy firing
+- Player damage i-frames and pooled transient combat entities for smoother Android frame pacing
 
 Recent stability fixes harden the gameplay loop:
 
 - Tank movement uses a circular footprint instead of a center-point wall test.
 - Player and enemies are kept separated and clamped inside the arena.
 - Enemy firing is timer-based instead of frame-rate-dependent random firing.
-- Waves cap the enemy count while increasing speed, health, and firing difficulty.
+- Waves cap enemy count and use bounded, composition-driven scaling instead of unbounded linear stat growth.
 - Enemy roles vary between fast scouts, assault tanks, heavy tanks, and ranged units.
 - Arena cover uses mixed obstacle layouts with different materials and durability.
 - Laser collision uses the travelled segment, preventing fast shots from skipping targets or walls.
 - Restart clears joystick and all active fire pointers.
 - Multiple Android fire touches are tracked independently.
 - Large frame deltas are capped to avoid physics jumps after a stalled frame.
-- Power-ups avoid walls, the player spawn area, and duplicate live pickups.
+- Power-ups avoid walls, the player spawn area, and duplicate live pickups, with five distinct pickup types.
 - Input is cleared when the screen is disposed.
 - Touch-cancel and Android lifecycle pause paths clear active joystick/fire state.
 - Audio initialization failures are isolated so unsupported audio devices do not stop gameplay.
@@ -101,17 +104,16 @@ The generated `sparky-warfare-debug` artifact contains the debug APK.
 
 The game no longer treats the device screen as the whole arena. The playable world is substantially wider and taller than the camera view, and the camera follows the player with smooth clamping at the world edges.
 
-The Android presentation uses immersive full-screen mode. HUD and controls are rendered in a separate screen-space camera so they stay fixed while the battlefield scrolls underneath them.
+The Android presentation uses immersive full-screen mode. HUD and controls are rendered in a separate screen-space camera and respect Android display cutout/gesture safe insets so important controls stay inside the usable area.
 
 ## Rendering
 
-`GlowRenderer` provides the shared layered glow style for tanks, lasers, power-ups and bursts. The current pass adds stronger bloom-like halos, brighter laser cores, multi-ring impacts, power-up pulses, varied obstacle materials, player hit flash, and subtle camera shake without adding a heavyweight rendering dependency.
+`GlowRenderer` provides the shared layered glow style for tanks, lasers, power-ups and bursts. Compatible effects are rendered in batched additive passes, with reusable math/color state to reduce Android allocation churn. The presentation includes stronger bloom-like halos, brighter laser cores, multi-ring impacts, power-up pulses, varied obstacle materials, player hit flash, and subtle camera shake without a heavyweight rendering dependency.
 
 ## Future work
 
 1. Real bloom via the included framebuffer shader.
 2. Particle debris using the included LibGDX particle resource.
-3. Tune the bundled sci-fi SFX mix and add additional CC0 UI/combat cues as needed.
-4. Additional arena layouts and power-up types.
-5. Persistent high scores.
-6. More advanced enemy behavior.
+3. Additional arena layouts and deeper enemy behavior.
+4. Optional mini-boss encounters as a future stretch feature.
+5. Multiplayer remains intentionally out of scope for this pass.
