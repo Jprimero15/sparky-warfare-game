@@ -1,157 +1,100 @@
 # Sparky Warfare
 
-A top-down tank combat game for **Android** — the grid, walls, and wave
-structure of *Battle City / Tank 1990* as the gameplay skeleton,
-reskinned as glowing energy tanks firing laser beams with a shared
-additive-glow VFX system.
-
-Built with **LibGDX + Kotlin**, targeting **Android only**, developed
-**100% from the command line**, built automatically via
-**GitHub Actions**.
+A top-down Android tank-combat game built with **LibGDX + Kotlin**. The game uses glowing energy tanks, laser fire, destructible walls, waves, power-ups, and Android touch controls.
 
 ## Status
 
-A complete, playable loop:
+The complete gameplay loop is playable:
 
-- ✅ Menu → play → game over → retry, all through a tap or SPACE/ENTER
-- ✅ Player movement + shooting, enemy tanks with basic chase-and-fire AI,
-  destructible brick walls, steel walls, laser-vs-wall / laser-vs-tank
-  collision
-- ✅ Wave progression (each cleared wave spawns a harder one) + score
-  (kills, power-up pickups) + on-screen health/score/wave HUD
-- ✅ Power-up pickups (rapid-fire buff, score orb) that trigger the big
-  "domain expansion" radial burst — the hero VFX moment from the
-  original reference image
-- ✅ Android touch controls: drag anywhere on the left half of the
-  screen to move, tap/hold the right half to fire
-- ⬜ Not yet built: sound, real bloom post-processing (the
-  `.frag`/`.vert` shader files are included but not wired into the
-  render pipeline — the current glow is the layered-circle approach in
-  `GlowRenderer`), multiple arenas, real sprite art, more power-up
-  types, persistent high scores, actual particle debris (the `.p`
-  particle file exists but isn't wired into gameplay yet)
+- Menu → play → game over → retry
+- Player movement and continuous firing
+- Enemy chase-and-fire AI
+- Destructible brick walls and indestructible steel walls
+- Wave progression and scoring
+- Rapid-fire and score power-ups
+- Android multitouch movement/fire controls
 
-Treat the "not yet built" list as your natural next steps, not gaps in
-what's here — the full loop already runs start to finish on a device.
+Recent stability fixes harden the gameplay loop:
+
+- Tank movement uses a circular footprint instead of a center-point wall test.
+- Player and enemies are kept separated and clamped inside the arena.
+- Enemy firing is timer-based instead of frame-rate-dependent random firing.
+- Waves cap the enemy count while increasing speed, health, and firing difficulty.
+- Laser collision uses the travelled segment, preventing fast shots from skipping targets or walls.
+- Restart clears joystick and fire-pointer state so an old touch cannot remain stuck.
+- Large frame deltas are capped to avoid physics jumps after a stalled frame.
+- Power-ups avoid walls, the player spawn area, and duplicate live pickups.
+- Input is cleared when the screen is disposed.
 
 ## Project layout
 
 ```
-sparky-warfare/
-├── core/           # All game logic + rendering (Kotlin) — consumed by android/
-│   └── .../game/
-│       ├── SparkyWarfareGame.kt   # entry point
-│       ├── GameScreen.kt          # states, waves, scoring, AI, collisions, touch input, HUD
-│       ├── Tank.kt / Laser.kt / Wall.kt / PowerUp.kt
-│       ├── VirtualJoystick.kt     # drag-based touch movement
-│       └── GlowRenderer.kt        # THE shared VFX system — glow, beams, bursts, domain burst
-├── android/        # The Android app — launcher, manifest, the only shipped module
-├── assets/
-│   ├── shaders/glow.vert, glow.frag   # bloom post-process shader (not yet wired in)
-│   └── particles/explosion.p          # LibGDX ParticleEffect config (not yet wired in)
-└── .github/workflows/build.yml    # CI: builds the debug APK on every push
+core/           # Game logic and rendering
+android/        # Android application
+assets/         # Shaders and particle resources
+.github/        # GitHub Actions CI
 ```
 
-`core` stays a plain Kotlin/JVM module (no Android SDK dependency) so
-its logic and shaders are easy to reason about in isolation — but the
-`android/` module is the only thing that actually builds and runs.
-There's no desktop launcher; every test loop goes through a real
-device, an emulator, or CI.
+Important gameplay files are under `core/src/main/kotlin/com/sparkywarfare/game/`:
 
-## The VFX approach
-
-Every glowing thing in the game — tank cores, laser beams, explosion
-bursts — goes through **one** class: `GlowRenderer`. It draws everything
-with **additive blending** (`GL_SRC_ALPHA, GL_ONE`), so overlapping glows
-brighten instead of muddying, which is the core trick behind this whole
-visual style. Extend that one file rather than writing a new effect
-system per entity.
-
-The included `.frag`/`.vert` shaders are a next-step upgrade path: a
-luminance-threshold bloom pass you can apply to a `FrameBuffer` render
-of the whole scene for a "real" glow halo, instead of (or in addition
-to) the current layered-circle approximation in `GlowRenderer`.
-
-## Building it
-
-You'll need a JDK (17+), the Android SDK, and Gradle (or Android
-Studio, which bundles all three). This repo doesn't commit a Gradle
-wrapper jar, so either:
-
-```bash
-# one-time, if you have Gradle installed locally:
-gradle wrapper
-
-# then use ./gradlew from here on:
-./gradlew android:assembleDebug
-```
-
-Or just push to GitHub and let CI build it for you (see below) — that
-was the point of going all-CLI.
-
-## Running it
-
-There's no desktop launcher, so testing means one of:
-
-- **A physical Android device** — build with the command above, then
-  `adb install android/build/outputs/apk/debug/android-debug.apk`
-- **An Android emulator** (via `emulator` CLI or Android Studio's AVD
-  Manager) — same install command, targets the emulator instead
-- **GitHub Actions** — push and download the built APK (below), no
-  local Android SDK setup at all
-
-## GitHub Actions (the actual "100% CLI" workflow)
-
-`.github/workflows/build.yml` runs on every push to `main` and every
-pull request:
-
-1. Checks out the repo
-2. Installs JDK 17 + the Android SDK
-3. Installs Gradle via `gradle/actions/setup-gradle` (no wrapper jar
-   needed)
-4. Runs `gradle android:assembleDebug`
-5. Uploads the resulting `.apk` as a workflow artifact
-
-**Your loop becomes:**
-
-```bash
-git add .
-git commit -m "add laser trail glow"
-git push
-```
-
-Then open the **Actions** tab on GitHub, wait for the green check,
-download the `sparky-warfare-debug` artifact, and:
-
-```bash
-adb install sparky-warfare-debug.apk
-```
-
-No local Android SDK setup ever required.
+- `GameScreen.kt` — states, waves, AI, movement, collisions, touch input and HUD
+- `Tank.kt` — health, cooldowns and rapid-fire state
+- `Laser.kt` — laser movement and swept-collision history
+- `VirtualJoystick.kt` — multitouch movement control
+- `GlowRenderer.kt` — tank, laser and burst rendering
 
 ## Controls
 
-Touch only, matching the shipped Android target:
+On Android:
 
-- Drag anywhere on the **left half** of the screen to move (virtual
-  joystick)
-- Tap or hold the **right half** of the screen to fire
-- Tap anywhere to start from the menu, or retry after game over
+- Drag on the **left half** of the screen to move.
+- Tap/hold the **right half** to fire.
+- Tap anywhere on the menu to start.
+- Tap anywhere after game over to restart.
 
-(The keyboard-input code from earlier prototyping — WASD/arrows/Space —
-is still present in `GameScreen.kt` as a harmless fallback if you're
-debugging through an emulator with a hardware keyboard, but touch is
-the actual supported input.)
+Keyboard fallback:
 
-## Next steps, roughly in order
+- WASD / arrow keys to move.
+- SPACE to fire or start/restart.
 
-1. Wire the bloom shader (`glow.frag`) into a `FrameBuffer` pass over
-   the whole scene for a real halo instead of the layered-circle glow
-2. Swap `explosion.p` in via LibGDX's `ParticleEffect` API alongside
-   `GlowRenderer.drawBurst` for denser explosion debris
-3. Sound effects (laser fire, explosions, power-up pickup) via
-   `Gdx.audio`
-4. More power-up types, a second arena layout, persistent high score
-   (LibGDX `Preferences`)
-5. Replace the AI's basic chase-and-fire in `updateEnemyAi` with
-   proper states (patrol/attack/retreat) if you want smarter enemies
+## Building
+
+With Gradle installed:
+
+```bash
+gradle :android:assembleDebug --no-daemon
+```
+
+The APK is generated at:
+
+```
+android/build/outputs/apk/debug/
+```
+
+## GitHub Actions
+
+`.github/workflows/build.yml` builds the Android debug APK on pushes to `main`, pull requests, and manual runs.
+
+CI uses:
+
+- JDK 17
+- Android platform API 34
+- Android build-tools 34.0.0
+- Gradle Actions setup v4
+
+The workflow deliberately installs specific SDK packages rather than relying on the obsolete `tools` SDK package that previously caused setup failures.
+
+The generated `sparky-warfare-debug` artifact contains the debug APK.
+
+## Rendering
+
+`GlowRenderer` provides the shared layered glow style for tanks, lasers, power-ups and bursts. The included shader and particle resources remain available for a future framebuffer bloom/particle pass.
+
+## Future work
+
+1. Real bloom via the included framebuffer shader.
+2. Particle debris using the included LibGDX particle resource.
+3. Sound effects for firing, impacts and pickups.
+4. Additional arena layouts and power-up types.
+5. Persistent high scores.
+6. More advanced enemy behavior.
