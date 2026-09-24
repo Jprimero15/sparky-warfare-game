@@ -9,7 +9,7 @@ The complete gameplay loop is playable, with a redesigned mobile presentation:
 - Menu → play → game over → retry
 - Player movement and continuous firing
 - Enemy chase-and-fire AI
-- Destructible brick walls and indestructible steel walls
+- Destructible brick, reinforced brick, concrete, and metal barriers plus indestructible steel walls
 - Wave progression and scoring
 - Rapid-fire and score power-ups
 - Android multitouch movement/fire controls
@@ -18,7 +18,7 @@ The complete gameplay loop is playable, with a redesigned mobile presentation:
 - Wide 1600×900 world with a camera that smoothly follows the player
 - Redesigned main menu with **Single Player** and **Multiplayer** placeholder
 - Upgraded HUD with aligned tactical typography, shadowed text, fixed-width HUD glyphs, and responsive panels
-- Deep-black battlefield with restrained grid lines and high-contrast combat lighting
+- Deep-black battlefield with clean open floor space and high-contrast combat lighting
 - Layered glow, impact bursts, hit flash, and screen shake
 - Bundled CC0 sci-fi SFX for lasers, hits, explosions, power-ups, and UI feedback
 - Android haptic feedback for firing, hits, explosions, pickups, and menu actions
@@ -31,6 +31,8 @@ Recent stability fixes harden the gameplay loop:
 - Player and enemies are kept separated and clamped inside the arena.
 - Enemy firing is timer-based instead of frame-rate-dependent random firing.
 - Waves cap the enemy count while increasing speed, health, and firing difficulty.
+- Enemy roles vary between fast scouts, assault tanks, heavy tanks, and ranged units.
+- Arena cover uses mixed obstacle layouts with different materials and durability.
 - Laser collision uses the travelled segment, preventing fast shots from skipping targets or walls.
 - Restart clears joystick and all active fire pointers.
 - Multiple Android fire touches are tracked independently.
@@ -103,7 +105,7 @@ The Android presentation uses immersive full-screen mode. HUD and controls are r
 
 ## Rendering
 
-`GlowRenderer` provides the shared layered glow style for tanks, lasers, power-ups and bursts. The current pass adds stronger bloom-like halos, brighter laser cores, multi-ring impacts, power-up pulses, arena grid contrast, player hit flash, and subtle camera shake without adding a heavyweight rendering dependency.
+`GlowRenderer` provides the shared layered glow style for tanks, lasers, power-ups and bursts. The current pass adds stronger bloom-like halos, brighter laser cores, multi-ring impacts, power-up pulses, varied obstacle materials, player hit flash, and subtle camera shake without adding a heavyweight rendering dependency.
 
 ## Future work
 
