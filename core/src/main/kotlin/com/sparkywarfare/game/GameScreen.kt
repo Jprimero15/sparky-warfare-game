@@ -293,6 +293,8 @@ class GameScreen : Screen, InputAdapter() {
                 }
             } else if (player.alive && segmentHitsCircle(laser.previousPosition, laser.position, player.position, TANK_RADIUS)) {
                 player.hit()
+                hitFlash = 0.28f
+                screenShake = maxOf(screenShake, 0.12f)
                 spawnBurst(laser.position, laser.color)
                 toRemove.add(laser)
             }
