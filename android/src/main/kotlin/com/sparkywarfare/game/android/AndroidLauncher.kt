@@ -11,6 +11,7 @@ class AndroidLauncher : AndroidApplication() {
         val config = AndroidApplicationConfiguration().apply {
             useAccelerometer = false
             useCompass = false
+            useImmersiveMode = true
         }
         initialize(SparkyWarfareGame(), config)
     }
