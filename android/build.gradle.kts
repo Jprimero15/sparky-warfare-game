@@ -58,6 +58,10 @@ dependencies {
     gdxNatives("com.badlogicgames.gdx:gdx-platform:$gdxVersion:natives-arm64-v8a")
     gdxNatives("com.badlogicgames.gdx:gdx-platform:$gdxVersion:natives-x86")
     gdxNatives("com.badlogicgames.gdx:gdx-platform:$gdxVersion:natives-x86_64")
+    gdxNatives("com.badlogicgames.gdx:gdx-freetype-platform:$gdxVersion:natives-armeabi-v7a")
+    gdxNatives("com.badlogicgames.gdx:gdx-freetype-platform:$gdxVersion:natives-arm64-v8a")
+    gdxNatives("com.badlogicgames.gdx:gdx-freetype-platform:$gdxVersion:natives-x86")
+    gdxNatives("com.badlogicgames.gdx:gdx-freetype-platform:$gdxVersion:natives-x86_64")
 }
 
 val extractGdxNatives = tasks.register("extractGdxNatives") {
@@ -99,6 +103,9 @@ val extractGdxNatives = tasks.register("extractGdxNatives") {
         for (abiName in abis) {
             check(destination.resolve(abiName + "/libgdx.so").isFile) {
                 "Missing LibGDX native library for ABI: " + abiName
+            }
+            check(destination.resolve(abiName + "/libgdx-freetype.so").isFile) {
+                "Missing LibGDX FreeType native library for ABI: " + abiName
             }
         }
     }
