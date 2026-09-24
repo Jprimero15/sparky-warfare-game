@@ -115,3 +115,4 @@ The Android presentation uses immersive full-screen mode. HUD and controls are r
 4. Additional arena layouts and power-up types.
 5. Persistent high scores.
 6. More advanced enemy behavior.
+\n<!-- CI validation marker -->
