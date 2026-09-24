@@ -14,7 +14,8 @@ class Tank(
     var speed: Float = 90f,
     var health: Int = 3,
     var fireCooldown: Float = 0f,
-    var fireRate: Float = 0.35f
+    var fireRate: Float = 0.35f,
+    var radius: Float = 14f
 ) {
     var alive: Boolean = true
     var aiFireTimer: Float = 0f
