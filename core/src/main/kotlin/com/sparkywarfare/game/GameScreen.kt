@@ -13,7 +13,7 @@ import com.badlogic.gdx.math.Intersector
 import com.badlogic.gdx.math.MathUtils
 import com.badlogic.gdx.math.Rectangle
 import com.badlogic.gdx.math.Vector2
-import com.badlogic.gdx.utils.viewport.FitViewport
+import com.badlogic.gdx.utils.viewport.ExtendViewport
 import com.badlogic.gdx.utils.viewport.Viewport
 
 const val WORLD_WIDTH = 480f
@@ -146,9 +146,13 @@ class GameScreen : Screen, InputAdapter() {
         }
     }
 
-    private fun startOrRestart() {
-        if (state == GameState.GAME_OVER) resetGame()
+    private fun startSinglePlayer() {
+        resetGame()
         state = GameState.PLAYING
+    }
+
+    private fun startOrRestart() {
+        startSinglePlayer()
     }
 
     private fun update(delta: Float) {
