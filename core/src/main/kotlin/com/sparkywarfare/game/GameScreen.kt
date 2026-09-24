@@ -48,6 +48,10 @@ class GameScreen : Screen, InputAdapter() {
     private var state = GameState.MENU
     private var score = 0
     private var wave = 0
+    private var highScore = 0
+    private var bestWave = 0
+    private var totalKills = 0
+    private val prefs by lazy { Gdx.app.getPreferences("Sparky Warfare") }
     private var screenShake = 0f
     private var hitFlash = 0f
 
@@ -87,6 +91,9 @@ class GameScreen : Screen, InputAdapter() {
         font = fontGenerator.generateFont(fontParameter)
         fontGenerator.dispose()
         layout = GlyphLayout()
+        highScore = prefs.getInteger("highScore", 0)
+        bestWave = prefs.getInteger("bestWave", 0)
+        totalKills = prefs.getInteger("totalKills", 0)
         FeedbackAudio.init()
         hudCamera = OrthographicCamera()
         hudCamera.setToOrtho(false, Gdx.graphics.width.toFloat(), Gdx.graphics.height.toFloat())
@@ -276,6 +283,7 @@ class GameScreen : Screen, InputAdapter() {
         walls.removeAll { !it.alive }
 
         if (!player.alive) {
+            persistProgress()
             state = GameState.GAME_OVER
             FeedbackAudio.play(FeedbackAudio.Cue.EXPLOSION)
             haptic(Input.VibrationType.HEAVY)
@@ -378,7 +386,11 @@ class GameScreen : Screen, InputAdapter() {
                         spawnBurst(laser.position, laser.color)
                         FeedbackAudio.play(if (enemy.alive) FeedbackAudio.Cue.HIT else FeedbackAudio.Cue.EXPLOSION)
                         toRemove.add(laser)
-                        if (!enemy.alive) { score += if (enemy.radius >= 18f) 250 else if (enemy.radius <= 11f) 125 else 175; haptic(Input.VibrationType.MEDIUM) } else haptic(Input.VibrationType.LIGHT)
+                        if (!enemy.alive) {
+                            score += if (enemy.radius >= 18f) 250 else if (enemy.radius <= 11f) 125 else 175
+                            totalKills += 1
+                            haptic(Input.VibrationType.MEDIUM)
+                        } else haptic(Input.VibrationType.LIGHT)
                         break
                     }
                 }
@@ -577,6 +589,15 @@ class GameScreen : Screen, InputAdapter() {
         batch.end()
     }
 
+    private fun persistProgress() {
+        if (score > highScore) highScore = score
+        if (wave > bestWave) bestWave = wave
+        prefs.putInteger("highScore", highScore)
+        prefs.putInteger("bestWave", bestWave)
+        prefs.putInteger("totalKills", totalKills)
+        prefs.flush()
+    }
+
     private fun drawHud() {
         val w = Gdx.graphics.width.toFloat()
         val h = Gdx.graphics.height.toFloat()
@@ -603,6 +624,8 @@ class GameScreen : Screen, InputAdapter() {
         font.data.setScale(1.08f)
         drawShadowed("SCORE  " + score, 32f, h - 62f, Color.WHITE)
         drawShadowed("WAVE   " + wave, 132f, h - 62f, Color(0.72f, 0.82f, 0.9f, 1f))
+        font.data.setScale(0.72f)
+        drawShadowed("BEST  " + highScore, 32f, h - 82f, Color(0.46f, 0.72f, 0.8f, 1f))
         drawRight("HP " + player.health, w - 42f, h - 34f, Color(0.95f, 0.35f, 0.42f, 1f))
         batch.end()
 
@@ -665,6 +688,8 @@ class GameScreen : Screen, InputAdapter() {
         drawShadowed("SPARKY WARFARE", centerX - 0f, h * 0.78f, Color(0.58f, 0.92f, 1f, 1f))
         font.data.setScale(1.05f)
         drawCentered("TACTICAL ENERGY COMBAT", centerX, h * 0.68f, Color(0.5f, 0.62f, 0.68f, 1f))
+        font.data.setScale(0.78f)
+        drawCentered("BEST " + highScore + "   •   WAVE " + bestWave + "   •   KILLS " + totalKills, centerX, h * 0.61f, Color(0.42f, 0.58f, 0.64f, 1f))
         font.data.setScale(1.25f)
         drawCentered("SINGLE PLAYER", centerX, singleButton.y + singleButton.height / 2f + 7f, Color.WHITE)
         drawCentered("MULTIPLAYER", centerX, multiButton.y + multiButton.height / 2f + 7f, Color(0.84f, 0.88f, 0.92f, 1f))
@@ -706,7 +731,9 @@ class GameScreen : Screen, InputAdapter() {
         font.data.setScale(2.45f)
         drawCentered("GAME OVER", w / 2f, bottom + panelH - 66f, Color(1f, 0.28f, 0.34f, 1f))
         font.data.setScale(1.12f)
-        drawCentered("SCORE  " + score + "    WAVE  " + wave, w / 2f, bottom + panelH / 2f + 4f, Color.WHITE)
+        drawCentered("SCORE  " + score + "    BEST  " + highScore, w / 2f, bottom + panelH / 2f + 4f, Color.WHITE)
+        font.data.setScale(0.78f)
+        drawCentered("WAVE " + wave + "    TOTAL KILLS " + totalKills, w / 2f, bottom + panelH / 2f - 22f, Color(0.56f, 0.66f, 0.72f, 1f))
         font.data.setScale(0.98f)
         drawCentered("TAP ANYWHERE TO RETRY", w / 2f, bottom + 48f, Color(0.7f, 0.78f, 0.84f, 1f))
         batch.end()
