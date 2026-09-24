@@ -20,9 +20,9 @@ object FeedbackAudio {
     fun init() {
         if (!available || laser != null) return
         try {
-            laser = Gdx.audio.newSound(Gdx.files.internal("audio/laser.wav"))
-            hit = Gdx.audio.newSound(Gdx.files.internal("audio/hit.wav"))
-            explosion = Gdx.audio.newSound(Gdx.files.internal("audio/explosion.wav"))
+            laser = Gdx.audio.newSound(Gdx.files.internal("audio/laser.ogg"))
+            hit = Gdx.audio.newSound(Gdx.files.internal("audio/hit.ogg"))
+            explosion = Gdx.audio.newSound(Gdx.files.internal("audio/explosion.ogg"))
         } catch (_: Throwable) {
             available = false
             disposeSounds()
