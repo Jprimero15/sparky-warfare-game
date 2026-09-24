@@ -8,6 +8,7 @@ import com.badlogic.gdx.graphics.Color
 import com.badlogic.gdx.graphics.GL20
 import com.badlogic.gdx.graphics.OrthographicCamera
 import com.badlogic.gdx.graphics.g2d.BitmapFont
+import com.badlogic.gdx.graphics.g2d.FreeTypeFontGenerator
 import com.badlogic.gdx.graphics.g2d.GlyphLayout
 import com.badlogic.gdx.graphics.g2d.SpriteBatch
 import com.badlogic.gdx.graphics.glutils.ShapeRenderer
@@ -69,11 +70,23 @@ class GameScreen : Screen, InputAdapter() {
         shapeRenderer = ShapeRenderer()
         glow = GlowRenderer(shapeRenderer)
         batch = SpriteBatch()
-        font = BitmapFont().apply {
-            data.setScale(2f)
-            setUseIntegerPositions(false)
-            setFixedWidthGlyphs("ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789:-")
+        val fontGenerator = FreeTypeFontGenerator(Gdx.files.internal("fonts/Orbitron-Medium.ttf"))
+        val fontParameter = FreeTypeFontGenerator.FreeTypeFontParameter().apply {
+            size = 30
+            color = Color.WHITE
+            borderWidth = 1.2f
+            borderColor = Color(0f, 0f, 0f, 0.85f)
+            shadowOffsetX = 1
+            shadowOffsetY = 1
+            shadowColor = Color(0f, 0f, 0f, 0.75f)
+            characters = FreeTypeFontGenerator.DEFAULT_CHARS + "0123456789:-"
+            kerning = true
+            genMipMaps = true
+            minFilter = com.badlogic.gdx.graphics.Texture.TextureFilter.Linear
+            magFilter = com.badlogic.gdx.graphics.Texture.TextureFilter.Linear
         }
+        font = fontGenerator.generateFont(fontParameter)
+        fontGenerator.dispose()
         layout = GlyphLayout()
         FeedbackAudio.init()
         hudCamera = OrthographicCamera()
