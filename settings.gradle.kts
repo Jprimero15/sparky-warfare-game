@@ -7,4 +7,4 @@ pluginManagement {
 }
 
 rootProject.name = "sparky-warfare"
-include("core", "android", "desktop")
+include("core", "android")

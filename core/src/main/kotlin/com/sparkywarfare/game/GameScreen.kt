@@ -331,7 +331,6 @@ class GameScreen : Screen, InputAdapter() {
     }
 
     private fun drawTouchControls() {
-        if (Gdx.app.type != com.badlogic.gdx.Application.ApplicationType.Android) return
         val h = Gdx.graphics.height.toFloat()
 
         Gdx.gl.glEnable(GL20.GL_BLEND)

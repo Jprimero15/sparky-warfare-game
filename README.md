@@ -1,22 +1,19 @@
 # Sparky Warfare
 
-A top-down tank combat game — the grid, walls, and wave structure of
-*Battle City / Tank 1990* as the gameplay skeleton, reskinned as glowing
-energy tanks firing laser beams with a shared additive-glow VFX system.
+A top-down tank combat game for **Android** — the grid, walls, and wave
+structure of *Battle City / Tank 1990* as the gameplay skeleton,
+reskinned as glowing energy tanks firing laser beams with a shared
+additive-glow VFX system.
 
-Built with **LibGDX + Kotlin**, developed **100% from the command line**,
-built automatically via **GitHub Actions**.
-
-**Target platform: Android only.** The `android/` module is the actual
-product. `desktop/` exists purely as a local dev convenience — it lets
-you test movement, shooting, and the glow VFX in a window on your own
-machine without a phone or emulator — but it is not part of what ships.
+Built with **LibGDX + Kotlin**, targeting **Android only**, developed
+**100% from the command line**, built automatically via
+**GitHub Actions**.
 
 ## Status
 
 A complete, playable loop:
 
-- ✅ Menu → play → game over → retry, all through tap or SPACE/ENTER
+- ✅ Menu → play → game over → retry, all through a tap or SPACE/ENTER
 - ✅ Player movement + shooting, enemy tanks with basic chase-and-fire AI,
   destructible brick walls, steel walls, laser-vs-wall / laser-vs-tank
   collision
@@ -25,36 +22,41 @@ A complete, playable loop:
 - ✅ Power-up pickups (rapid-fire buff, score orb) that trigger the big
   "domain expansion" radial burst — the hero VFX moment from the
   original reference image
-- ✅ Android touch controls: drag anywhere on the left half to move,
-  tap/hold the right half to fire — alongside WASD/arrows + Space for
-  desktop testing
+- ✅ Android touch controls: drag anywhere on the left half of the
+  screen to move, tap/hold the right half to fire
 - ⬜ Not yet built: sound, real bloom post-processing (the
   `.frag`/`.vert` shader files are included but not wired into the
   render pipeline — the current glow is the layered-circle approach in
   `GlowRenderer`), multiple arenas, real sprite art, more power-up
-  types, persistent high scores
+  types, persistent high scores, actual particle debris (the `.p`
+  particle file exists but isn't wired into gameplay yet)
 
 Treat the "not yet built" list as your natural next steps, not gaps in
-what's here — the full loop already runs start to finish.
+what's here — the full loop already runs start to finish on a device.
 
 ## Project layout
 
 ```
 sparky-warfare/
-├── core/           # Shared game logic + rendering (Kotlin) — all platforms use this
+├── core/           # All game logic + rendering (Kotlin) — consumed by android/
 │   └── .../game/
 │       ├── SparkyWarfareGame.kt   # entry point
 │       ├── GameScreen.kt          # states, waves, scoring, AI, collisions, touch input, HUD
 │       ├── Tank.kt / Laser.kt / Wall.kt / PowerUp.kt
 │       ├── VirtualJoystick.kt     # drag-based touch movement
 │       └── GlowRenderer.kt        # THE shared VFX system — glow, beams, bursts, domain burst
-├── desktop/        # Dev-only: fast local VFX testing, not shipped
-├── android/        # THE product — Android launcher + manifest
+├── android/        # The Android app — launcher, manifest, the only shipped module
 ├── assets/
 │   ├── shaders/glow.vert, glow.frag   # bloom post-process shader (not yet wired in)
-│   └── particles/explosion.p          # LibGDX ParticleEffect config
+│   └── particles/explosion.p          # LibGDX ParticleEffect config (not yet wired in)
 └── .github/workflows/build.yml    # CI: builds the debug APK on every push
 ```
+
+`core` stays a plain Kotlin/JVM module (no Android SDK dependency) so
+its logic and shaders are easy to reason about in isolation — but the
+`android/` module is the only thing that actually builds and runs.
+There's no desktop launcher; every test loop goes through a real
+device, an emulator, or CI.
 
 ## The VFX approach
 
@@ -70,22 +72,33 @@ luminance-threshold bloom pass you can apply to a `FrameBuffer` render
 of the whole scene for a "real" glow halo, instead of (or in addition
 to) the current layered-circle approximation in `GlowRenderer`.
 
-## Running it locally
+## Building it
 
-You'll need a JDK (17+) and Gradle installed (or Android Studio, which
-bundles both). This repo doesn't commit a Gradle wrapper jar, so either:
+You'll need a JDK (17+), the Android SDK, and Gradle (or Android
+Studio, which bundles all three). This repo doesn't commit a Gradle
+wrapper jar, so either:
 
 ```bash
 # one-time, if you have Gradle installed locally:
 gradle wrapper
 
-# then use ./gradlew from here on, e.g.:
-./gradlew desktop:run          # fast iteration, runs on your machine
-./gradlew android:assembleDebug # builds an APK locally
+# then use ./gradlew from here on:
+./gradlew android:assembleDebug
 ```
 
 Or just push to GitHub and let CI build it for you (see below) — that
 was the point of going all-CLI.
+
+## Running it
+
+There's no desktop launcher, so testing means one of:
+
+- **A physical Android device** — build with the command above, then
+  `adb install android/build/outputs/apk/debug/android-debug.apk`
+- **An Android emulator** (via `emulator` CLI or Android Studio's AVD
+  Manager) — same install command, targets the emulator instead
+- **GitHub Actions** — push and download the built APK (below), no
+  local Android SDK setup at all
 
 ## GitHub Actions (the actual "100% CLI" workflow)
 
@@ -118,11 +131,17 @@ No local Android SDK setup ever required.
 
 ## Controls
 
-- **Desktop (dev testing):** WASD/arrow keys to move, Space to fire,
-  Space/Enter to start or retry from the menu/game-over screen
-- **Android:** drag anywhere on the left half of the screen to move
-  (virtual joystick), tap/hold the right half to fire, tap anywhere to
-  start or retry
+Touch only, matching the shipped Android target:
+
+- Drag anywhere on the **left half** of the screen to move (virtual
+  joystick)
+- Tap or hold the **right half** of the screen to fire
+- Tap anywhere to start from the menu, or retry after game over
+
+(The keyboard-input code from earlier prototyping — WASD/arrows/Space —
+is still present in `GameScreen.kt` as a harmless fallback if you're
+debugging through an emulator with a hardware keyboard, but touch is
+the actual supported input.)
 
 ## Next steps, roughly in order
 
