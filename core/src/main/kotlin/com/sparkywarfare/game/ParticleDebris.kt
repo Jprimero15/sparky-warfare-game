@@ -4,12 +4,13 @@ import com.badlogic.gdx.Gdx
 import com.badlogic.gdx.graphics.g2d.ParticleEffect
 import com.badlogic.gdx.graphics.g2d.ParticleEffectPool
 import com.badlogic.gdx.graphics.g2d.SpriteBatch
+import com.badlogic.gdx.math.Matrix4
 import com.badlogic.gdx.math.Vector2
 
 class ParticleDebris(private val batch: SpriteBatch) {
     private val template = ParticleEffect()
     private val active = mutableListOf<ParticleEffectPool.PooledEffect>()
-    private val pool: ParticleEffectPool.PooledEffect
+    private val pool: ParticleEffectPool
 
     init {
         template.load(
@@ -37,16 +38,20 @@ class ParticleDebris(private val batch: SpriteBatch) {
         }
     }
 
-    fun draw(projection: com.badlogic.gdx.math.Matrix4) {
+    fun draw(projection: Matrix4) {
         if (active.isEmpty()) return
         batch.projectionMatrix = projection
         batch.begin()
-        for (effect in active) effect.draw(batch)
+        for (effect in active) {
+            effect.draw(batch)
+        }
         batch.end()
     }
 
     fun clear() {
-        for (effect in active) pool.free(effect)
+        for (effect in active) {
+            pool.free(effect)
+        }
         active.clear()
     }
 
