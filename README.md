@@ -4,7 +4,7 @@ An Android-only top-down tank-combat game built with **LibGDX + Kotlin**. The ga
 
 ## Status
 
-The complete gameplay loop is playable:
+The complete gameplay loop is playable, with a redesigned mobile presentation:
 
 - Menu → play → game over → retry
 - Player movement and continuous firing
@@ -13,6 +13,11 @@ The complete gameplay loop is playable:
 - Wave progression and scoring
 - Rapid-fire and score power-ups
 - Android multitouch movement/fire controls
+- Dedicated translucent virtual joystick and fire button
+- Full-screen immersive Android presentation
+- Wide 1600×900 world with a camera that smoothly follows the player
+- Redesigned main menu with **Single Player** and **Multiplayer** placeholder
+- Upgraded HUD, arena grid, layered glow, impact bursts, hit flash, and screen shake
 
 Recent stability fixes harden the gameplay loop:
 
@@ -42,11 +47,12 @@ Important gameplay files are under `core/src/main/kotlin/com/sparkywarfare/game/
 
 ## Android controls
 
-- Drag on the **left half** of the screen to move.
-- Tap/hold the **right half** to fire.
+- Use the dedicated **MOVE** virtual joystick on the lower-left.
+- Hold the dedicated **FIRE** button on the lower-right.
 - Multiple fire touches are handled safely.
-- Tap anywhere on the menu to start.
-- Tap anywhere after game over to retry.
+- **Single Player** starts the current game mode.
+- **Multiplayer** is a visual placeholder for a future mode.
+- Tap after game over to retry.
 
 There is no desktop keyboard-control path.
 
@@ -81,9 +87,15 @@ The workflow installs the required Android SDK packages directly and does not us
 
 The generated `sparky-warfare-debug` artifact contains the debug APK.
 
+## Presentation upgrade
+
+The game no longer treats the device screen as the whole arena. The playable world is substantially wider and taller than the camera view, and the camera follows the player with smooth clamping at the world edges.
+
+The Android presentation uses immersive full-screen mode. HUD and controls are rendered in a separate screen-space camera so they stay fixed while the battlefield scrolls underneath them.
+
 ## Rendering
 
-`GlowRenderer` provides the shared layered glow style for tanks, lasers, power-ups and bursts. The included shader and particle resources remain available for future visual improvements.
+`GlowRenderer` provides the shared layered glow style for tanks, lasers, power-ups and bursts. The current pass adds stronger bloom-like halos, brighter laser cores, multi-ring impacts, power-up pulses, arena grid contrast, player hit flash, and subtle camera shake without adding a heavyweight rendering dependency.
 
 ## Future work
 
