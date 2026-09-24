@@ -68,30 +68,39 @@ val extractGdxNatives = tasks.register("extractGdxNatives") {
 
         val abis = setOf("armeabi-v7a", "arm64-v8a", "x86", "x86_64")
 
-        configurations.named("gdxNatives").get().files.forEach { jar ->
-            java.util.zip.ZipFile(jar).use { zip ->
-                zip.entries().asSequence()
-                    .filter { !it.isDirectory && it.name.endsWith(".so") }
+        configurations.named("gdxNatives").get().files.forEach { jarFile ->
+            java.util.zip.ZipFile(jarFile).use { zipFile ->
+                zipFile.entries().asSequence()
+                    .filter { entry -> !entry.isDirectory && entry.name.endsWith(".so") }
                     .forEach { entry ->
-                        val abi = abis.firstOrNull { entry.name.contains("/" + it + "/") }
-                            ?: abis.firstOrNull { entry.name.contains(it + "/") }
+                        val abi = abis.firstOrNull { abiName ->
+                            entry.name.contains("/" + abiName + "/")
+                        } ?: abis.firstOrNull { abiName ->
+                            entry.name.contains(abiName + "/")
+                        }
+
                         if (abi != null) {
-                            val output = destination.resolve(abi + "/" + entry.name.substringAfterLast('/'))
+                            val output = destination.resolve(
+                                abi + "/" + entry.name.substringAfterLast("/")
+                            )
                             output.parentFile.mkdirs()
-                            zip.getInputStream(entry).use { input ->
-                                output.outputStream().use { outputStream -> input.copyTo(outputStream) }
+                            zipFile.getInputStream(entry).use { input ->
+                                output.outputStream().use { outputStream ->
+                                    input.copyTo(outputStream)
+                                }
                             }
                         }
                     }
             }
         }
 
-        check(abis.all { destination.resolve(it + "/libgdx.so").isFile }) {
+        check(abis.all { abiName ->
+            destination.resolve(abiName + "/libgdx.so").isFile
+        }) {
             "LibGDX native libraries were not extracted correctly"
         }
     }
 }
-
 android.sourceSets.getByName("main").jniLibs.srcDir(
     layout.buildDirectory.dir("generated/gdxNatives")
 )
