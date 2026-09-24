@@ -69,7 +69,11 @@ class GameScreen : Screen, InputAdapter() {
         shapeRenderer = ShapeRenderer()
         glow = GlowRenderer(shapeRenderer)
         batch = SpriteBatch()
-        font = BitmapFont().apply { data.setScale(2f); setUseIntegerPositions(false) }
+        font = BitmapFont().apply {
+            data.setScale(2f)
+            setUseIntegerPositions(false)
+            setFixedWidthGlyphs("ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789:-")
+        }
         layout = GlyphLayout()
         FeedbackAudio.init()
         hudCamera = OrthographicCamera()
