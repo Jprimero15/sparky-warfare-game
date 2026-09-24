@@ -222,6 +222,7 @@ class GameScreen : Screen, InputAdapter() {
         Wall(Rectangle(col * TILE, row * TILE, TILE, TILE), type)
 
     override fun render(delta: Float) {
+        transition += (transitionTarget - transition) * (delta * GameConfig.Ui.TRANSITION_SPEED).coerceAtMost(1f)
         when (state) {
             GameState.MENU -> {
                 drawWorldIdle()
@@ -250,6 +251,21 @@ class GameScreen : Screen, InputAdapter() {
                 drawSettingsOverlay()
             }
         }
+        drawTransition()
+    }
+
+    private fun drawTransition() {
+        if (transition <= 0.01f) return
+        val w = Gdx.graphics.width.toFloat()
+        val h = Gdx.graphics.height.toFloat()
+        Gdx.gl.glEnable(GL20.GL_BLEND)
+        Gdx.gl.glBlendFunc(GL20.GL_SRC_ALPHA, GL20.GL_ONE_MINUS_SRC_ALPHA)
+        shapeRenderer.projectionMatrix = hudCamera.combined
+        shapeRenderer.begin(ShapeRenderer.ShapeType.Filled)
+        shapeRenderer.color = Color(0f, 0f, 0f, transition.coerceIn(0f, 1f))
+        shapeRenderer.rect(0f, 0f, w, h)
+        shapeRenderer.end()
+        Gdx.gl.glDisable(GL20.GL_BLEND)
     }
 
     private fun startSinglePlayer() {
@@ -630,10 +646,12 @@ class GameScreen : Screen, InputAdapter() {
     private fun drawHud() {
         val w = Gdx.graphics.width.toFloat()
         val h = Gdx.graphics.height.toFloat()
+        safeArea = hud.safeArea(w, h)
         val panelW = (w * 0.43f).coerceIn(280f, 430f)
         val panelH = 92f
-        val left = 18f
-        val top = h - 18f
+        val left = safeArea.left
+        val top = safeArea.top
+        pauseButton.set(safeArea.right - 58f, safeArea.top - 48f, 48f, 38f)
 
         Gdx.gl.glEnable(GL20.GL_BLEND)
         Gdx.gl.glBlendFunc(GL20.GL_SRC_ALPHA, GL20.GL_ONE_MINUS_SRC_ALPHA)
@@ -644,7 +662,7 @@ class GameScreen : Screen, InputAdapter() {
         shapeRenderer.color = Color(0.15f, 0.72f, 1f, 0.5f)
         shapeRenderer.rect(left, top - 2f, panelW, 2f)
         shapeRenderer.color = Color(0.06f, 0.08f, 0.1f, 0.7f)
-        shapeRenderer.rect(w - 118f, h - 58f, 88f, 38f)
+        shapeRenderer.rect(pauseButton.x, pauseButton.y, pauseButton.width, pauseButton.height)
         shapeRenderer.end()
         Gdx.gl.glDisable(GL20.GL_BLEND)
 
@@ -657,10 +675,11 @@ class GameScreen : Screen, InputAdapter() {
         drawRight("WAVE " + wave, left + panelW - 14f, top - 57f, Color(0.72f, 0.82f, 0.9f, 1f))
         font.data.setScale(0.68f)
         drawShadowed("BEST " + highScore, left + 14f, top - 79f, Color(0.46f, 0.72f, 0.8f, 1f))
-        drawRight("COMBO x" + combo, left + panelW - 14f, top - 79f,
-            if (combo >= 3) Color(1f, 0.78f, 0.2f, 1f) else Color(0.46f, 0.58f, 0.64f, 1f))
+        drawRight("COMBO x" + combo, left + panelW - 14f, top - 79f, if (combo >= 3) Color(1f, 0.78f, 0.2f, 1f) else Color(0.46f, 0.58f, 0.64f, 1f))
         font.data.setScale(0.82f)
-        drawRight("HP " + player.health, w - 42f, h - 34f, Color(0.95f, 0.35f, 0.42f, 1f))
+        drawRight("HP " + player.health, safeArea.right - 70f, safeArea.top - 34f, Color(0.95f, 0.35f, 0.42f, 1f))
+        font.data.setScale(0.58f)
+        drawCentered("Ⅱ", pauseButton.x + pauseButton.width / 2f, pauseButton.y + 25f, Color(0.7f, 0.88f, 0.95f, 1f))
         batch.end()
 
         if (hitFlash > 0f) {
@@ -706,11 +725,13 @@ class GameScreen : Screen, InputAdapter() {
     private fun drawMenuOverlay() {
         val w = Gdx.graphics.width.toFloat()
         val h = Gdx.graphics.height.toFloat()
+        safeArea = hud.safeArea(w, h)
         val buttonW = (w * 0.64f).coerceIn(300f, 520f)
-        val buttonH = (h * 0.13f).coerceIn(58f, 82f)
-        val centerX = w / 2f
-        singleButton.set(centerX - buttonW / 2f, h * 0.34f, buttonW, buttonH)
-        multiButton.set(centerX - buttonW / 2f, h * 0.18f, buttonW, buttonH)
+        val buttonH = (h * 0.11f).coerceIn(56f, 78f)
+        val centerX = (safeArea.left + safeArea.right) / 2f
+        singleButton.set(centerX - buttonW / 2f, h * 0.35f, buttonW, buttonH)
+        multiButton.set(centerX - buttonW / 2f, h * 0.22f, buttonW, buttonH)
+        settingsButton.set(centerX - buttonW / 2f, h * 0.09f, buttonW, buttonH)
 
         Gdx.gl.glEnable(GL20.GL_BLEND)
         Gdx.gl.glBlendFunc(GL20.GL_SRC_ALPHA, GL20.GL_ONE_MINUS_SRC_ALPHA)
@@ -722,24 +743,26 @@ class GameScreen : Screen, InputAdapter() {
         shapeRenderer.rect(0f, h * 0.78f, w, h * 0.22f)
         drawButton(singleButton, Color(0.02f, 0.32f, 0.46f, 0.78f))
         drawButton(multiButton, Color(0.055f, 0.065f, 0.075f, 0.86f))
+        drawButton(settingsButton, Color(0.035f, 0.08f, 0.1f, 0.82f))
         shapeRenderer.end()
         Gdx.gl.glDisable(GL20.GL_BLEND)
 
         batch.projectionMatrix = hudCamera.combined
         batch.begin()
         fitFont("SPARKY WARFARE", w * 0.82f, 3.15f, 1.65f)
-        drawShadowed("SPARKY WARFARE", centerX - layout.width / 2f, h * 0.80f, Color(0.58f, 0.92f, 1f, 1f))
+        drawShadowed("SPARKY WARFARE", centerX, h * 0.80f, Color(0.58f, 0.92f, 1f, 1f))
         fitFont("TACTICAL ENERGY COMBAT", w * 0.78f, 1.05f, 0.72f)
         drawCentered("TACTICAL ENERGY COMBAT", centerX, h * 0.68f, Color(0.5f, 0.62f, 0.68f, 1f))
-        fitFont("BEST 000000   •   WAVE 00   •   KILLS 0000", w * 0.82f, 0.78f, 0.56f)
-        drawCentered("BEST " + highScore + "   •   WAVE " + bestWave + "   •   KILLS " + totalKills,
-            centerX, h * 0.61f, Color(0.42f, 0.58f, 0.64f, 1f))
-        fitFont("SINGLE PLAYER", singleButton.width - 24f, 1.25f, 0.78f)
+        fitFont("BEST 000000 • WAVE 00 • KILLS 0000", w * 0.82f, 0.78f, 0.56f)
+        drawCentered("BEST " + highScore + " • WAVE " + bestWave + " • KILLS " + totalKills, centerX, h * 0.61f, Color(0.42f, 0.58f, 0.64f, 1f))
+        fitFont("SINGLE PLAYER", buttonW - 24f, 1.25f, 0.78f)
         drawCentered("SINGLE PLAYER", centerX, singleButton.y + singleButton.height / 2f + 7f, Color.WHITE)
-        fitFont("MULTIPLAYER", multiButton.width - 24f, 1.25f, 0.78f)
+        fitFont("MULTIPLAYER", buttonW - 24f, 1.25f, 0.78f)
         drawCentered("MULTIPLAYER", centerX, multiButton.y + multiButton.height / 2f + 7f, Color(0.84f, 0.88f, 0.92f, 1f))
-        font.data.setScale(0.68f)
-        drawCentered("COMING SOON", centerX, multiButton.y + 12f, Color(0.38f, 0.46f, 0.5f, 1f))
+        font.data.setScale(0.58f)
+        drawCentered("NOT AVAILABLE YET", centerX, multiButton.y + 12f, Color(0.38f, 0.46f, 0.5f, 1f))
+        fitFont("SETTINGS", buttonW - 24f, 1.05f, 0.7f)
+        drawCentered("SETTINGS", centerX, settingsButton.y + settingsButton.height / 2f + 5f, Color(0.72f, 0.88f, 0.92f, 1f))
         batch.end()
     }
 
@@ -754,9 +777,11 @@ class GameScreen : Screen, InputAdapter() {
         val w = Gdx.graphics.width.toFloat()
         val h = Gdx.graphics.height.toFloat()
         val panelW = (w * 0.72f).coerceIn(340f, 620f)
-        val panelH = (h * 0.46f).coerceIn(230f, 350f)
+        val panelH = (h * 0.5f).coerceIn(260f, 370f)
         val left = (w - panelW) / 2f
         val bottom = (h - panelH) / 2f
+        singleButton.set(left + 18f, bottom + 18f, panelW / 2f - 27f, 54f)
+        menuButton.set(left + panelW / 2f + 9f, bottom + 18f, panelW / 2f - 27f, 54f)
 
         Gdx.gl.glEnable(GL20.GL_BLEND)
         Gdx.gl.glBlendFunc(GL20.GL_SRC_ALPHA, GL20.GL_ONE_MINUS_SRC_ALPHA)
@@ -768,6 +793,8 @@ class GameScreen : Screen, InputAdapter() {
         shapeRenderer.rect(left, bottom, panelW, panelH)
         shapeRenderer.color = Color(1f, 0.12f, 0.2f, 0.72f)
         shapeRenderer.rect(left, bottom + panelH - 3f, panelW, 3f)
+        drawButton(singleButton, Color(0.14f, 0.28f, 0.34f, 0.9f))
+        drawButton(menuButton, Color(0.07f, 0.08f, 0.1f, 0.92f))
         shapeRenderer.end()
         Gdx.gl.glDisable(GL20.GL_BLEND)
 
@@ -775,13 +802,13 @@ class GameScreen : Screen, InputAdapter() {
         batch.begin()
         fitFont("GAME OVER", panelW - 40f, 2.45f, 1.4f)
         drawCentered("GAME OVER", w / 2f, bottom + panelH - 58f, Color(1f, 0.28f, 0.34f, 1f))
-        fitFont("SCORE 000000    BEST 000000", panelW - 40f, 1.12f, 0.78f)
-        drawCentered("SCORE  " + score + "    BEST  " + highScore, w / 2f, bottom + panelH / 2f + 8f, Color.WHITE)
-        fitFont("WAVE 00    KILLS 0000    COMBO x8", panelW - 40f, 0.78f, 0.56f)
-        drawCentered("WAVE " + wave + "    KILLS " + totalKills + "    COMBO x" + comboBest,
-            w / 2f, bottom + panelH / 2f - 20f, Color(0.56f, 0.66f, 0.72f, 1f))
-        fitFont("TAP ANYWHERE TO RETRY", panelW - 40f, 0.98f, 0.68f)
-        drawCentered("TAP ANYWHERE TO RETRY", w / 2f, bottom + 44f, Color(0.7f, 0.78f, 0.84f, 1f))
+        fitFont("SCORE 000000 • BEST 000000", panelW - 40f, 1.12f, 0.78f)
+        drawCentered("SCORE " + score + " • BEST " + highScore, w / 2f, bottom + panelH / 2f + 18f, Color.WHITE)
+        fitFont("WAVE 00 • KILLS 0000 • COMBO x8", panelW - 40f, 0.78f, 0.56f)
+        drawCentered("WAVE " + wave + " • KILLS " + totalKills + " • COMBO x" + comboBest, w / 2f, bottom + panelH / 2f - 10f, Color(0.56f, 0.66f, 0.72f, 1f))
+        font.data.setScale(0.72f)
+        drawCentered("RETRY", singleButton.x + singleButton.width / 2f, singleButton.y + 34f, Color.WHITE)
+        drawCentered("MAIN MENU", menuButton.x + menuButton.width / 2f, menuButton.y + 34f, Color(0.78f, 0.86f, 0.9f, 1f))
         batch.end()
     }
 
@@ -850,6 +877,66 @@ class GameScreen : Screen, InputAdapter() {
             font.data.setScale(0.58f)
             drawCentered("TAP TO SELECT", rect.x + rect.width / 2f, rect.y + 26f, Color(0.38f, 0.52f, 0.58f, 1f))
         }
+        batch.end()
+    }
+
+    private fun drawPauseOverlay() {
+        val w = Gdx.graphics.width.toFloat()
+        val h = Gdx.graphics.height.toFloat()
+        val cx = (safeArea.left + safeArea.right) / 2f
+        resumeButton.set(cx - 150f, h * 0.36f, 300f, 60f)
+        menuButton.set(cx - 150f, h * 0.23f, 300f, 60f)
+        Gdx.gl.glEnable(GL20.GL_BLEND)
+        Gdx.gl.glBlendFunc(GL20.GL_SRC_ALPHA, GL20.GL_ONE_MINUS_SRC_ALPHA)
+        shapeRenderer.projectionMatrix = hudCamera.combined
+        shapeRenderer.begin(ShapeRenderer.ShapeType.Filled)
+        shapeRenderer.color = Color(0f, 0f, 0f, 0.78f)
+        shapeRenderer.rect(0f, 0f, w, h)
+        drawButton(resumeButton, Color(0.02f, 0.32f, 0.46f, 0.9f))
+        drawButton(menuButton, Color(0.055f, 0.065f, 0.075f, 0.9f))
+        shapeRenderer.end()
+        Gdx.gl.glDisable(GL20.GL_BLEND)
+        batch.projectionMatrix = hudCamera.combined
+        batch.begin()
+        fitFont("PAUSED", w * 0.5f, 2.1f, 1.2f)
+        drawCentered("PAUSED", cx, h * 0.67f, Color(0.58f, 0.92f, 1f, 1f))
+        fitFont("RESUME", resumeButton.width - 24f, 1.1f, 0.72f)
+        drawCentered("RESUME", cx, resumeButton.y + 38f, Color.WHITE)
+        fitFont("MAIN MENU", menuButton.width - 24f, 1.0f, 0.68f)
+        drawCentered("MAIN MENU", cx, menuButton.y + 38f, Color(0.8f, 0.86f, 0.9f, 1f))
+        batch.end()
+    }
+
+    private fun drawSettingsOverlay() {
+        val w = Gdx.graphics.width.toFloat()
+        val h = Gdx.graphics.height.toFloat()
+        val cx = (safeArea.left + safeArea.right) / 2f
+        val bw = (w * 0.6f).coerceIn(300f, 520f)
+        val bh = 58f
+        toggleSfxButton.set(cx - bw / 2f, h * 0.48f, bw, bh)
+        toggleHapticsButton.set(cx - bw / 2f, h * 0.36f, bw, bh)
+        menuButton.set(cx - bw / 2f, h * 0.20f, bw, bh)
+        Gdx.gl.glEnable(GL20.GL_BLEND)
+        Gdx.gl.glBlendFunc(GL20.GL_SRC_ALPHA, GL20.GL_ONE_MINUS_SRC_ALPHA)
+        shapeRenderer.projectionMatrix = hudCamera.combined
+        shapeRenderer.begin(ShapeRenderer.ShapeType.Filled)
+        shapeRenderer.color = Color(0f, 0f, 0f, 0.9f)
+        shapeRenderer.rect(0f, 0f, w, h)
+        drawButton(toggleSfxButton, Color(0.03f, 0.12f, 0.15f, 0.92f))
+        drawButton(toggleHapticsButton, Color(0.03f, 0.12f, 0.15f, 0.92f))
+        drawButton(menuButton, Color(0.055f, 0.065f, 0.075f, 0.9f))
+        shapeRenderer.end()
+        Gdx.gl.glDisable(GL20.GL_BLEND)
+        batch.projectionMatrix = hudCamera.combined
+        batch.begin()
+        fitFont("SETTINGS", w * 0.6f, 2.0f, 1.2f)
+        drawCentered("SETTINGS", cx, h * 0.72f, Color(0.58f, 0.92f, 1f, 1f))
+        fitFont("SFX  " + if (FeedbackAudio.isMuted()) "OFF" else "ON", bw - 24f, 1.0f, 0.68f)
+        drawCentered("SFX  " + if (FeedbackAudio.isMuted()) "OFF" else "ON", cx, toggleSfxButton.y + 36f, Color.WHITE)
+        fitFont("HAPTICS  " + if (hapticsMuted) "OFF" else "ON", bw - 24f, 1.0f, 0.68f)
+        drawCentered("HAPTICS  " + if (hapticsMuted) "OFF" else "ON", cx, toggleHapticsButton.y + 36f, Color.WHITE)
+        fitFont("MAIN MENU", bw - 24f, 1.0f, 0.68f)
+        drawCentered("MAIN MENU", cx, menuButton.y + 36f, Color(0.8f, 0.86f, 0.9f, 1f))
         batch.end()
     }
 
