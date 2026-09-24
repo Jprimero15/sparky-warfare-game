@@ -1050,7 +1050,7 @@ class GameScreen : Screen, InputAdapter() {
     override fun resize(width: Int, height: Int) {
         viewport.update(width, height, true)
         hudCamera.setToOrtho(false, width.toFloat(), height.toFloat())
-        safeArea = SafeArea.fromScreen(width.toFloat(), height.toFloat())
+        safeArea = hud.safeArea(width.toFloat(), height.toFloat())
         centerCamera(true)
     }
 
