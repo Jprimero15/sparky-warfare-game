@@ -1,0 +1,13 @@
+plugins {
+    id("com.android.application") version "8.5.0" apply false
+    kotlin("android") version "1.9.24" apply false
+    kotlin("jvm") version "1.9.24" apply false
+}
+
+allprojects {
+    repositories {
+        google()
+        mavenCentral()
+        maven("https://s01.oss.sonatype.org/content/repositories/snapshots/")
+    }
+}
