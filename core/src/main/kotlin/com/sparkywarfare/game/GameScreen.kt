@@ -356,7 +356,6 @@ class GameScreen : Screen, InputAdapter() {
             }
             FeedbackAudio.play(FeedbackAudio.Cue.POWER_UP)
             haptic(Input.VibrationType.LIGHT)
-            }
         }
         powerUps.removeAll { !it.alive }
     }
