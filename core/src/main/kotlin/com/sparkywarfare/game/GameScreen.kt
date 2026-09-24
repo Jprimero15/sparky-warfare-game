@@ -329,9 +329,7 @@ class GameScreen : Screen, InputAdapter() {
             if (wave % 3 == 0) {
                 prepareUpgradeChoices()
                 state = GameState.UPGRADE
-                firePointers.clear()
-                firing = false
-                joystick.reset()
+                input.clearTransientInput()
                 FeedbackAudio.play(FeedbackAudio.Cue.POWER_UP)
                 haptic(Input.VibrationType.MEDIUM)
             } else {
@@ -372,6 +370,10 @@ class GameScreen : Screen, InputAdapter() {
         }
         if (input.firing && player.canFire()) fireLaser(player)
     }
+
+    private fun outOfBounds(position: Vector2): Boolean =
+        position.x < TILE || position.y < TILE ||
+            position.x > WORLD_WIDTH - TILE || position.y > WORLD_HEIGHT - TILE
 
     private fun fireLaser(tank: Tank) {
         val rad = Math.toRadians(tank.angle.toDouble())
