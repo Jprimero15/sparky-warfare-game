@@ -17,15 +17,13 @@ class Wall(
     }
 ) {
     var alive = true
-
-    val color: Color
-        get() = when (type) {
-            WallType.STEEL -> Color(0.10f, 0.13f, 0.17f, 1f)
-            WallType.BRICK -> Color(0.18f, 0.075f, 0.045f, 1f)
-            WallType.RED_BRICK -> Color(0.30f, 0.09f, 0.055f, 1f)
-            WallType.CONCRETE -> Color(0.23f, 0.25f, 0.27f, 1f)
-            WallType.METAL -> Color(0.10f, 0.20f, 0.24f, 1f)
-        }
+    val color = when (type) {
+        WallType.STEEL -> Color(0.10f, 0.13f, 0.17f, 1f)
+        WallType.BRICK -> Color(0.18f, 0.075f, 0.045f, 1f)
+        WallType.RED_BRICK -> Color(0.30f, 0.09f, 0.055f, 1f)
+        WallType.CONCRETE -> Color(0.23f, 0.25f, 0.27f, 1f)
+        WallType.METAL -> Color(0.10f, 0.20f, 0.24f, 1f)
+    }
 
     fun hit() {
         if (type == WallType.STEEL) return
