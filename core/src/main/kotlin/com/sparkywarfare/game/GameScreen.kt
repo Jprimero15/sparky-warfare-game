@@ -73,7 +73,7 @@ class GameScreen : Screen, InputAdapter() {
     private val enemySpawner = EnemySpawner()
     private val pools = EntityPools()
     private lateinit var hud: HudRenderer
-    private var safeArea = SafeArea(0f, 0f, Gdx.graphics.width.toFloat(), Gdx.graphics.height.toFloat())
+    private var safeArea = com.sparkywarfare.game.ui.SafeArea(0f, 0f, Gdx.graphics.width.toFloat(), Gdx.graphics.height.toFloat())
     private val singleButton = Rectangle()
     private val multiButton = Rectangle()
     private val settingsButton = Rectangle()
@@ -114,7 +114,7 @@ class GameScreen : Screen, InputAdapter() {
         font = fontGenerator.generateFont(fontParameter)
         fontGenerator.dispose()
         layout = GlyphLayout()
-        hud = HudRenderer(font, batch, layout)
+        hud = HudRenderer(shapeRenderer, batch, font, layout, hudCamera)
         highScore = prefs.getInteger("highScore", 0)
         bestWave = prefs.getInteger("bestWave", 0)
         totalKills = prefs.getInteger("totalKills", 0)
@@ -649,7 +649,7 @@ class GameScreen : Screen, InputAdapter() {
     private fun drawHud() {
         val w = Gdx.graphics.width.toFloat()
         val h = Gdx.graphics.height.toFloat()
-        safeArea = SafeArea.fromScreen(w, h)
+        safeArea = com.sparkywarfare.game.ui.SafeArea.fromScreen(w, h)
         val panelW = (w * 0.43f).coerceIn(280f, 430f)
         val panelH = 92f
         val left = safeArea.left
