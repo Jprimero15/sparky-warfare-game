@@ -14,6 +14,22 @@ object CollisionSystem {
         Intersector.intersectSegmentRectangle(a, b, rect)
     fun segmentHitsCircle(a: Vector2, b: Vector2, center: Vector2, radius: Float): Boolean =
         Intersector.intersectSegmentCircle(a, b, center, radius * radius)
+    fun tryMoveTank(tank: Tank, direction: Vector2, distance: Float, player: Tank, enemies: List<Tank>, walls: List<Wall>) {
+        val oldX = tank.position.x
+        val oldY = tank.position.y
+        tank.position.x += direction.x * distance
+        if (walls.any { it.alive && circleIntersectsRectangle(tank.position, tank.radius, it.bounds) }) tank.position.x = oldX
+        tank.position.y += direction.y * distance
+        if (walls.any { it.alive && circleIntersectsRectangle(tank.position, tank.radius, it.bounds) }) tank.position.y = oldY
+        tank.position.x = tank.position.x.coerceIn(tank.radius + TILE, WORLD_WIDTH - tank.radius - TILE)
+        tank.position.y = tank.position.y.coerceIn(tank.radius + TILE, WORLD_HEIGHT - tank.radius - TILE)
+        if (tank !== player) {
+            for (other in enemies) if (other !== tank && other.alive) separateCircles(tank, other)
+        }
+    }
+    fun hasLineOfSight(from: Vector2, to: Vector2, walls: List<Wall>): Boolean =
+        walls.none { it.alive && segmentIntersectsRectangle(from, to, it.bounds) }
+
     fun separateCircles(a: Tank, b: Tank) {
         val dx=b.position.x-a.position.x; val dy=b.position.y-a.position.y
         val minDistance=a.radius+b.radius; val dist2=dx*dx+dy*dy
