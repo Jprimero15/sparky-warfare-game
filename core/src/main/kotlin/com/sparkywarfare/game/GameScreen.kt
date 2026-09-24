@@ -126,6 +126,9 @@ class GameScreen : Screen, InputAdapter() {
         hapticsMuted = prefs.getBoolean("muteHaptics", false)
         FeedbackAudio.init()
         safeArea = hud.safeArea(Gdx.graphics.width.toFloat(), Gdx.graphics.height.toFloat())
+        // Start with the fade overlay opaque, then fade into the menu instead of staying black.
+        transition = 1f
+        transitionTarget = 0f
         Gdx.input.inputProcessor = this
         resetGame()
     }
