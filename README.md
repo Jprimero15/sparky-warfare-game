@@ -17,7 +17,11 @@ The complete gameplay loop is playable, with a redesigned mobile presentation:
 - Full-screen immersive Android presentation
 - Wide 1600×900 world with a camera that smoothly follows the player
 - Redesigned main menu with **Single Player** and **Multiplayer** placeholder
-- Upgraded HUD, arena grid, layered glow, impact bursts, hit flash, and screen shake
+- Upgraded HUD with aligned tactical typography, shadowed text, fixed-width HUD glyphs, and responsive panels
+- Deep-black battlefield with restrained grid lines and high-contrast combat lighting
+- Layered glow, impact bursts, hit flash, and screen shake
+- Synthesized combat/menu sound cues through LibGDX audio
+- Android haptic feedback for firing, hits, explosions, pickups, and menu actions
 
 Recent stability fixes harden the gameplay loop:
 
@@ -31,6 +35,8 @@ Recent stability fixes harden the gameplay loop:
 - Large frame deltas are capped to avoid physics jumps after a stalled frame.
 - Power-ups avoid walls, the player spawn area, and duplicate live pickups.
 - Input is cleared when the screen is disposed.
+- Touch-cancel and Android lifecycle pause paths clear active joystick/fire state.
+- Audio initialization failures are isolated so unsupported audio devices do not stop gameplay.
 
 ## Android-only project layout
 
@@ -101,7 +107,7 @@ The Android presentation uses immersive full-screen mode. HUD and controls are r
 
 1. Real bloom via the included framebuffer shader.
 2. Particle debris using the included LibGDX particle resource.
-3. Sound effects for firing, impacts and pickups.
+3. Replace synthesized prototype cues with authored WAV/OGG sound assets when the final sound direction is ready.
 4. Additional arena layouts and power-up types.
 5. Persistent high scores.
 6. More advanced enemy behavior.
