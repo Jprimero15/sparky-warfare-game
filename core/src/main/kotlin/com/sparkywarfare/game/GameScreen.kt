@@ -560,7 +560,7 @@ class GameScreen : Screen, InputAdapter() {
     }
 
     private fun toUiRect(screenX: Int, screenY: Int, rect: Rectangle): Boolean {
-        val uiY = Gdx.graphics.height - screenY
+        val uiY = (Gdx.graphics.height - screenY).toFloat()
         return rect.contains(screenX.toFloat(), uiY)
     }
 
