@@ -604,10 +604,11 @@ class GameScreen : Screen, InputAdapter() {
     private fun drawTouchControls() {
         val w = Gdx.graphics.width.toFloat()
         val h = Gdx.graphics.height.toFloat()
-        val baseX = 118f
-        val baseY = 118f
-        val fireX = w - 118f
-        val fireY = 118f
+        val controlRadius = (h * 0.17f).coerceIn(58f, 74f)
+        val baseX = controlRadius + 42f
+        val baseY = controlRadius + 34f
+        val fireX = w - controlRadius - 42f
+        val fireY = baseY
 
         Gdx.gl.glEnable(GL20.GL_BLEND)
         Gdx.gl.glBlendFunc(GL20.GL_SRC_ALPHA, GL20.GL_ONE_MINUS_SRC_ALPHA)
@@ -615,34 +616,32 @@ class GameScreen : Screen, InputAdapter() {
         shapeRenderer.begin(ShapeRenderer.ShapeType.Filled)
 
         shapeRenderer.color = Color(0.015f, 0.02f, 0.025f, 0.72f)
-        shapeRenderer.circle(baseX, baseY, 74f, 40)
+        shapeRenderer.circle(baseX, baseY, controlRadius, 40)
         shapeRenderer.color = Color(0.18f, 0.72f, 1f, 0.12f)
-        shapeRenderer.circle(baseX, baseY, 68f, 40)
+        shapeRenderer.circle(baseX, baseY, controlRadius - 6f, 40)
         val knob = if (joystick.active) joystick.knobForRender(h) else Vector2(baseX, baseY)
         shapeRenderer.color = Color(0.25f, 0.85f, 1f, if (joystick.active) 0.7f else 0.42f)
         shapeRenderer.circle(knob.x, knob.y, 30f, 28)
 
         shapeRenderer.color = Color(0.02f, 0.008f, 0.012f, 0.72f)
-        shapeRenderer.circle(fireX, fireY, 74f, 40)
+        shapeRenderer.circle(fireX, fireY, controlRadius, 40)
         shapeRenderer.color = if (firing) Color(1f, 0.22f, 0.3f, 0.76f) else Color(1f, 0.25f, 0.34f, 0.4f)
-        shapeRenderer.circle(fireX, fireY, 58f, 40)
+        shapeRenderer.circle(fireX, fireY, controlRadius - 16f, 40)
         shapeRenderer.end()
 
         shapeRenderer.begin(ShapeRenderer.ShapeType.Line)
         shapeRenderer.color = Color(0.65f, 0.9f, 1f, 0.55f)
-        shapeRenderer.circle(baseX, baseY, 74f, 40)
+        shapeRenderer.circle(baseX, baseY, controlRadius, 40)
         shapeRenderer.color = Color(1f, 0.65f, 0.7f, 0.65f)
-        shapeRenderer.circle(fireX, fireY, 74f, 40)
+        shapeRenderer.circle(fireX, fireY, controlRadius, 40)
         shapeRenderer.end()
         Gdx.gl.glDisable(GL20.GL_BLEND)
 
         batch.projectionMatrix = hudCamera.combined
         batch.begin()
-        font.data.setScale(1.2f)
-        font.color = Color(0.85f, 0.95f, 1f, 0.85f)
-        font.draw(batch, "MOVE", baseX - 28f, baseY + 5f)
-        font.color = Color(1f, 0.86f, 0.9f, 0.95f)
-        font.draw(batch, "FIRE", fireX - 23f, fireY + 5f)
+        font.data.setScale(0.9f)
+        drawCentered("MOVE", baseX, baseY + 5f, Color(0.85f, 0.95f, 1f, 0.85f))
+        drawCentered("FIRE", fireX, fireY + 5f, Color(1f, 0.86f, 0.9f, 0.95f))
         batch.end()
     }
 
