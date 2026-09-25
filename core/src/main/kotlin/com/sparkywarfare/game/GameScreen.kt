@@ -27,11 +27,15 @@ const val VIEW_HEIGHT = GameConfig.VIEW_HEIGHT
 
 enum class GameState { MENU, PLAYING, GAME_OVER, UPGRADE, PAUSED, SETTINGS }
 
-private enum class UpgradeType(val title: String, val description: String) {
-    OVERCLOCK("OVERCLOCK", "25% FASTER FIRE"),
-    THRUSTERS("THRUSTERS", "15% MORE SPEED"),
-    REPAIR("REPAIR CORE", "+1 HP"),
-    SCORE_CORE("SCORE CORE", "DOUBLE COMBO VALUE")
+private enum class UpgradeType(val title: String, val description: String, val maxStacks: Int) {
+    OVERCLOCK("OVERCLOCK", "25% FASTER FIRE", 3),
+    THRUSTERS("THRUSTERS", "15% MORE SPEED", 3),
+    REPAIR("REPAIR CORE", "+1 HP", 3),
+    SCORE_CORE("SCORE CORE", "+1 SCORE MULTIPLIER", 2),
+    ARMOR("ARMOR PLATING", "+1 MAX HP", 2),
+    COOLING("COOLING ARRAY", "10% FASTER FIRE", 3),
+    ENERGY_CELL("ENERGY CELL", "START WITH SHIELD", 2),
+    OVERDRIVE_CORE("OVERDRIVE CORE", "FASTER MOVE + FIRE", 2)
 }
 
 class GameScreen : Screen, InputAdapter() {
@@ -63,6 +67,7 @@ class GameScreen : Screen, InputAdapter() {
     private var comboBest = 0
     private var scoreMultiplier = 1
     private val upgradeChoices = mutableListOf<UpgradeType>()
+    private val upgradeLevels = mutableMapOf<UpgradeType, Int>()
     private val upgradeButtons = Array(3) { Rectangle() }
     private val prefs by lazy { Gdx.app.getPreferences("Sparky Warfare") }
     private var screenShake = 0f
@@ -76,6 +81,8 @@ class GameScreen : Screen, InputAdapter() {
     private val pools = EntityPools()
     private lateinit var particles: ParticleDebris
     private lateinit var hud: HudRenderer
+    private lateinit var bloom: BloomRenderer
+    private lateinit var bodyFont: BitmapFont
     private var safeArea = SafeArea(0f, Gdx.graphics.width.toFloat(), 0f, Gdx.graphics.height.toFloat())
     private val singleButton = Rectangle()
     private val multiButton = Rectangle()
@@ -85,6 +92,13 @@ class GameScreen : Screen, InputAdapter() {
     private val menuButton = Rectangle()
     private val toggleSfxButton = Rectangle()
     private val toggleHapticsButton = Rectangle()
+    private val volumeSlider = Rectangle()
+    private val swapControlsButton = Rectangle()
+    private val tutorialButton = Rectangle()
+    private var controlsSwapped = false
+    private var tutorialVisible = false
+    private var waveBannerTimer = 0f
+    private var waveBannerElite = false
     private var hapticsMuted = false
     private var transition = 1f
     private var transitionTarget = 1f
@@ -100,6 +114,7 @@ class GameScreen : Screen, InputAdapter() {
         glow = GlowRenderer(shapeRenderer)
         batch = SpriteBatch()
         particles = ParticleDebris(batch)
+        bloom = BloomRenderer()
         val fontGenerator = FreeTypeFontGenerator(Gdx.files.internal("fonts/Orbitron-Medium.ttf"))
         val fontParameter = FreeTypeFontGenerator.FreeTypeFontParameter().apply {
             size = 30
@@ -117,6 +132,8 @@ class GameScreen : Screen, InputAdapter() {
         }
         font = fontGenerator.generateFont(fontParameter)
         fontGenerator.dispose()
+        bodyFont = BitmapFont()
+        bodyFont.data.setScale(0.75f)
         layout = GlyphLayout()
         hudCamera = OrthographicCamera()
         hudCamera.setToOrtho(false, Gdx.graphics.width.toFloat(), Gdx.graphics.height.toFloat())
@@ -126,8 +143,12 @@ class GameScreen : Screen, InputAdapter() {
         totalKills = prefs.getInteger("totalKills", 0)
         FeedbackAudio.setMuted(prefs.getBoolean("muteSfx", false))
         hapticsMuted = prefs.getBoolean("muteHaptics", false)
+        controlsSwapped = prefs.getBoolean("controlsSwapped", false)
+        FeedbackAudio.setMasterVolume(prefs.getFloat("sfxVolume", 0.8f))
+        tutorialVisible = !prefs.getBoolean("tutorialSeen", false)
         FeedbackAudio.init()
         safeArea = hud.safeArea(Gdx.graphics.width.toFloat(), Gdx.graphics.height.toFloat())
+        bloom.resize(Gdx.graphics.width, Gdx.graphics.height)
         // Start with the fade overlay opaque, then fade into the menu instead of staying black.
         transition = 1f
         transitionTarget = 0f
@@ -157,7 +178,9 @@ class GameScreen : Screen, InputAdapter() {
         comboBest = 0
         scoreMultiplier = 1
         upgradeChoices.clear()
+        upgradeLevels.clear()
         input.clearTransientInput()
+        waveBannerTimer = 0f
 
         player = Tank(
             position = Vector2(WORLD_WIDTH / 2f, 120f),
@@ -176,7 +199,9 @@ class GameScreen : Screen, InputAdapter() {
     private fun nextWave() {
         wave += 1
         enemySpawner.spawnWave(wave, player, walls, enemies)
-        if (wave % 5 == 0) score += 500
+        waveBannerTimer = 2.2f
+        waveBannerElite = waveManager.isEliteWave(wave)
+        score += waveManager.eliteBonus(wave)
     }
 
     private fun buildArena() {
@@ -315,6 +340,7 @@ class GameScreen : Screen, InputAdapter() {
         bursts.removeAll { it.t >= 1f }
         screenShake = (screenShake - delta * 2.8f).coerceAtLeast(0f)
         hitFlash = (hitFlash - delta * 2.5f).coerceAtLeast(0f)
+        waveBannerTimer = (waveBannerTimer - delta).coerceAtLeast(0f)
         if (comboTimer > 0f) {
             comboTimer -= delta
             if (comboTimer <= 0f) combo = 0
@@ -337,7 +363,7 @@ class GameScreen : Screen, InputAdapter() {
         }
         else if (enemies.isEmpty()) {
             spawnPowerUp()
-            if (wave % 3 == 0) {
+            if (waveManager.isUpgradeWave(wave)) {
                 prepareUpgradeChoices()
                 state = GameState.UPGRADE
                 input.clearTransientInput()
@@ -386,20 +412,6 @@ class GameScreen : Screen, InputAdapter() {
         position.x < TILE || position.y < TILE ||
             position.x > WORLD_WIDTH - TILE || position.y > WORLD_HEIGHT - TILE
 
-    private fun tryMoveTank(tank: Tank, dx: Float, dy: Float) {
-        val oldX = tank.position.x
-        val oldY = tank.position.y
-        tank.position.x += dx
-        if (walls.any { it.alive && CollisionSystem.circleIntersectsRectangle(tank.position, tank.radius, it.bounds) }) tank.position.x = oldX
-        tank.position.y += dy
-        if (walls.any { it.alive && CollisionSystem.circleIntersectsRectangle(tank.position, tank.radius, it.bounds) }) tank.position.y = oldY
-        tank.position.x = tank.position.x.coerceIn(tank.radius + TILE, WORLD_WIDTH - tank.radius - TILE)
-        tank.position.y = tank.position.y.coerceIn(tank.radius + TILE, WORLD_HEIGHT - tank.radius - TILE)
-    }
-
-    private fun hasLineOfSight(from: Tank, to: Tank): Boolean =
-        combat.hasLineOfSight(from, to, walls)
-
     private fun fireLaser(tank: Tank) {
         val rad = Math.toRadians(tank.angle.toDouble())
         scratchDirection.set(Math.cos(rad).toFloat(), Math.sin(rad).toFloat()).nor()
@@ -446,16 +458,10 @@ class GameScreen : Screen, InputAdapter() {
                         laser.clear()
                         laserRemove.add(laser)
                         if (!enemy.alive) {
-                            val baseScore = when {
-                                enemy.radius >= 22f -> 500
-                                enemy.radius >= 18f -> 250
-                                enemy.radius <= 11f -> 125
-                                else -> 175
-                            }
                             combo = (combo + 1).coerceAtMost(GameConfig.Combat.MAX_COMBO)
                             comboBest = maxOf(comboBest, combo)
                             comboTimer = GameConfig.Combat.COMBO_TIMEOUT
-                            score += baseScore * (1 + (combo - 1) / 2) * scoreMultiplier
+                            score += combat.scoreForKill(enemy, combo, scoreMultiplier)
                             totalKills += 1
                             haptic(Input.VibrationType.MEDIUM)
                         } else haptic(Input.VibrationType.LIGHT)
@@ -481,14 +487,13 @@ class GameScreen : Screen, InputAdapter() {
     private fun spawnPowerUp() {
         if (powerUps.any { it.alive }) return
         val types = PowerUpType.values()
-        val type = types[MathUtils.random(types.size - 1)]
+        val type = powerUpManager.chooseType(wave)
         repeat(12) {
             scratchSpawn.set(
                 MathUtils.random(TILE * 2f, WORLD_WIDTH - TILE * 2f),
                 MathUtils.random(TILE * 2f, WORLD_HEIGHT - TILE * 2f)
             )
-            if (!walls.any { it.alive && it.bounds.contains(scratchSpawn.x, scratchSpawn.y) } &&
-                scratchSpawn.dst2(player.position) > 80f * 80f) {
+            if (powerUpManager.isSafe(scratchSpawn, player, walls, powerUps)) {
                 powerUps.add(PowerUp(Vector2(scratchSpawn), type))
                 return
             }
@@ -523,7 +528,8 @@ class GameScreen : Screen, InputAdapter() {
         val halfW = camera.viewportWidth / 2f
         val halfH = camera.viewportHeight / 2f
         val targetX = player.position.x
-        val targetY = player.position.y + 35f
+        val targetY = player.position.y + 35f + if (input.joystick.active) input.joystick.direction.y * 18f else 0f
+        val targetX = player.position.x + if (input.joystick.active) input.joystick.direction.x * 24f else 0f
         val x = targetX.coerceIn(halfW, WORLD_WIDTH - halfW)
         val y = targetY.coerceIn(halfH, WORLD_HEIGHT - halfH)
         if (instant) {
@@ -546,6 +552,7 @@ class GameScreen : Screen, InputAdapter() {
         shapeRenderer.projectionMatrix = camera.combined
         drawArenaBackdrop()
         drawWalls()
+        bloom.begin()
         glow.beginAdditive()
         if (player.alive) glow.drawTank(player.position, player.angle, player.color, player.radius)
         enemies.forEach { glow.drawTank(it.position, it.angle, it.color, it.radius) }
@@ -554,6 +561,7 @@ class GameScreen : Screen, InputAdapter() {
         powerUps.forEach { glow.drawPowerUp(it.position, it.pulse, it.color) }
         domainBursts.forEach { glow.drawDomainBurst(it.position, it.t, it.color) }
         glow.end()
+        bloom.endAndComposite()
         particles.draw(camera.combined)
         Gdx.gl.glDisable(GL20.GL_BLEND)
         drawTouchControls()
@@ -598,6 +606,7 @@ class GameScreen : Screen, InputAdapter() {
             shapeRenderer.rect(x + 2f, y + 2f, w - 4f, 2f)
         }
         shapeRenderer.end()
+        drawEnemyHealthBars()
 
         shapeRenderer.begin(ShapeRenderer.ShapeType.Line)
         for (wall in walls) {
@@ -623,9 +632,11 @@ class GameScreen : Screen, InputAdapter() {
         val w = Gdx.graphics.width.toFloat()
         val h = Gdx.graphics.height.toFloat()
         val controlRadius = (h * 0.17f).coerceIn(58f, 74f)
-        val baseX = controlRadius + 42f
+        val leftX = controlRadius + 42f
         val baseY = controlRadius + 34f
-        val fireX = w - controlRadius - 42f
+        val rightX = w - controlRadius - 42f
+        val baseX = if (controlsSwapped) rightX else leftX
+        val fireX = if (controlsSwapped) leftX else rightX
         val fireY = baseY
 
         Gdx.gl.glEnable(GL20.GL_BLEND)
@@ -707,10 +718,11 @@ class GameScreen : Screen, InputAdapter() {
         drawRight("COMBO x" + combo, left + panelW - 14f, top - 79f, if (combo >= 3) Color(1f, 0.78f, 0.2f, 1f) else Color(0.46f, 0.58f, 0.64f, 1f))
         font.data.setScale(0.82f)
         drawRight("HP " + player.health, safeArea.right - 70f, safeArea.top - 34f, Color(0.95f, 0.35f, 0.42f, 1f))
-        font.data.setScale(0.58f)
-        drawCentered("Ⅱ", pauseButton.x + pauseButton.width / 2f, pauseButton.y + 25f, Color(0.7f, 0.88f, 0.95f, 1f))
+        drawPauseIcon(pauseButton)
         batch.end()
 
+        if (waveBannerTimer > 0f) drawWaveBanner()
+        if (tutorialVisible) drawTutorialOverlay()
         if (hitFlash > 0f) {
             Gdx.gl.glEnable(GL20.GL_BLEND)
             Gdx.gl.glBlendFunc(GL20.GL_SRC_ALPHA, GL20.GL_ONE_MINUS_SRC_ALPHA)
@@ -721,6 +733,83 @@ class GameScreen : Screen, InputAdapter() {
             shapeRenderer.end()
             Gdx.gl.glDisable(GL20.GL_BLEND)
         }
+    }
+
+    private fun drawPauseIcon(rect: Rectangle) {
+        shapeRenderer.projectionMatrix = hudCamera.combined
+        shapeRenderer.begin(ShapeRenderer.ShapeType.Filled)
+        shapeRenderer.color = Color(0.7f, 0.88f, 0.95f, 1f)
+        shapeRenderer.rect(rect.x + 16f, rect.y + 10f, 4f, 18f)
+        shapeRenderer.rect(rect.x + 28f, rect.y + 10f, 4f, 18f)
+        shapeRenderer.end()
+    }
+
+    private fun drawEnemyHealthBars() {
+        shapeRenderer.projectionMatrix = camera.combined
+        shapeRenderer.begin(ShapeRenderer.ShapeType.Filled)
+        for (enemy in enemies) {
+            if (!enemy.alive || enemy.health <= 0) continue
+            val width = enemy.radius * 2.4f
+            val y = enemy.position.y + enemy.radius + 6f
+            shapeRenderer.color = Color(0f, 0f, 0f, 0.65f)
+            shapeRenderer.rect(enemy.position.x - width / 2f, y, width, 3f)
+            shapeRenderer.color = if (enemy.radius >= 22f) Color(1f, 0.72f, 0.16f, 0.95f) else Color(0.35f, 0.9f, 1f, 0.9f)
+            val ratio = (enemy.health.toFloat() / enemy.maxHealth.coerceAtLeast(1)).coerceIn(0f, 1f)
+            shapeRenderer.rect(enemy.position.x - width / 2f, y, width * ratio, 3f)
+        }
+        shapeRenderer.end()
+    }
+
+    private fun drawWaveBanner() {
+        val w = Gdx.graphics.width.toFloat()
+        val h = Gdx.graphics.height.toFloat()
+        val cx = (safeArea.left + safeArea.right) / 2f
+        val alpha = (waveBannerTimer / 0.5f).coerceAtMost(1f).coerceAtMost((2.2f - waveBannerTimer) / 0.5f + 1f).coerceIn(0f, 1f)
+        shapeRenderer.projectionMatrix = hudCamera.combined
+        shapeRenderer.begin(ShapeRenderer.ShapeType.Filled)
+        shapeRenderer.color = Color(0.01f, 0.03f, 0.05f, 0.72f * alpha)
+        shapeRenderer.rect(cx - 190f, h * 0.67f, 380f, 58f)
+        shapeRenderer.color = if (waveBannerElite) Color(1f, 0.65f, 0.15f, 0.85f * alpha) else Color(0.15f, 0.72f, 1f, 0.8f * alpha)
+        shapeRenderer.rect(cx - 190f, h * 0.67f, 4f, 58f)
+        shapeRenderer.end()
+        batch.projectionMatrix = hudCamera.combined
+        batch.begin()
+        fitFont(if (waveBannerElite) "ELITE WAVE" else "WAVE " + wave, 330f, 1.5f, 0.9f)
+        drawCentered(if (waveBannerElite) "ELITE WAVE" else "WAVE " + wave, cx, h * 0.67f + 34f, Color(0.7f, 0.94f, 1f, alpha))
+        bodyFont.color = Color(0.5f, 0.68f, 0.74f, alpha)
+        bodyFont.draw(batch, if (waveBannerElite) "HEAVY CONTACT DETECTED" else "HOSTILES INBOUND", cx - 100f, h * 0.67f + 16f)
+        batch.end()
+    }
+
+    private fun drawTutorialOverlay() {
+        val w = Gdx.graphics.width.toFloat()
+        val h = Gdx.graphics.height.toFloat()
+        val cx = (safeArea.left + safeArea.right) / 2f
+        val panel = Rectangle(cx - (w * 0.72f).coerceAtMost(560f) / 2f, h * 0.18f, (w * 0.72f).coerceAtMost(560f), h * 0.58f)
+        tutorialButton.set(panel.x + 24f, panel.y + 18f, panel.width - 48f, 52f)
+        shapeRenderer.projectionMatrix = hudCamera.combined
+        shapeRenderer.begin(ShapeRenderer.ShapeType.Filled)
+        shapeRenderer.color = Color(0f, 0f, 0f, 0.82f)
+        shapeRenderer.rect(0f, 0f, w, h)
+        shapeRenderer.color = Color(0.025f, 0.07f, 0.09f, 0.97f)
+        shapeRenderer.rect(panel.x, panel.y, panel.width, panel.height)
+        shapeRenderer.color = Color(0.15f, 0.72f, 1f, 0.85f)
+        shapeRenderer.rect(panel.x, panel.y + panel.height - 3f, panel.width, 3f)
+        drawButton(tutorialButton, Color(0.02f, 0.32f, 0.46f, 0.92f))
+        shapeRenderer.end()
+        batch.projectionMatrix = hudCamera.combined
+        batch.begin()
+        fitFont("FIELD BRIEFING", panel.width - 40f, 1.8f, 1f)
+        drawCentered("FIELD BRIEFING", cx, panel.y + panel.height - 48f, Color(0.62f, 0.94f, 1f, 1f))
+        bodyFont.color = Color(0.78f, 0.86f, 0.9f, 1f)
+        bodyFont.draw(batch, "MOVE: drag the joystick", panel.x + 28f, panel.y + panel.height - 92f)
+        bodyFont.draw(batch, "FIRE: hold the fire control", panel.x + 28f, panel.y + panel.height - 120f)
+        bodyFont.draw(batch, "Destroy every enemy to advance the wave.", panel.x + 28f, panel.y + panel.height - 148f)
+        bodyFont.draw(batch, "Every third wave offers three upgrades.", panel.x + 28f, panel.y + panel.height - 176f)
+        bodyFont.draw(batch, "Chain kills before the combo timer expires.", panel.x + 28f, panel.y + panel.height - 204f)
+        fitFont("GOT IT", tutorialButton.width - 24f, 1f, 0.7f)
+        drawCentered("GOT IT", cx, tutorialButton.y + 34f, Color.WHITE)
+        batch.end()
     }
 
     private fun fitFont(text: String, maxWidth: Float, preferred: Float, minimum: Float): Float {
@@ -944,7 +1033,9 @@ class GameScreen : Screen, InputAdapter() {
         val bh = 58f
         toggleSfxButton.set(cx - bw / 2f, h * 0.48f, bw, bh)
         toggleHapticsButton.set(cx - bw / 2f, h * 0.36f, bw, bh)
-        menuButton.set(cx - bw / 2f, h * 0.20f, bw, bh)
+        volumeSlider.set(cx - bw / 2f, h * 0.26f, bw, 28f)
+        swapControlsButton.set(cx - bw / 2f, h * 0.16f, bw, bh)
+        menuButton.set(cx - bw / 2f, h * 0.06f, bw, bh)
         Gdx.gl.glEnable(GL20.GL_BLEND)
         Gdx.gl.glBlendFunc(GL20.GL_SRC_ALPHA, GL20.GL_ONE_MINUS_SRC_ALPHA)
         shapeRenderer.projectionMatrix = hudCamera.combined
@@ -953,6 +1044,11 @@ class GameScreen : Screen, InputAdapter() {
         shapeRenderer.rect(0f, 0f, w, h)
         drawButton(toggleSfxButton, Color(0.03f, 0.12f, 0.15f, 0.92f))
         drawButton(toggleHapticsButton, Color(0.03f, 0.12f, 0.15f, 0.92f))
+        shapeRenderer.color = Color(0.02f, 0.05f, 0.07f, 0.92f)
+        shapeRenderer.rect(volumeSlider.x, volumeSlider.y, volumeSlider.width, volumeSlider.height)
+        shapeRenderer.color = Color(0.15f, 0.72f, 1f, 0.8f)
+        shapeRenderer.rect(volumeSlider.x, volumeSlider.y, volumeSlider.width * FeedbackAudio.masterVolume(), volumeSlider.height)
+        drawButton(swapControlsButton, Color(0.03f, 0.12f, 0.15f, 0.92f))
         drawButton(menuButton, Color(0.055f, 0.065f, 0.075f, 0.9f))
         shapeRenderer.end()
         Gdx.gl.glDisable(GL20.GL_BLEND)
@@ -964,12 +1060,24 @@ class GameScreen : Screen, InputAdapter() {
         drawCentered("SFX  " + if (FeedbackAudio.isMuted()) "OFF" else "ON", cx, toggleSfxButton.y + 36f, Color.WHITE)
         fitFont("HAPTICS  " + if (hapticsMuted) "OFF" else "ON", bw - 24f, 1.0f, 0.68f)
         drawCentered("HAPTICS  " + if (hapticsMuted) "OFF" else "ON", cx, toggleHapticsButton.y + 36f, Color.WHITE)
-        fitFont("MAIN MENU", bw - 24f, 1.0f, 0.68f)
+        fitFont("VOLUME  " + (FeedbackAudio.masterVolume() * 100f).toInt() + "%", bw - 24f, 0.82f, 0.62f)
+        drawCentered("VOLUME  " + (FeedbackAudio.masterVolume() * 100f).toInt() + "%", cx, volumeSlider.y + 40f, Color(0.72f, 0.86f, 0.92f, 1f))
+        fitFont("CONTROLS  " + if (controlsSwapped) "SWAPPED" else "DEFAULT", bw - 24f, 0.9f, 0.62f)
+        drawCentered("CONTROLS  " + if (controlsSwapped) "SWAPPED" else "DEFAULT", cx, swapControlsButton.y + 36f, Color.WHITE)
+        fitFont("MAIN MENU", bw - 24f, 0.9f, 0.62f)
         drawCentered("MAIN MENU", cx, menuButton.y + 36f, Color(0.8f, 0.86f, 0.9f, 1f))
         batch.end()
     }
 
     override fun touchDown(screenX: Int, screenY: Int, pointer: Int, button: Int): Boolean {
+        if (tutorialVisible) {
+            if (toUiRect(screenX, screenY, tutorialButton) || state == GameState.MENU) {
+                tutorialVisible = false
+                prefs.putBoolean("tutorialSeen", true).flush()
+                FeedbackAudio.play(FeedbackAudio.Cue.UI)
+            }
+            return true
+        }
         if (state == GameState.MENU) {
             if (toUiRect(screenX, screenY, singleButton)) startSinglePlayer()
             else if (toUiRect(screenX, screenY, settingsButton)) state = GameState.SETTINGS
@@ -1060,6 +1168,7 @@ class GameScreen : Screen, InputAdapter() {
     override fun resize(width: Int, height: Int) {
         viewport.update(width, height, true)
         hudCamera.setToOrtho(false, width.toFloat(), height.toFloat())
+        bloom.resize(width, height)
         safeArea = hud.safeArea(width.toFloat(), height.toFloat())
         centerCamera(true)
     }
@@ -1086,8 +1195,10 @@ class GameScreen : Screen, InputAdapter() {
         shapeRenderer.dispose()
         batch.dispose()
         font.dispose()
+        bodyFont.dispose()
         pools.clear()
         particles.dispose()
+        bloom.dispose()
         FeedbackAudio.dispose()
     }
 }
