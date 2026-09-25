@@ -20,11 +20,8 @@ class GameOverRenderer(
         val x=cx-panelW/2f; val y=cy-panelH/2f
         shape.begin(ShapeRenderer.ShapeType.Filled)
         shape.color=UiTheme.BLACK; shape.color.a=0.88f; shape.rect(0f,0f,width,height)
-        shape.color=UiTheme.PANEL; shape.rect(x,y,panelW,panelH)
-        shape.color=UiTheme.INNER; shape.rect(x+6f,y+6f,panelW-12f,panelH-12f)
-        shape.color=UiTheme.DANGER; shape.rect(x,y+panelH-4f,panelW,4f)
-        shape.color=UiTheme.CYAN; shape.rect(x,y+4f,panelW*0.34f,3f)
-        shape.color=UiTheme.DANGER; shape.color.a=0.18f; shape.rect(x+30f,y+panelH-128f,panelW-60f,2f)
+        UiShapes.roundedRect(shape,x,y,panelW,panelH,28f,UiTheme.PANEL)
+        UiShapes.roundedRect(shape,x+6f,y+6f,panelW-12f,panelH-12f,24f,UiTheme.INNER)
         drawButton(retry,UiTheme.PANEL_DARK); drawButton(menu,UiTheme.PANEL_DARK)
         shape.end()
         batch.begin()
