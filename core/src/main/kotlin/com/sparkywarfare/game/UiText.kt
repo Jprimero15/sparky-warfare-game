@@ -10,16 +10,38 @@ class UiText(private val batch: SpriteBatch) {
     private val layout = GlyphLayout()
 
     fun fit(font: BitmapFont, text: String, maxWidth: Float, preferred: Float, minimum: Float) {
+        fitWithin(font, text, maxWidth, Float.POSITIVE_INFINITY, preferred, minimum)
+    }
+
+    fun fitWithin(
+        font: BitmapFont,
+        text: String,
+        maxWidth: Float,
+        maxHeight: Float,
+        preferred: Float,
+        minimum: Float
+    ) {
         font.data.setScale(1f)
         layout.setText(font, text)
-        if (layout.width <= 0f) {
+        if (layout.width <= 0f || layout.height <= 0f) {
             font.data.setScale(preferred.coerceAtLeast(0.05f))
             return
         }
         val widthScale = (maxWidth / layout.width).coerceAtLeast(0.05f)
-        // Available width always wins so text cannot escape a panel at extreme ratios.
-        val scale = if (widthScale < minimum) widthScale else minOf(preferred, widthScale)
-        font.data.setScale(scale.coerceAtLeast(0.05f))
+        val heightScale = if (maxHeight.isFinite()) {
+            (maxHeight / layout.height).coerceAtLeast(0.05f)
+        } else {
+            Float.POSITIVE_INFINITY
+        }
+        // Width and height constraints both win. This prevents glyphs from escaping
+        // or vertically colliding inside compact landscape controls.
+        val scale = minOf(preferred, widthScale, heightScale).coerceAtLeast(0.05f)
+        font.data.setScale(scale)
+    }
+
+    fun height(font: BitmapFont, text: String): Float {
+        layout.setText(font, text)
+        return layout.height
     }
 
     fun centered(font: BitmapFont, text: String, x: Float, y: Float, color: Color) {

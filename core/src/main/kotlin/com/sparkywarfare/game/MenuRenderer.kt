@@ -84,9 +84,13 @@ class MenuRenderer(
 
     private fun drawCommand(rect: Rectangle, title: String, subtitle: String, titleColor: Color, subtitleColor: Color) {
         val cx = rect.x + rect.width / 2f
-        text.fit(titleFont, title, rect.width - 46f, 0.82f, 0.56f)
-        text.centered(titleFont, title, cx, rect.y + rect.height * 0.66f, titleColor)
-        text.fit(bodyFont, subtitle, rect.width - 46f, 0.62f, 0.42f)
-        text.centered(bodyFont, subtitle, cx, rect.y + rect.height * 0.25f, subtitleColor)
+        text.fitWithin(titleFont, title, rect.width - 46f, rect.height * 0.40f, 0.82f, 0.56f)
+        val titleHeight = text.height(titleFont, title)
+        text.fitWithin(bodyFont, subtitle, rect.width - 46f, rect.height * 0.30f, 0.62f, 0.42f)
+        val subtitleHeight = text.height(bodyFont, subtitle)
+        val centerY = rect.y + rect.height / 2f
+        val gap = (rect.height * 0.10f).coerceIn(4f, 8f)
+        text.centered(titleFont, title, cx, centerY + gap / 2f + titleHeight / 2f, titleColor)
+        text.centered(bodyFont, subtitle, cx, centerY - gap / 2f - subtitleHeight / 2f, subtitleColor)
     }
 }

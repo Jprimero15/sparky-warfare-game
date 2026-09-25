@@ -673,16 +673,17 @@ class GameScreen : Screen, InputAdapter() {
         drawBodyRight("COMBO x" + combo, left + panelW - 14f, top - 77f,
             if (combo >= 3) Color(1f, 0.72f, 0.2f, 1f) else Color(0.46f, 0.6f, 0.68f, 1f))
 
-        // Player integrity readout. Text stays in the sprite batch; geometry is drawn
-        // only after the batch closes to keep GL state transitions deterministic.
+        // Player integrity readout is deliberately docked below the pause control.
+        // Keeping these regions separate prevents the CORE text from colliding with
+        // the pause icon on compact landscape displays.
         fitBodyFont("CORE " + player.health + "/" + player.maxHealth, 150f, 0.78f, 0.54f)
-        drawBodyRight("CORE " + player.health + "/" + player.maxHealth, safeArea.right - 12f, safeArea.top - 22f,
+        drawBodyRight("CORE " + player.health + "/" + player.maxHealth, safeArea.right - 12f, safeArea.top - 78f,
             Color(1f, 0.42f, 0.52f, 1f))
         batch.end()
 
         val coreW = 104f
         val coreX = safeArea.right - coreW - 12f
-        val coreY = safeArea.top - 46f
+        val coreY = safeArea.top - 102f
         shapeRenderer.projectionMatrix = hudCamera.combined
         shapeRenderer.begin(ShapeRenderer.ShapeType.Filled)
         shapeRenderer.color = Color(0f, 0f, 0f, 0.68f)

@@ -42,7 +42,13 @@ class GameOverRenderer(
 
     private fun command(r:Rectangle,t:String,s:String,tc:Color,sc:Color){
         val cx=r.x+r.width/2f
-        text.fit(titleFont,t,r.width-44f,0.74f,0.54f); text.centered(titleFont,t,cx,r.y+r.height*0.66f,tc)
-        text.fit(bodyFont,s,r.width-44f,0.62f,0.42f); text.centered(bodyFont,s,cx,r.y+r.height*0.25f,sc)
+        text.fitWithin(titleFont,t,r.width-44f,r.height*0.40f,0.74f,0.54f)
+        val titleHeight=text.height(titleFont,t)
+        text.fitWithin(bodyFont,s,r.width-44f,r.height*0.28f,0.62f,0.42f)
+        val subtitleHeight=text.height(bodyFont,s)
+        val centerY=r.y+r.height/2f
+        val gap=(r.height*0.10f).coerceIn(4f,8f)
+        text.centered(titleFont,t,cx,centerY+gap/2f+titleHeight/2f,tc)
+        text.centered(bodyFont,s,cx,centerY-gap/2f-subtitleHeight/2f,sc)
     }
 }
