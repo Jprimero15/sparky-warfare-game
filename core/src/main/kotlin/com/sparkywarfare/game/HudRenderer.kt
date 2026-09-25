@@ -8,6 +8,7 @@ import com.badlogic.gdx.graphics.g2d.SpriteBatch
 import com.badlogic.gdx.graphics.glutils.ShapeRenderer
 import com.badlogic.gdx.math.Rectangle
 
+
 class HudRenderer(
     private val shape: ShapeRenderer,
     private val batch: SpriteBatch,
@@ -24,21 +25,21 @@ class HudRenderer(
 
     fun fit(text: String, maxWidth: Float, preferred: Float, minimum: Float) {
         font.data.setScale(1f)
-        layout.setText(font, text)
-        val scale = if (layout.width > 0f) (maxWidth / layout.width).coerceAtMost(preferred) else preferred
+        val baseWidth = widthAtBaseScale(text)
+        val scale = if (baseWidth > 0f) (maxWidth / baseWidth).coerceAtMost(preferred) else preferred
         font.data.setScale(scale.coerceAtLeast(minimum))
     }
 
     fun centered(text: String, x: Float, y: Float, color: Color) {
-        layout.setText(font, text)
+        val width = widthAtBaseScale(text) * font.data.scaleX
         font.color = color
-        font.draw(batch, text, x - layout.width / 2f, y)
+        font.draw(batch, text, x - width / 2f, y)
     }
 
     fun right(text: String, x: Float, y: Float, color: Color) {
-        layout.setText(font, text)
+        val width = widthAtBaseScale(text) * font.data.scaleX
         font.color = color
-        font.draw(batch, text, x - layout.width, y)
+        font.draw(batch, text, x - width, y)
     }
 
     fun shadowed(text: String, x: Float, y: Float, color: Color) {
