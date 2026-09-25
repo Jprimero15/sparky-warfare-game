@@ -77,10 +77,10 @@ class WorldRenderer(
     fun drawTouchControls(controlsSwapped: Boolean) {
         val w = Gdx.graphics.width.toFloat()
         val h = Gdx.graphics.height.toFloat()
-        val controlRadius = (h * 0.17f).coerceIn(58f, 74f)
-        val leftX = controlRadius + 42f
-        val baseY = controlRadius + 34f
-        val rightX = w - controlRadius - 42f
+        val controlRadius = (h * 0.22f).coerceIn(82f, 104f)
+        val leftX = controlRadius + 54f
+        val baseY = controlRadius + 46f
+        val rightX = w - controlRadius - 54f
         val baseX = if (controlsSwapped) rightX else leftX
         val fireX = if (controlsSwapped) leftX else rightX
 
@@ -94,7 +94,7 @@ class WorldRenderer(
         shapeRenderer.circle(baseX, baseY, controlRadius - 6f, 40)
         val knob = if (input.joystick.active) input.joystick.knobForRender(h, scratchUi) else scratchUi.set(baseX, baseY)
         shapeRenderer.color = Color(0.25f, 0.85f, 1f, if (input.joystick.active) 0.7f else 0.42f)
-        shapeRenderer.circle(knob.x, knob.y, 30f, 28)
+        shapeRenderer.circle(knob.x, knob.y, (controlRadius * 0.48f).coerceIn(38f, 50f), 36)
 
         shapeRenderer.color = Color(0.02f, 0.008f, 0.012f, 0.72f)
         shapeRenderer.circle(fireX, baseY, controlRadius, 40)
@@ -115,8 +115,8 @@ class WorldRenderer(
         // Large, high-contrast labels stay inside the control rings and remain
         // readable on landscape phones without relying on tiny text.
         font.data.setScale(1.08f)
-        drawCentered("MOVE", baseX, baseY + 7f, hudTextColor)
-        drawCentered("FIRE", fireX, baseY + 7f, fireTextColor)
+        drawCentered("MOVE", baseX, baseY + 10f, hudTextColor)
+        drawCentered("FIRE", fireX, baseY + 10f, fireTextColor)
         batch.end()
         font.data.setScale(1f)
     }
