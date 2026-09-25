@@ -50,7 +50,7 @@ The UI has been rebuilt as a cyber-neon tactical console with a landscape-first 
 
 The UI now uses two deliberate typography tiers:
 - Orbitron Medium for major tactical headings and command labels.
-- The bundled LibGDX bitmap font for secondary descriptions, statistics, instructions, and explanatory copy.
+- Kenney Future for secondary descriptions, statistics, instructions, and explanatory copy.
 
 This separation is intentional. Orbitron provides the futuristic identity while the less condensed body font prevents small explanatory text from becoming visually crowded.
 
