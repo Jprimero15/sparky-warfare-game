@@ -527,9 +527,8 @@ class GameScreen : Screen, InputAdapter() {
     private fun centerCamera(instant: Boolean) {
         val halfW = camera.viewportWidth / 2f
         val halfH = camera.viewportHeight / 2f
-        val targetX = player.position.x
-        val targetY = player.position.y + 35f + if (input.joystick.active) input.joystick.direction.y * 18f else 0f
         val targetX = player.position.x + if (input.joystick.active) input.joystick.direction.x * 24f else 0f
+        val targetY = player.position.y + 35f + if (input.joystick.active) input.joystick.direction.y * 18f else 0f
         val x = targetX.coerceIn(halfW, WORLD_WIDTH - halfW)
         val y = targetY.coerceIn(halfH, WORLD_HEIGHT - halfH)
         if (instant) {
@@ -932,7 +931,9 @@ class GameScreen : Screen, InputAdapter() {
 
     private fun prepareUpgradeChoices() {
         upgradeChoices.clear()
-        val pool = UpgradeType.values().toMutableList()
+        val pool = UpgradeType.values().filter {
+            (upgradeLevels[it] ?: 0) < it.maxStacks
+        }.toMutableList()
         while (upgradeChoices.size < 3 && pool.isNotEmpty()) {
             val index = MathUtils.random(pool.size - 1)
             upgradeChoices.add(pool.removeAt(index))
@@ -940,11 +941,22 @@ class GameScreen : Screen, InputAdapter() {
     }
 
     private fun applyUpgrade(type: UpgradeType) {
+        upgradeLevels[type] = (upgradeLevels[type] ?: 0) + 1
         when (type) {
             UpgradeType.OVERCLOCK -> player.fireRate = (player.fireRate * 0.75f).coerceAtLeast(0.11f)
             UpgradeType.THRUSTERS -> player.speed *= 1.15f
-            UpgradeType.REPAIR -> player.health = (player.health + 1).coerceAtMost(4)
-            UpgradeType.SCORE_CORE -> scoreMultiplier = 2
+            UpgradeType.REPAIR -> player.health = (player.health + 1).coerceAtMost(player.maxHealth)
+            UpgradeType.SCORE_CORE -> scoreMultiplier = (scoreMultiplier + 1).coerceAtMost(3)
+            UpgradeType.ARMOR -> {
+                player.maxHealth = (player.maxHealth + 1).coerceAtMost(GameConfig.Player.MAX_HP + 2)
+                player.health = (player.health + 1).coerceAtMost(player.maxHealth)
+            }
+            UpgradeType.COOLING -> player.fireRate = (player.fireRate * 0.9f).coerceAtLeast(0.09f)
+            UpgradeType.ENERGY_CELL -> player.grantShield(4.5f)
+            UpgradeType.OVERDRIVE_CORE -> {
+                player.grantOverdrive(5.5f)
+                player.grantRapidFire(5.5f)
+            }
         }
     }
 
@@ -1091,6 +1103,13 @@ class GameScreen : Screen, InputAdapter() {
             } else if (toUiRect(screenX, screenY, toggleHapticsButton)) {
                 hapticsMuted = !hapticsMuted
                 prefs.putBoolean("muteHaptics", hapticsMuted).flush()
+            } else if (toUiRect(screenX, screenY, volumeSlider)) {
+                val ratio = ((screenX.toFloat() - volumeSlider.x) / volumeSlider.width).coerceIn(0f, 1f)
+                FeedbackAudio.setMasterVolume(ratio)
+                prefs.putFloat("sfxVolume", ratio).flush()
+            } else if (toUiRect(screenX, screenY, swapControlsButton)) {
+                controlsSwapped = !controlsSwapped
+                prefs.putBoolean("controlsSwapped", controlsSwapped).flush()
             } else if (toUiRect(screenX, screenY, menuButton)) {
                 state = GameState.MENU
             }
