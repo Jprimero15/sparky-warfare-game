@@ -28,6 +28,8 @@ class BloomRenderer {
         frameBuffer = FrameBuffer(Pixmap.Format.RGBA8888, width, height, false)
         region = TextureRegion(frameBuffer!!.colorBufferTexture).also { it.flip(false, true) }
         camera.setToOrtho(false, width.toFloat(), height.toFloat())
+        shader?.bind()
+        shader?.setUniformf("u_texelSize", 1f / width.toFloat(), 1f / height.toFloat())
         camera.update()
     }
 
@@ -48,7 +50,7 @@ class BloomRenderer {
         Gdx.gl.glBlendFunc(GL20.GL_SRC_ALPHA, GL20.GL_ONE)
         batch.begin()
         batch.setColor(1f, 1f, 1f, 1f)
-        batch.draw(region, 0f, 0f, width.toFloat(), height.toFloat())
+        batch.draw(region!!, 0f, 0f, width.toFloat(), height.toFloat())
         batch.end()
         batch.setShader(null)
         Gdx.gl.glBlendFunc(GL20.GL_SRC_ALPHA, GL20.GL_ONE_MINUS_SRC_ALPHA)
