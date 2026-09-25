@@ -12,7 +12,8 @@ class Tank(
     var health: Int = 3,
     var fireCooldown: Float = 0f,
     fireRate: Float = 0.35f,
-    var radius: Float = 14f
+    var radius: Float = 14f,
+    val enemyTier: EnemyTier? = null
 ) {
     var maxHealth = health
     var alive = true

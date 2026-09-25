@@ -29,14 +29,21 @@ class EnemySpawner {
     }
 
     private fun createEnemy(wave: Int, role: Int, elite: Boolean): Tank {
-        if (elite) return Tank(Vector2(), 270f, false, Color(1f, 0.78f, 0.12f, 1f),
-            (48f + wave).coerceAtMost(72f), 6 + (wave - 5) / 3, 0f,
-            (0.72f - wave * 0.009f).coerceAtLeast(0.46f), 22f)
+        if (elite) return Tank(
+            position = Vector2(), angle = 270f, isPlayer = false,
+            color = Color(1f, 0.78f, 0.12f, 1f),
+            speed = (48f + wave).coerceAtMost(72f),
+            health = 6 + (wave - 5) / 3,
+            fireCooldown = 0f,
+            fireRate = (0.72f - wave * 0.009f).coerceAtLeast(0.46f),
+            radius = 22f,
+            enemyTier = EnemyTier.ELITE
+        )
         return when (role) {
-            0 -> Tank(Vector2(), 270f, false, Color(1f, 0.25f, 0.35f, 1f), (78f + wave * 1.5f).coerceAtMost(108f), 1 + (wave - 1) / 6, 0f, (1.35f - wave * 0.018f).coerceAtLeast(0.78f), 11f)
-            1 -> Tank(Vector2(), 270f, false, Color(1f, 0.42f, 0.18f, 1f), (58f + wave * 2f).coerceAtMost(90f), 1 + (wave - 1) / 5, 0f, (1.1f - wave * 0.022f).coerceAtLeast(0.58f), 14f)
-            2 -> Tank(Vector2(), 270f, false, Color(0.95f, 0.16f, 0.55f, 1f), (42f + wave * 1.15f).coerceAtMost(66f), 3 + (wave - 1) / 4, 0f, (1.45f - wave * 0.018f).coerceAtLeast(0.84f), 18f)
-            else -> Tank(Vector2(), 270f, false, Color(0.72f, 0.28f, 1f, 1f), (48f + wave * 1.15f).coerceAtMost(74f), 2 + (wave - 1) / 5, 0f, (0.95f - wave * 0.016f).coerceAtLeast(0.54f), 12f)
+            0 -> Tank(Vector2(), 270f, false, Color(1f, 0.25f, 0.35f, 1f), (78f + wave * 1.5f).coerceAtMost(108f), 1 + (wave - 1) / 6, 0f, (1.35f - wave * 0.018f).coerceAtLeast(0.78f), 11f, enemyTier = EnemyTier.SCOUT)
+            1 -> Tank(Vector2(), 270f, false, Color(1f, 0.42f, 0.18f, 1f), (58f + wave * 2f).coerceAtMost(90f), 1 + (wave - 1) / 5, 0f, (1.1f - wave * 0.022f).coerceAtLeast(0.58f), 14f, enemyTier = EnemyTier.ASSAULT)
+            2 -> Tank(Vector2(), 270f, false, Color(0.95f, 0.16f, 0.55f, 1f), (42f + wave * 1.15f).coerceAtMost(66f), 3 + (wave - 1) / 4, 0f, (1.45f - wave * 0.018f).coerceAtLeast(0.84f), 18f, enemyTier = EnemyTier.HEAVY)
+            else -> Tank(Vector2(), 270f, false, Color(0.72f, 0.28f, 1f, 1f), (48f + wave * 1.15f).coerceAtMost(74f), 2 + (wave - 1) / 5, 0f, (0.95f - wave * 0.016f).coerceAtLeast(0.54f), 12f, enemyTier = EnemyTier.RANGED)
         }
     }
 

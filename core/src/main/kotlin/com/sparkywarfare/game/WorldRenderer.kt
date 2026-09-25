@@ -244,7 +244,7 @@ class WorldRenderer(
             val y = enemy.position.y + enemy.radius + 6f
             shapeRenderer.color = healthBack
             shapeRenderer.rect(enemy.position.x - width / 2f, y, width, 3f)
-            shapeRenderer.color = if (enemy.radius >= 22f) healthElite else healthNormal
+            shapeRenderer.color = if (enemy.enemyTier == EnemyTier.ELITE) healthElite else healthNormal
             val ratio = (enemy.health.toFloat() / enemy.maxHealth.coerceAtLeast(1)).coerceIn(0f, 1f)
             shapeRenderer.rect(enemy.position.x - width / 2f, y, width * ratio, 3f)
         }
