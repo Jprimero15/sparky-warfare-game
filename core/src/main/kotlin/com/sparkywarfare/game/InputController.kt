@@ -19,6 +19,10 @@ class InputController {
         if (value) clearTransientInput()
     }
 
+    fun setTouchRadius(radius: Float) {
+        joystick.setMaxRadius(radius)
+    }
+
     fun pressFire(pointer: Int) {
         firePointers.add(pointer)
         firing = firePointers.isNotEmpty()

@@ -2,7 +2,7 @@ package com.sparkywarfare.game
 
 import com.badlogic.gdx.math.Vector2
 
-class VirtualJoystick(private val maxRadius: Float = 82f) {
+class VirtualJoystick(private var maxRadius: Float = 82f) {
     private var pointer = -1
     private val center = Vector2()
     private val current = Vector2()
@@ -39,6 +39,10 @@ class VirtualJoystick(private val maxRadius: Float = 82f) {
             delta.scl(maxRadius / kotlin.math.sqrt(length2))
         }
         direction.set(delta.x, -delta.y).scl(1f / maxRadius)
+    }
+
+    fun setMaxRadius(radius: Float) {
+        maxRadius = radius.coerceAtLeast(1f)
     }
 
     fun release(pointerId: Int) {
