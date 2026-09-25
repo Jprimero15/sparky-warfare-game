@@ -23,6 +23,12 @@ class WorldRenderer(
 ) {
     private val scratchUi = Vector2()
     private val layout = GlyphLayout()
+    private val backdropColor = Color(0.003f, 0.005f, 0.008f, 1f)
+    private val floorAccentColor = Color(0.018f, 0.028f, 0.036f, 1f)
+    private val wallHighlight = Color(1f, 1f, 1f, 0.045f)
+    private val wallShadow = Color(0f, 0f, 0f, 0.14f)
+    private val hudTextColor = Color(0.85f, 0.95f, 1f, 0.85f)
+    private val fireTextColor = Color(1f, 0.86f, 0.9f, 0.95f)
 
     fun renderCombat(
         player: Tank,
@@ -106,17 +112,17 @@ class WorldRenderer(
 
         batch.projectionMatrix = hudCamera.combined
         batch.begin()
-        font.data.setScale(0.9f)
-        drawCentered("MOVE", baseX, baseY + 5f, Color(0.85f, 0.95f, 1f, 0.85f))
-        drawCentered("FIRE", fireX, baseY + 5f, Color(1f, 0.86f, 0.9f, 0.95f))
+        font.data.setScale(0.92f)
+        drawCentered("MOVE", baseX, baseY + 5f, hudTextColor)
+        drawCentered("FIRE", fireX, baseY + 5f, fireTextColor)
         batch.end()
     }
 
     private fun drawArenaBackdrop() {
         shapeRenderer.begin(ShapeRenderer.ShapeType.Filled)
-        shapeRenderer.color = Color(0.003f, 0.005f, 0.008f, 1f)
+        shapeRenderer.color = backdropColor
         shapeRenderer.rect(0f, 0f, GameConfig.WORLD_WIDTH, GameConfig.WORLD_HEIGHT)
-        shapeRenderer.color = Color(0.018f, 0.028f, 0.036f, 1f)
+        shapeRenderer.color = floorAccentColor
         shapeRenderer.rect(GameConfig.TILE, GameConfig.TILE, GameConfig.WORLD_WIDTH - GameConfig.TILE * 2f, 3f)
         shapeRenderer.end()
     }
@@ -130,9 +136,9 @@ class WorldRenderer(
             val y = wall.bounds.y
             val w = wall.bounds.width
             val h = wall.bounds.height
-            shapeRenderer.color = Color(1f, 1f, 1f, 0.045f)
+            shapeRenderer.color = wallHighlight
             shapeRenderer.rect(x + 2f, y + h - 4f, w - 4f, 2f)
-            shapeRenderer.color = Color(0f, 0f, 0f, 0.14f)
+            shapeRenderer.color = wallShadow
             shapeRenderer.rect(x + 2f, y + 2f, w - 4f, 2f)
         }
         shapeRenderer.end()
@@ -184,7 +190,9 @@ class WorldRenderer(
     }
 }
 
-private fun SpriteBatch.drawCentered(font: BitmapFont, text: String, centerX: Float, y: Float) {
-    val layout = com.badlogic.gdx.graphics.g2d.GlyphLayout(font, text)
-    font.draw(this, text, centerX - layout.width / 2f, y)
+    private fun drawCentered(text: String, centerX: Float, y: Float, color: Color) {
+        layout.setText(font, text)
+        font.color = color
+        font.draw(batch, text, centerX - layout.width / 2f, y)
+    }
 }
