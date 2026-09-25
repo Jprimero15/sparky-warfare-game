@@ -26,16 +26,24 @@ object CollisionSystem {
         enemies: List<Tank>,
         walls: List<Wall>
     ) {
+        if (!tank.alive || distance <= 0f) return
+
         val oldX = tank.position.x
         val oldY = tank.position.y
 
+        // Tanks are solid circles. Resolve each axis independently so movement
+        // cannot tunnel through another tank during fast or diagonal motion.
         tank.position.x += direction.x * distance
-        if (walls.any { it.alive && circleIntersectsRectangle(tank.position, tank.radius, it.bounds) }) {
+        if (hitsSolidTank(tank, player, enemies) ||
+            walls.any { it.alive && circleIntersectsRectangle(tank.position, tank.radius, it.bounds) }
+        ) {
             tank.position.x = oldX
         }
 
         tank.position.y += direction.y * distance
-        if (walls.any { it.alive && circleIntersectsRectangle(tank.position, tank.radius, it.bounds) }) {
+        if (hitsSolidTank(tank, player, enemies) ||
+            walls.any { it.alive && circleIntersectsRectangle(tank.position, tank.radius, it.bounds) }
+        ) {
             tank.position.y = oldY
         }
 
@@ -47,29 +55,18 @@ object CollisionSystem {
             tank.radius + TILE,
             WORLD_HEIGHT - tank.radius - TILE
         )
+    }
 
-        if (tank !== player) {
-            for (other in enemies) {
-                if (other !== tank && other.alive) {
-                    separateCircles(tank, other)
-                }
-            }
+    private fun hitsSolidTank(tank: Tank, player: Tank, enemies: List<Tank>): Boolean {
+        if (tank !== player && player.alive && circlesOverlap(tank, player)) return true
+        return enemies.any { it !== tank && it.alive && circlesOverlap(tank, it) }
+    }
 
-            // Separation is a visual/AI correction, not permission to tunnel into cover.
-            // If the correction would embed the tank in a wall, keep its last valid position.
-            if (walls.any { it.alive && circleIntersectsRectangle(tank.position, tank.radius, it.bounds) }) {
-                tank.position.set(oldX, oldY)
-            }
-
-            tank.position.x = tank.position.x.coerceIn(
-                tank.radius + TILE,
-                WORLD_WIDTH - tank.radius - TILE
-            )
-            tank.position.y = tank.position.y.coerceIn(
-                tank.radius + TILE,
-                WORLD_HEIGHT - tank.radius - TILE
-            )
-        }
+    private fun circlesOverlap(a: Tank, b: Tank): Boolean {
+        val dx = b.position.x - a.position.x
+        val dy = b.position.y - a.position.y
+        val minDistance = a.radius + b.radius
+        return dx * dx + dy * dy < minDistance * minDistance
     }
 
     fun hasLineOfSight(from: Vector2, to: Vector2, walls: List<Wall>): Boolean =

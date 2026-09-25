@@ -636,14 +636,26 @@ class GameScreen : Screen, InputAdapter() {
 
     private fun drawHud() {
         val w = Gdx.graphics.width.toFloat()
-        val h = Gdx.graphics.height.toFloat()
-        ui.update(w, h)
+        ui.update(w, Gdx.graphics.height.toFloat())
         ui.hud()
 
         val left = safeArea.left
+        val right = safeArea.right
         val top = safeArea.top
-        val panelW = (w * 0.46f).coerceIn(320f, 500f)
-        val panelH = 112f
+        val pauseGap = 8f
+        val panelGap = 8f
+        val panelH = 108f
+        val pauseW = pauseButton.width
+
+        // Dedicated player-core card: it never shares the score panel or pause target.
+        val healthW = minOf(220f, (right - left) * 0.30f).coerceAtLeast(140f)
+        val healthX = right - pauseW - pauseGap - healthW
+        val statsW = minOf(460f, (healthX - panelGap - left).coerceAtLeast(200f))
+        val healthBarX = healthX + 12f
+        val healthBarW = healthW - 24f
+        val healthRatio = (player.health.toFloat() / player.maxHealth.coerceAtLeast(1)).coerceIn(0f, 1f)
+        val healthColor = if (healthRatio <= 0.34f) Color(1f, 0.18f, 0.3f, 0.98f)
+            else Color(0.18f, 0.9f, 1f, 0.95f)
 
         Gdx.gl.glEnable(GL20.GL_BLEND)
         Gdx.gl.glBlendFunc(GL20.GL_SRC_ALPHA, GL20.GL_ONE_MINUS_SRC_ALPHA)
@@ -651,16 +663,25 @@ class GameScreen : Screen, InputAdapter() {
         shapeRenderer.begin(ShapeRenderer.ShapeType.Filled)
 
         shapeRenderer.color = Color(0.004f, 0.014f, 0.026f, 0.94f)
-        shapeRenderer.rect(left, top - panelH, panelW, panelH)
+        shapeRenderer.rect(left, top - panelH, statsW, panelH)
         shapeRenderer.color = Color(0.18f, 0.9f, 1f, 0.9f)
-        shapeRenderer.rect(left, top - 3f, panelW, 3f)
+        shapeRenderer.rect(left, top - 3f, statsW, 3f)
         shapeRenderer.color = Color(0.78f, 0.24f, 1f, 0.55f)
-        shapeRenderer.rect(left + panelW - 4f, top - 33f, 4f, 30f)
-
-        // Deliberate row separators keep SCORE/BEST and WAVE/COMBO visually isolated.
+        shapeRenderer.rect(left + statsW - 4f, top - 33f, 4f, 30f)
         shapeRenderer.color = Color(0.18f, 0.9f, 1f, 0.12f)
-        shapeRenderer.rect(left + 12f, top - 60f, panelW - 24f, 2f)
-        shapeRenderer.rect(left + 12f, top - 91f, panelW - 24f, 2f)
+        shapeRenderer.rect(left + 12f, top - 58f, statsW - 24f, 2f)
+        shapeRenderer.rect(left + 12f, top - 88f, statsW - 24f, 2f)
+
+        shapeRenderer.color = Color(0.004f, 0.014f, 0.026f, 0.94f)
+        shapeRenderer.rect(healthX, top - panelH, healthW, panelH)
+        shapeRenderer.color = healthColor
+        shapeRenderer.rect(healthX, top - 3f, healthW, 3f)
+
+        // Larger 12px health bar with its own vertical lane, safely below CORE text.
+        shapeRenderer.color = Color(0f, 0f, 0f, 0.72f)
+        shapeRenderer.rect(healthBarX, top - 78f, healthBarW, 12f)
+        shapeRenderer.color = healthColor
+        shapeRenderer.rect(healthBarX, top - 78f, healthBarW * healthRatio, 12f)
 
         shapeRenderer.color = Color(0.015f, 0.035f, 0.055f, 0.96f)
         shapeRenderer.rect(pauseButton.x, pauseButton.y, pauseButton.width, pauseButton.height)
@@ -672,37 +693,24 @@ class GameScreen : Screen, InputAdapter() {
         batch.projectionMatrix = hudCamera.combined
         batch.begin()
 
-        // Three measured rows: no decorative title, no shared baseline collisions.
-        fitBodyFont("SCORE " + score, panelW * 0.46f, 0.9f, 0.58f)
-        drawBodyShadowed("SCORE " + score, left + 14f, top - 36f, Color.WHITE)
+        fitBodyFont("SCORE " + score, statsW * 0.46f, 0.9f, 0.58f)
+        drawBodyShadowed("SCORE " + score, left + 14f, top - 34f, Color.WHITE)
+        fitBodyFont("BEST " + highScore, statsW * 0.46f, 0.82f, 0.54f)
+        drawBodyRight("BEST " + highScore, left + statsW - 14f, top - 34f, Color(0.42f, 0.72f, 0.82f, 1f))
 
-        fitBodyFont("BEST " + highScore, panelW * 0.46f, 0.82f, 0.54f)
-        drawBodyRight("BEST " + highScore, left + panelW - 14f, top - 36f, Color(0.42f, 0.72f, 0.82f, 1f))
-
-        fitBodyFont("WAVE " + wave, panelW * 0.42f, 0.78f, 0.52f)
-        drawBodyShadowed("WAVE " + wave, left + 14f, top - 67f, Color(0.72f, 0.86f, 0.93f, 1f))
-
-        fitBodyFont("COMBO x" + combo, panelW * 0.42f, 0.78f, 0.52f)
-        drawBodyRight("COMBO x" + combo, left + panelW - 14f, top - 67f,
+        fitBodyFont("WAVE " + wave, statsW * 0.42f, 0.78f, 0.52f)
+        drawBodyShadowed("WAVE " + wave, left + 14f, top - 65f, Color(0.72f, 0.86f, 0.93f, 1f))
+        fitBodyFont("COMBO x" + combo, statsW * 0.42f, 0.78f, 0.52f)
+        drawBodyRight("COMBO x" + combo, left + statsW - 14f, top - 65f,
             if (combo >= 3) Color(1f, 0.72f, 0.2f, 1f) else Color(0.46f, 0.6f, 0.68f, 1f))
 
-        // CORE is a separate right-side stack: label, then health bar, then pause control.
-        fitBodyFont("CORE " + player.health + "/" + player.maxHealth, 150f, 0.78f, 0.52f)
-        drawBodyRight("CORE " + player.health + "/" + player.maxHealth, safeArea.right - 12f, safeArea.top - 88f,
-            Color(1f, 0.42f, 0.52f, 1f))
-        batch.end()
+        fitBodyFont("CORE", healthW * 0.45f, 0.72f, 0.48f)
+        drawBodyShadowed("CORE", healthBarX, top - 36f, Color(0.74f, 0.9f, 0.96f, 1f))
+        val healthText = player.health.toString() + "/" + player.maxHealth
+        fitBodyFont(healthText, healthW * 0.38f, 0.72f, 0.48f)
+        drawBodyRight(healthText, healthX + healthW - 12f, top - 36f, Color(1f, 0.55f, 0.62f, 1f))
 
-        val coreW = 128f
-        val coreX = safeArea.right - coreW - 12f
-        val coreY = safeArea.top - 108f
-        shapeRenderer.projectionMatrix = hudCamera.combined
-        shapeRenderer.begin(ShapeRenderer.ShapeType.Filled)
-        shapeRenderer.color = Color(0f, 0f, 0f, 0.68f)
-        shapeRenderer.rect(coreX, coreY, coreW, 7f)
-        shapeRenderer.color = if (player.health <= 1) Color(1f, 0.18f, 0.3f, 0.95f) else Color(0.18f, 0.9f, 1f, 0.9f)
-        shapeRenderer.rect(coreX, coreY,
-            coreW * (player.health.toFloat() / player.maxHealth.coerceAtLeast(1)).coerceIn(0f, 1f), 7f)
-        shapeRenderer.end()
+        batch.end()
         drawPauseIcon(pauseButton)
 
         if (waveBannerTimer > 0f) drawWaveBanner()
@@ -713,7 +721,7 @@ class GameScreen : Screen, InputAdapter() {
             shapeRenderer.projectionMatrix = hudCamera.combined
             shapeRenderer.begin(ShapeRenderer.ShapeType.Filled)
             shapeRenderer.color = Color(1f, 0.04f, 0.08f, hitFlash * 0.20f)
-            shapeRenderer.rect(0f, 0f, w, h)
+            shapeRenderer.rect(0f, 0f, w, Gdx.graphics.height.toFloat())
             shapeRenderer.end()
             Gdx.gl.glDisable(GL20.GL_BLEND)
         }
