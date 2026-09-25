@@ -185,12 +185,6 @@ class WorldRenderer(
     }
 
     private fun drawCentered(text: String, centerX: Float, y: Float, color: Color) {
-        font.color = color
-        batch.drawCentered(font, text, centerX, y)
-    }
-}
-
-    private fun drawCentered(text: String, centerX: Float, y: Float, color: Color) {
         layout.setText(font, text)
         font.color = color
         font.draw(batch, text, centerX - layout.width / 2f, y)
