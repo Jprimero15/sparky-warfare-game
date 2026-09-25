@@ -5,7 +5,6 @@ import com.badlogic.gdx.graphics.Color
 import com.badlogic.gdx.graphics.GL20
 import com.badlogic.gdx.graphics.glutils.ShapeRenderer
 import com.badlogic.gdx.math.Vector2
-import kotlin.math.cos
 import kotlin.math.sin
 
 class GlowRenderer(private val shapeRenderer: ShapeRenderer) {
