@@ -1,13 +1,13 @@
 package com.sparkywarfare.game
 
 import com.badlogic.gdx.Gdx
+import com.badlogic.gdx.math.Circle
 import com.badlogic.gdx.math.Rectangle
 
 data class SafeArea(val left: Float, val right: Float, val bottom: Float, val top: Float)
 
 class UiLayout {
     val singleButton = Rectangle()
-    val multiButton = Rectangle()
     val settingsButton = Rectangle()
     val pauseButton = Rectangle()
     val resumeButton = Rectangle()
@@ -18,6 +18,7 @@ class UiLayout {
     val swapControlsButton = Rectangle()
     val tutorialButton = Rectangle()
     val upgradeButtons = Array(3) { Rectangle() }
+    val touchControls = TouchControlGeometry()
 
     var safeArea = SafeArea(0f, 0f, 0f, 0f)
         private set
@@ -66,6 +67,20 @@ class UiLayout {
         pauseButton.set(safeArea.right - size, safeArea.top - size, size, size)
     }
 
+    fun touchControls(width: Float, height: Float, controlsSwapped: Boolean) {
+        val leftSafe = Gdx.graphics.safeInsetLeft.toFloat().coerceAtLeast(GameConfig.Ui.SAFE_MARGIN)
+        val rightSafe = (width - Gdx.graphics.safeInsetRight).coerceAtMost(width - GameConfig.Ui.SAFE_MARGIN)
+        val bottomSafe = Gdx.graphics.safeInsetBottom.toFloat().coerceAtLeast(GameConfig.Ui.SAFE_MARGIN)
+        val radius = (height * 0.29f).coerceIn(112f, 156f)
+        val leftX = leftSafe + radius + 30f
+        val rightX = rightSafe - radius - 30f
+        val baseY = bottomSafe + radius + 24f
+        val centerYScreen = height - baseY
+        val moveX = if (controlsSwapped) rightX else leftX
+        val fireX = if (controlsSwapped) leftX else rightX
+        touchControls.set(moveX, centerYScreen, fireX, centerYScreen, radius)
+    }
+
     fun settings(width: Float, height: Float) {
         val sw = (safeArea.right - safeArea.left).coerceAtLeast(1f)
         val sh = (safeArea.top - safeArea.bottom).coerceAtLeast(1f)
@@ -107,5 +122,24 @@ class UiLayout {
         val gap = 18f
         singleButton.set(cx - buttonW - gap / 2f, cy - sh * 0.28f, buttonW, 64f)
         menuButton.set(cx + gap / 2f, cy - sh * 0.28f, buttonW, 64f)
+    }
+}
+
+
+class TouchControlGeometry {
+    val move = Circle()
+    val fire = Circle()
+    val moveHit = Circle()
+    val fireHit = Circle()
+    var radius: Float = 0f
+        private set
+
+    fun set(moveX: Float, centerY: Float, fireX: Float, fireY: Float, radius: Float) {
+        this.radius = radius
+        move.set(moveX, centerY, radius)
+        fire.set(fireX, fireY, radius)
+        val hitRadius = radius + 26f
+        moveHit.set(moveX, centerY, hitRadius)
+        fireHit.set(fireX, fireY, hitRadius)
     }
 }
