@@ -23,9 +23,8 @@ class UpgradeRenderer(
         val left=cx-totalW/2f
         val bottom=(height*0.18f).coerceAtLeast(82f)
         shape.begin(ShapeRenderer.ShapeType.Filled)
-        shape.color = UiTheme.OVERLAY
-        shape.rect(0f, 0f, width, height)
-        UiShapes.roundedRect(shape, width * 0.04f, height * 0.06f, width * 0.92f, height * 0.88f, UiTheme.Metrics.PANEL_RADIUS, UiTheme.PANEL)
+        UiShapes.overlay(shape, width, height)
+        UiShapes.panel(shape, width * 0.04f, height * 0.06f, width * 0.92f, height * 0.88f)
         for(i in 0 until 3){
             val x=left+i*(cardW+gap)
             buttons[i].set(x,bottom,cardW,cardH)
@@ -39,7 +38,7 @@ class UpgradeRenderer(
         for(i in 0 until minOf(3,choices.size)){
             val r=buttons[i];val choice=choices[i]
             text.fit(titleFont,choice.title,r.width-28f,0.72f,0.48f)
-            text.centered(titleFont,choice.title,r.x+r.width/2f,r.y+r.height-56f,Color.WHITE)
+            text.centered(titleFont,choice.title,r.x+r.width/2f,r.y+r.height-56f,UiTheme.TEXT_PRIMARY)
             text.fit(bodyFont,choice.description,r.width-28f,0.78f,0.52f)
             text.centered(bodyFont,choice.description,r.x+r.width/2f,r.y+r.height/2f,UiTheme.TEXT_SECONDARY)
         }
