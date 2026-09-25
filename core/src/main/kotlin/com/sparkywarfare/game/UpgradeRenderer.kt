@@ -24,15 +24,12 @@ class UpgradeRenderer(
         val bottom=(height*0.18f).coerceAtLeast(82f)
         shape.begin(ShapeRenderer.ShapeType.Filled)
         shape.color=UiTheme.BLACK;shape.color.a=0.88f;shape.rect(0f,0f,width,height)
-        shape.color=UiTheme.PANEL;shape.rect(width*0.04f,height*0.06f,width*0.92f,height*0.88f)
-        shape.color=UiTheme.CYAN;shape.rect(width*0.04f,height*0.94f-3f,width*0.92f,3f)
-        shape.color=UiTheme.MAGENTA;shape.rect(width*0.96f-4f,height*0.94f-34f,4f,31f)
+        UiShapes.roundedRect(shape,width*0.04f,height*0.06f,width*0.92f,height*0.88f,30f,UiTheme.PANEL)
         for(i in 0 until 3){
             val x=left+i*(cardW+gap)
             buttons[i].set(x,bottom,cardW,cardH)
-            shape.color=UiTheme.CARD;shape.rect(x,bottom,cardW,cardH)
-            shape.color=if(i==1)UiTheme.MAGENTA else UiTheme.CYAN;shape.rect(x,bottom+cardH-4f,cardW,4f)
-            shape.color=UiTheme.CYAN_SOFT;shape.rect(x+8f,bottom+8f,3f,cardH-16f)
+            UiShapes.roundedRect(shape,x,bottom,cardW,cardH,22f,UiTheme.CARD)
+            UiShapes.roundedRect(shape,x+10f,bottom+cardH-7f,cardW-20f,4f,2f,if(i==1)UiTheme.MAGENTA else UiTheme.CYAN)
         }
         shape.end()
         batch.begin()
