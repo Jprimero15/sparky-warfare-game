@@ -626,31 +626,6 @@ class GameScreen : Screen, InputAdapter() {
         }
     }
 
-    private fun drawPauseIcon(rect: Rectangle) {
-        shapeRenderer.projectionMatrix = hudCamera.combined
-        shapeRenderer.begin(ShapeRenderer.ShapeType.Filled)
-        shapeRenderer.color = Color(0.7f, 0.88f, 0.95f, 1f)
-        shapeRenderer.rect(rect.x + 16f, rect.y + 10f, 4f, 18f)
-        shapeRenderer.rect(rect.x + 28f, rect.y + 10f, 4f, 18f)
-        shapeRenderer.end()
-    }
-
-    private fun drawEnemyHealthBars() {
-        shapeRenderer.projectionMatrix = camera.combined
-        shapeRenderer.begin(ShapeRenderer.ShapeType.Filled)
-        for (enemy in enemies) {
-            if (!enemy.alive || enemy.health <= 0) continue
-            val width = enemy.radius * 2.4f
-            val y = enemy.position.y + enemy.radius + 6f
-            shapeRenderer.color = Color(0f, 0f, 0f, 0.65f)
-            shapeRenderer.rect(enemy.position.x - width / 2f, y, width, 3f)
-            shapeRenderer.color = if (enemy.radius >= 22f) Color(1f, 0.72f, 0.16f, 0.95f) else Color(0.35f, 0.9f, 1f, 0.9f)
-            val ratio = (enemy.health.toFloat() / enemy.maxHealth.coerceAtLeast(1)).coerceIn(0f, 1f)
-            shapeRenderer.rect(enemy.position.x - width / 2f, y, width * ratio, 3f)
-        }
-        shapeRenderer.end()
-    }
-
     private fun drawWaveBanner() {
         val w = Gdx.graphics.width.toFloat()
         val h = Gdx.graphics.height.toFloat()
