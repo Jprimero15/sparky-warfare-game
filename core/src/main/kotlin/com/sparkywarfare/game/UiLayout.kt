@@ -140,7 +140,7 @@ class TouchControlGeometry {
         this.radius = radius
         move.set(moveX, centerY, radius)
         fire.set(fireX, fireY, radius)
-        val hitRadius = radius + 26f
+        val hitRadius = radius + UiTheme.Metrics.TOUCH_EXTRA_HIT
         moveHit.set(moveX, centerY, hitRadius)
         fireHit.set(fireX, fireY, hitRadius)
     }
