@@ -962,10 +962,10 @@ class GameScreen : Screen, InputAdapter() {
 
                 val h = Gdx.graphics.height.toFloat()
                 val w = Gdx.graphics.width.toFloat()
-                val controlRadius = (h * 0.17f).coerceIn(58f, 74f)
-                val leftX = controlRadius + 42f
-                val rightX = w - controlRadius - 42f
-                val baseY = controlRadius + 34f
+                val controlRadius = (h * 0.22f).coerceIn(82f, 104f)
+                val leftX = controlRadius + 54f
+                val rightX = w - controlRadius - 54f
+                val baseY = controlRadius + 46f
                 val moveX = if (controlsSwapped) rightX else leftX
                 val fireX = if (controlsSwapped) leftX else rightX
                 val dx = screenX - moveX
