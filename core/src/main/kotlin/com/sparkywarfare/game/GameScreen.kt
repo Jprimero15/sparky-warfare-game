@@ -635,23 +635,23 @@ class GameScreen : Screen, InputAdapter() {
         fitFont("SPARKY // COMBAT LINK", panelW - 90f, 0.82f, 0.52f)
         drawShadowed("SPARKY // COMBAT LINK", left + 14f, top - 24f, Color(0.55f, 0.94f, 1f, 1f))
 
-        fitFont("SCORE " + score, panelW * 0.48f, 0.72f, 0.44f)
-        drawShadowed("SCORE " + score, left + 14f, top - 55f, Color.WHITE)
+        fitBodyFont("SCORE " + score, panelW * 0.48f, 0.95f, 0.62f)
+        drawBodyShadowed("SCORE " + score, left + 14f, top - 55f, Color.WHITE)
 
-        fitFont("WAVE " + wave, panelW * 0.24f, 0.58f, 0.38f)
-        drawRight("WAVE " + wave, left + panelW - 14f, top - 55f, Color(0.72f, 0.86f, 0.93f, 1f))
+        fitBodyFont("WAVE " + wave, panelW * 0.24f, 0.82f, 0.56f)
+        drawBodyRight("WAVE " + wave, left + panelW - 14f, top - 55f, Color(0.72f, 0.86f, 0.93f, 1f))
 
-        fitFont("BEST " + highScore, panelW * 0.43f, 0.5f, 0.34f)
-        drawShadowed("BEST " + highScore, left + 14f, top - 77f, Color(0.42f, 0.72f, 0.82f, 1f))
+        fitBodyFont("BEST " + highScore, panelW * 0.43f, 0.72f, 0.5f)
+        drawBodyShadowed("BEST " + highScore, left + 14f, top - 77f, Color(0.42f, 0.72f, 0.82f, 1f))
 
-        fitFont("COMBO x" + combo, panelW * 0.31f, 0.5f, 0.34f)
-        drawRight("COMBO x" + combo, left + panelW - 14f, top - 77f,
+        fitBodyFont("COMBO x" + combo, panelW * 0.31f, 0.72f, 0.5f)
+        drawBodyRight("COMBO x" + combo, left + panelW - 14f, top - 77f,
             if (combo >= 3) Color(1f, 0.72f, 0.2f, 1f) else Color(0.46f, 0.6f, 0.68f, 1f))
 
         // Player integrity readout. Text stays in the sprite batch; geometry is drawn
         // only after the batch closes to keep GL state transitions deterministic.
-        fitFont("CORE " + player.health + "/" + player.maxHealth, 150f, 0.55f, 0.38f)
-        drawRight("CORE " + player.health + "/" + player.maxHealth, safeArea.right - 12f, safeArea.top - 22f,
+        fitBodyFont("CORE " + player.health + "/" + player.maxHealth, 150f, 0.78f, 0.54f)
+        drawBodyRight("CORE " + player.health + "/" + player.maxHealth, safeArea.right - 12f, safeArea.top - 22f,
             Color(1f, 0.42f, 0.52f, 1f))
         batch.end()
 
@@ -783,6 +783,32 @@ class GameScreen : Screen, InputAdapter() {
         fitFont("ACKNOWLEDGE", tutorialButton.width - 30f, 0.66f, 0.46f)
         drawCentered("ACKNOWLEDGE", cx, tutorialButton.y + tutorialButton.height * 0.62f, Color.WHITE)
         batch.end()
+    }
+
+    private fun fitBodyFont(text: String, maxWidth: Float, preferred: Float, minimum: Float): Float {
+        bodyFont.data.setScale(1f)
+        layout.setText(bodyFont, text)
+        if (layout.width <= 0f) {
+            bodyFont.data.setScale(preferred)
+            return preferred
+        }
+        val widthScale = maxWidth / layout.width
+        bodyFont.data.setScale(minOf(preferred, widthScale.coerceAtLeast(minimum), widthScale))
+        layout.setText(bodyFont, text)
+        return bodyFont.data.scaleX
+    }
+
+    private fun drawBodyShadowed(text: String, x: Float, y: Float, color: Color) {
+        bodyFont.color = Color(0f, 0f, 0f, 0.8f)
+        bodyFont.draw(batch, text, x + 2f, y - 2f)
+        bodyFont.color = color
+        bodyFont.draw(batch, text, x, y)
+    }
+
+    private fun drawBodyRight(text: String, rightX: Float, y: Float, color: Color) {
+        layout.setText(bodyFont, text)
+        bodyFont.color = color
+        bodyFont.draw(batch, text, rightX - layout.width, y)
     }
 
     private fun fitFont(text: String, maxWidth: Float, preferred: Float, minimum: Float): Float {
