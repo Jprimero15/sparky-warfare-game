@@ -13,32 +13,61 @@ class GameOverRenderer(
     private val bodyFont: BitmapFont,
     private val text: UiText
 ) {
-    fun draw(width:Float,height:Float,safe:SafeArea,retry:Rectangle,menu:Rectangle,score:Int,best:Int,wave:Int,kills:Int,combo:Int,drawButton:(Rectangle,Color)->Unit){
-        val cx=(safe.left+safe.right)/2f; val cy=(safe.bottom+safe.top)/2f
-        val sw=safe.right-safe.left; val sh=safe.top-safe.bottom
-        val panelW=minOf(sw*0.78f,980f).coerceAtLeast(320f); val panelH=minOf(sh*0.78f,520f).coerceAtLeast(260f)
-        val x=cx-panelW/2f; val y=cy-panelH/2f
+    fun draw(
+        width: Float,
+        height: Float,
+        safe: SafeArea,
+        retry: Rectangle,
+        menu: Rectangle,
+        score: Int,
+        best: Int,
+        wave: Int,
+        kills: Int,
+        combo: Int,
+        drawButton: (Rectangle, Color) -> Unit
+    ) {
+        val cx = (safe.left + safe.right) / 2f
+        val cy = (safe.bottom + safe.top) / 2f
+        val sw = safe.right - safe.left
+        val sh = safe.top - safe.bottom
+        val panelW = minOf(sw * 0.72f, 880f).coerceAtLeast(360f)
+        val panelH = minOf(sh * 0.76f, 500f).coerceAtLeast(280f)
+        val x = cx - panelW / 2f
+        val y = cy - panelH / 2f
+
         shape.begin(ShapeRenderer.ShapeType.Filled)
         UiShapes.overlay(shape, width, height)
-        UiShapes.panel(shape, x, y, panelW, panelH)
-        drawButton(retry,UiTheme.PANEL_DARK); drawButton(menu,UiTheme.PANEL_DARK)
+        UiShapes.glassPanel(shape, x, y, panelW, panelH)
+        UiShapes.glassCard(shape, x + 26f, y + panelH - 170f, panelW * 0.43f, 76f, 20f, UiTheme.CYAN)
+        UiShapes.glassCard(shape, x + panelW * 0.50f, y + panelH - 170f, panelW * 0.43f, 76f, 20f, UiTheme.MAGENTA)
+        drawButton(retry, UiTheme.CYAN)
+        drawButton(menu, UiTheme.PANEL_DARK)
         shape.end()
+
         batch.begin()
-        text.fit(titleFont,"SYSTEM FAILURE",panelW-80f,1.25f,0.82f); text.centered(titleFont,"SYSTEM FAILURE",cx,y+panelH-56f,UiTheme.DANGER)
-        text.fit(bodyFont,"SCORE   $score",panelW*0.34f,0.86f,0.58f); text.centered(bodyFont,"SCORE   $score",x+panelW*0.30f,y+panelH-142f,UiTheme.TEXT_PRIMARY)
-        text.fit(bodyFont,"BEST   $best",panelW*0.30f,0.86f,0.58f); text.centered(bodyFont,"BEST   $best",x+panelW*0.70f,y+panelH-142f,UiTheme.TEXT_PRIMARY)
-        text.fit(bodyFont,"WAVE $wave   //   KILLS $kills   //   COMBO x$combo",panelW-90f,0.7f,0.48f)
-        text.centered(bodyFont,"WAVE $wave   //   KILLS $kills   //   COMBO x$combo",cx,y+panelH-177f,UiTheme.TEXT_SECONDARY)
-        command(retry,"RETRY",UiTheme.TEXT_PRIMARY)
-        command(menu,"MENU",UiTheme.TEXT_PRIMARY)
-        text.reset(titleFont,bodyFont)
+        text.fitWithin(titleFont, "RUN OVER", panelW - 80f, 58f, 1.18f, 0.76f)
+        text.centered(titleFont, "RUN OVER", cx, y + panelH - 58f, UiTheme.MAGENTA)
+
+        text.fitWithin(bodyFont, "SCORE  $score", panelW * 0.36f, 30f, 0.72f, 0.48f)
+        text.centered(bodyFont, "SCORE  $score", x + panelW * 0.25f, y + panelH - 135f, UiTheme.TEXT_PRIMARY)
+        text.fitWithin(bodyFont, "BEST  $best", panelW * 0.36f, 30f, 0.72f, 0.48f)
+        text.centered(bodyFont, "BEST  $best", x + panelW * 0.75f, y + panelH - 135f, UiTheme.TEXT_PRIMARY)
+
+        val detail = "WAVE  $wave    •    KILLS  $kills    •    COMBO  x$combo"
+        text.fitWithin(bodyFont, detail, panelW - 72f, 28f, 0.64f, 0.42f)
+        text.centered(bodyFont, detail, cx, y + panelH - 195f, UiTheme.TEXT_SECONDARY)
+
+        command(retry, "REDEPLOY", UiTheme.TEXT_PRIMARY)
+        command(menu, "MAIN MENU", UiTheme.TEXT_PRIMARY)
+
+        text.reset(titleFont, bodyFont)
         batch.end()
     }
 
-    private fun command(r: Rectangle, title: String, color: com.badlogic.gdx.graphics.Color) {
-        val cx = r.x + r.width / 2f
-        text.fitWithin(titleFont, title, r.width - 44f, r.height * 0.50f, 0.84f, 0.58f)
-        val titleHeight = text.height(titleFont, title)
-        text.centered(titleFont, title, cx, r.y + r.height / 2f + titleHeight / 2f, color)
+    private fun command(rect: Rectangle, title: String, color: Color) {
+        val cx = rect.x + rect.width / 2f
+        text.fitWithin(titleFont, title, rect.width - 52f, rect.height * 0.44f, 0.80f, 0.54f)
+        val h = text.height(titleFont, title)
+        text.centered(titleFont, title, cx, rect.y + rect.height / 2f + h / 2f, color)
     }
 }
