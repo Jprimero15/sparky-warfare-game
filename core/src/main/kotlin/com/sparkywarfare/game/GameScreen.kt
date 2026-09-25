@@ -1089,7 +1089,7 @@ class GameScreen : Screen, InputAdapter() {
                 val leftSafe = Gdx.graphics.safeInsetLeft.toFloat().coerceAtLeast(GameConfig.Ui.SAFE_MARGIN)
                 val rightSafe = (w - Gdx.graphics.safeInsetRight).coerceAtMost(w - GameConfig.Ui.SAFE_MARGIN)
                 val bottomSafe = Gdx.graphics.safeInsetBottom.toFloat().coerceAtLeast(GameConfig.Ui.SAFE_MARGIN)
-                val controlRadius = (h * 0.24f).coerceIn(100f, 128f)
+                val controlRadius = (h * 0.29f).coerceIn(112f, 156f)
                 val leftX = leftSafe + controlRadius + 30f
                 val rightX = rightSafe - controlRadius - 30f
                 val baseY = bottomSafe + controlRadius + 24f
