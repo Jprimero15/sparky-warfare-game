@@ -123,7 +123,7 @@ class GameScreen : Screen, InputAdapter() {
         bloom = BloomRenderer()
         val fontGenerator = FreeTypeFontGenerator(Gdx.files.internal("fonts/Orbitron-Medium.ttf"))
         val fontParameter = FreeTypeFontGenerator.FreeTypeFontParameter().apply {
-            size = 30
+            size = 48
             color = Color.WHITE
             borderWidth = 1.2f
             borderColor = Color(0f, 0f, 0f, 0.85f)
@@ -132,14 +132,14 @@ class GameScreen : Screen, InputAdapter() {
             shadowColor = Color(0f, 0f, 0f, 0.75f)
             characters = FreeTypeFontGenerator.DEFAULT_CHARS + "0123456789:-"
             kerning = true
-            genMipMaps = true
+            genMipMaps = false
             minFilter = com.badlogic.gdx.graphics.Texture.TextureFilter.Linear
             magFilter = com.badlogic.gdx.graphics.Texture.TextureFilter.Linear
         }
         font = fontGenerator.generateFont(fontParameter)
         fontGenerator.dispose()
         bodyFont = BitmapFont()
-        bodyFont.data.setScale(0.75f)
+        bodyFont.data.setScale(1.0f)
         layout = GlyphLayout()
         hudCamera = OrthographicCamera()
         hudCamera.setToOrtho(false, Gdx.graphics.width.toFloat(), Gdx.graphics.height.toFloat())
@@ -175,7 +175,7 @@ class GameScreen : Screen, InputAdapter() {
             fireRate = GameConfig.Player.FIRE_RATE,
             radius = GameConfig.Player.RADIUS
         )
-        if (!prefs.getBoolean("tutorialSeen", false)) tutorialVisible = false
+        tutorialVisible = false
         state = GameState.MENU
     }
 
@@ -287,7 +287,7 @@ class GameScreen : Screen, InputAdapter() {
                 drawMenuOverlay()
             }
             GameState.PLAYING -> {
-                if (!input.paused) update(delta.coerceIn(0f, 0.05f))
+                if (!input.paused && !tutorialVisible) update(delta.coerceIn(0f, 0.05f))
                 draw()
                 drawHud()
             }
@@ -673,8 +673,10 @@ class GameScreen : Screen, InputAdapter() {
         val w = Gdx.graphics.width.toFloat()
         val h = Gdx.graphics.height.toFloat()
         val cx = (safeArea.left + safeArea.right) / 2f
-        val panel = Rectangle(cx - (w * 0.72f).coerceAtMost(560f) / 2f, h * 0.18f, (w * 0.72f).coerceAtMost(560f), h * 0.58f)
-        tutorialButton.set(panel.x + 24f, panel.y + 18f, panel.width - 48f, 52f)
+        val panelW = (safeArea.right - safeArea.left).coerceIn(360f, 720f) * 0.86f
+        val panelH = (safeArea.top - safeArea.bottom).coerceIn(330f, 620f) * 0.72f
+        val panel = Rectangle(cx - panelW / 2f, (safeArea.bottom + safeArea.top) / 2f - panelH / 2f, panelW, panelH)
+        tutorialButton.set(panel.x + 28f, panel.y + 22f, panel.width - 56f, (panel.height * 0.16f).coerceIn(54f, 72f))
         shapeRenderer.projectionMatrix = hudCamera.combined
         shapeRenderer.begin(ShapeRenderer.ShapeType.Filled)
         shapeRenderer.color = Color(0f, 0f, 0f, 0.82f)
@@ -689,14 +691,17 @@ class GameScreen : Screen, InputAdapter() {
         batch.begin()
         fitFont("FIELD BRIEFING", panel.width - 40f, 1.8f, 1f)
         drawCentered("FIELD BRIEFING", cx, panel.y + panel.height - 48f, Color(0.62f, 0.94f, 1f, 1f))
-        bodyFont.color = Color(0.78f, 0.86f, 0.9f, 1f)
-        bodyFont.draw(batch, "MOVE: drag the joystick", panel.x + 28f, panel.y + panel.height - 92f)
-        bodyFont.draw(batch, "FIRE: hold the fire control", panel.x + 28f, panel.y + panel.height - 120f)
-        bodyFont.draw(batch, "Destroy every enemy to advance the wave.", panel.x + 28f, panel.y + panel.height - 148f)
-        bodyFont.draw(batch, "Every third wave offers three upgrades.", panel.x + 28f, panel.y + panel.height - 176f)
-        bodyFont.draw(batch, "Chain kills before the combo timer expires.", panel.x + 28f, panel.y + panel.height - 204f)
-        fitFont("GOT IT", tutorialButton.width - 24f, 1f, 0.7f)
-        drawCentered("GOT IT", cx, tutorialButton.y + 34f, Color.WHITE)
+        font.data.setScale(0.60f)
+        font.color = Color(0.78f, 0.88f, 0.92f, 1f)
+        val textX = panel.x + 34f
+        val top = panel.y + panel.height - 104f
+        font.draw(batch, "MOVE: drag the joystick", textX, top)
+        font.draw(batch, "FIRE: hold the fire control", textX, top - 38f)
+        font.draw(batch, "Destroy every enemy to advance the wave.", textX, top - 76f)
+        font.draw(batch, "Every third wave offers three upgrades.", textX, top - 114f)
+        font.draw(batch, "Chain kills before the combo timer expires.", textX, top - 152f)
+        fitFont("GOT IT", tutorialButton.width - 24f, 1f, 0.62f)
+        drawCentered("GOT IT", cx, tutorialButton.y + tutorialButton.height * 0.62f, Color.WHITE)
         batch.end()
     }
 
