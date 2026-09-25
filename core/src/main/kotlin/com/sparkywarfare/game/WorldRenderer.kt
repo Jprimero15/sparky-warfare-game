@@ -112,10 +112,13 @@ class WorldRenderer(
 
         batch.projectionMatrix = hudCamera.combined
         batch.begin()
-        font.data.setScale(0.92f)
-        drawCentered("MOVE", baseX, baseY + 5f, hudTextColor)
-        drawCentered("FIRE", fireX, baseY + 5f, fireTextColor)
+        // Large, high-contrast labels stay inside the control rings and remain
+        // readable on landscape phones without relying on tiny text.
+        font.data.setScale(1.08f)
+        drawCentered("MOVE", baseX, baseY + 7f, hudTextColor)
+        drawCentered("FIRE", fireX, baseY + 7f, fireTextColor)
         batch.end()
+        font.data.setScale(1f)
     }
 
     private fun drawArenaBackdrop() {
