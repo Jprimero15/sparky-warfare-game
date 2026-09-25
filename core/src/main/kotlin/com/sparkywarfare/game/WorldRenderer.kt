@@ -117,9 +117,9 @@ class WorldRenderer(
         shapeRenderer.projectionMatrix = hudCamera.combined
 
         shapeRenderer.begin(ShapeRenderer.ShapeType.Filled)
-        shapeRenderer.color = Color(0.004f, 0.012f, 0.022f, 0.78f)
+        shapeRenderer.color = UiTheme.TOUCH_BASE
         shapeRenderer.circle(baseX, baseY, controlRadius, 48)
-        shapeRenderer.color = Color(0.02f, 0.06f, 0.09f, 0.92f)
+        shapeRenderer.color = UiTheme.TOUCH_INNER
         shapeRenderer.circle(baseX, baseY, innerRadius, 48)
 
         val knob = if (input.joystick.active) {
@@ -132,9 +132,9 @@ class WorldRenderer(
         shapeRenderer.color = Color(0.75f, 0.97f, 1f, if (input.joystick.active) 0.28f else 0.16f)
         shapeRenderer.circle(knob.x, knob.y, knobRadius * 0.52f, 32)
 
-        shapeRenderer.color = Color(0.008f, 0.012f, 0.022f, 0.8f)
+        shapeRenderer.color = UiTheme.FIRE_BASE
         shapeRenderer.circle(fireX, baseY, controlRadius, 48)
-        shapeRenderer.color = Color(0.03f, 0.012f, 0.032f, 0.94f)
+        shapeRenderer.color = UiTheme.FIRE_BASE
         shapeRenderer.circle(fireX, baseY, innerRadius, 48)
         shapeRenderer.color = if (input.firing) fireActive else fireIdle
         shapeRenderer.circle(fireX, baseY, controlRadius * 0.58f, 44)
@@ -150,19 +150,6 @@ class WorldRenderer(
         shapeRenderer.circle(fireX, baseY, controlRadius, 48)
         shapeRenderer.circle(fireX, baseY, controlRadius - 7f, 48)
 
-        // Direction ticks make the enlarged joystick read as a real control, not a flat circle.
-        shapeRenderer.color = Color(0.42f, 0.84f, 1f, 0.5f)
-        for (i in 0 until 8) {
-            val angle = i * 45f * MathUtils.degRad
-            val inner = controlRadius - 22f
-            val outer = controlRadius - 12f
-            shapeRenderer.line(
-                baseX + kotlin.math.cos(angle.toDouble()).toFloat() * inner,
-                baseY + kotlin.math.sin(angle.toDouble()).toFloat() * inner,
-                baseX + kotlin.math.cos(angle.toDouble()).toFloat() * outer,
-                baseY + kotlin.math.sin(angle.toDouble()).toFloat() * outer
-            )
-        }
         shapeRenderer.end()
         Gdx.gl.glDisable(GL20.GL_BLEND)
 
