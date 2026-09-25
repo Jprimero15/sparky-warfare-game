@@ -82,6 +82,9 @@ class GameScreen : Screen, InputAdapter() {
     private lateinit var hud: HudRenderer
     private lateinit var bloom: BloomRenderer
     private lateinit var worldRenderer: WorldRenderer
+    private lateinit var menuRenderer: MenuRenderer
+    private lateinit var settingsRenderer: SettingsRenderer
+    private lateinit var gameOverRenderer: GameOverRenderer
     private val ui = UiLayout()
     private lateinit var bodyFont: BitmapFont
     private val safeArea get() = ui.safeArea
@@ -140,6 +143,9 @@ class GameScreen : Screen, InputAdapter() {
         hudCamera.setToOrtho(false, Gdx.graphics.width.toFloat(), Gdx.graphics.height.toFloat())
         hud = HudRenderer(shapeRenderer, batch, font, layout, hudCamera)
         worldRenderer = WorldRenderer(camera, hudCamera, shapeRenderer, batch, glow, bloom, particles, font, input)
+        menuRenderer = MenuRenderer(shapeRenderer, batch, font)
+        settingsRenderer = SettingsRenderer(shapeRenderer, batch, font)
+        gameOverRenderer = GameOverRenderer(shapeRenderer, batch, font)
         highScore = prefs.getInteger("highScore", 0)
         bestWave = prefs.getInteger("bestWave", 0)
         totalKills = prefs.getInteger("totalKills", 0)
@@ -722,44 +728,8 @@ class GameScreen : Screen, InputAdapter() {
     }
 
     private fun drawMenuOverlay() {
-        val w = Gdx.graphics.width.toFloat()
-        val h = Gdx.graphics.height.toFloat()
-        ui.update(w, h)
-        val buttonW = ui.singleButton.width
-        val centerX = (safeArea.left + safeArea.right) / 2f
-        ui.menu(w, h)
-
-        Gdx.gl.glEnable(GL20.GL_BLEND)
-        Gdx.gl.glBlendFunc(GL20.GL_SRC_ALPHA, GL20.GL_ONE_MINUS_SRC_ALPHA)
-        shapeRenderer.projectionMatrix = hudCamera.combined
-        shapeRenderer.begin(ShapeRenderer.ShapeType.Filled)
-        shapeRenderer.color = Color(0f, 0f, 0f, 0.9f)
-        shapeRenderer.rect(0f, 0f, w, h)
-        shapeRenderer.color = Color(0.03f, 0.16f, 0.2f, 0.22f)
-        shapeRenderer.rect(0f, h * 0.78f, w, h * 0.22f)
-        drawButton(singleButton, Color(0.02f, 0.32f, 0.46f, 0.78f))
-        drawButton(multiButton, Color(0.055f, 0.065f, 0.075f, 0.86f))
-        drawButton(settingsButton, Color(0.035f, 0.08f, 0.1f, 0.82f))
-        shapeRenderer.end()
-        Gdx.gl.glDisable(GL20.GL_BLEND)
-
-        batch.projectionMatrix = hudCamera.combined
-        batch.begin()
-        fitFont("SPARKY WARFARE", w * 0.82f, 3.15f, 1.65f)
-        drawShadowed("SPARKY WARFARE", centerX, h * 0.80f, Color(0.58f, 0.92f, 1f, 1f))
-        fitFont("TACTICAL ENERGY COMBAT", w * 0.78f, 1.05f, 0.72f)
-        drawCentered("TACTICAL ENERGY COMBAT", centerX, h * 0.68f, Color(0.5f, 0.62f, 0.68f, 1f))
-        fitFont("BEST 000000 • WAVE 00 • KILLS 0000", w * 0.82f, 0.78f, 0.56f)
-        drawCentered("BEST " + highScore + " • WAVE " + bestWave + " • KILLS " + totalKills, centerX, h * 0.61f, Color(0.42f, 0.58f, 0.64f, 1f))
-        fitFont("SINGLE PLAYER", buttonW - 24f, 1.25f, 0.78f)
-        drawCentered("SINGLE PLAYER", centerX, singleButton.y + singleButton.height / 2f + 7f, Color.WHITE)
-        fitFont("MULTIPLAYER", buttonW - 24f, 1.25f, 0.78f)
-        drawCentered("MULTIPLAYER", centerX, multiButton.y + multiButton.height / 2f + 7f, Color(0.84f, 0.88f, 0.92f, 1f))
-        font.data.setScale(0.58f)
-        drawCentered("NOT AVAILABLE YET", centerX, multiButton.y + 12f, Color(0.38f, 0.46f, 0.5f, 1f))
-        fitFont("SETTINGS", buttonW - 24f, 1.05f, 0.7f)
-        drawCentered("SETTINGS", centerX, settingsButton.y + settingsButton.height / 2f + 5f, Color(0.72f, 0.88f, 0.92f, 1f))
-        batch.end()
+        val w=Gdx.graphics.width.toFloat(); val h=Gdx.graphics.height.toFloat(); ui.update(w,h); ui.menu(w,h)
+        menuRenderer.draw(w,h,safeArea,singleButton,multiButton,settingsButton,::drawButton,::drawCentered,::fitFont)
     }
 
     private fun drawButton(rect: Rectangle, color: Color) {
@@ -770,41 +740,8 @@ class GameScreen : Screen, InputAdapter() {
     }
 
     private fun drawGameOverOverlay() {
-        val w = Gdx.graphics.width.toFloat()
-        val h = Gdx.graphics.height.toFloat()
-        val panelW = (w * 0.72f).coerceIn(340f, 620f)
-        val panelH = (h * 0.5f).coerceIn(260f, 370f)
-        val left = (w - panelW) / 2f
-        val bottom = (h - panelH) / 2f
-        ui.gameOver(w, h)
-
-        Gdx.gl.glEnable(GL20.GL_BLEND)
-        Gdx.gl.glBlendFunc(GL20.GL_SRC_ALPHA, GL20.GL_ONE_MINUS_SRC_ALPHA)
-        shapeRenderer.projectionMatrix = hudCamera.combined
-        shapeRenderer.begin(ShapeRenderer.ShapeType.Filled)
-        shapeRenderer.color = Color(0f, 0f, 0f, 0.9f)
-        shapeRenderer.rect(0f, 0f, w, h)
-        shapeRenderer.color = Color(0.14f, 0.015f, 0.025f, 0.82f)
-        shapeRenderer.rect(left, bottom, panelW, panelH)
-        shapeRenderer.color = Color(1f, 0.12f, 0.2f, 0.72f)
-        shapeRenderer.rect(left, bottom + panelH - 3f, panelW, 3f)
-        drawButton(singleButton, Color(0.14f, 0.28f, 0.34f, 0.9f))
-        drawButton(menuButton, Color(0.07f, 0.08f, 0.1f, 0.92f))
-        shapeRenderer.end()
-        Gdx.gl.glDisable(GL20.GL_BLEND)
-
-        batch.projectionMatrix = hudCamera.combined
-        batch.begin()
-        fitFont("GAME OVER", panelW - 40f, 2.45f, 1.4f)
-        drawCentered("GAME OVER", w / 2f, bottom + panelH - 58f, Color(1f, 0.28f, 0.34f, 1f))
-        fitFont("SCORE 000000 • BEST 000000", panelW - 40f, 1.12f, 0.78f)
-        drawCentered("SCORE " + score + " • BEST " + highScore, w / 2f, bottom + panelH / 2f + 18f, Color.WHITE)
-        fitFont("WAVE 00 • KILLS 0000 • COMBO x8", panelW - 40f, 0.78f, 0.56f)
-        drawCentered("WAVE " + wave + " • KILLS " + totalKills + " • COMBO x" + comboBest, w / 2f, bottom + panelH / 2f - 10f, Color(0.56f, 0.66f, 0.72f, 1f))
-        font.data.setScale(0.72f)
-        drawCentered("RETRY", singleButton.x + singleButton.width / 2f, singleButton.y + 34f, Color.WHITE)
-        drawCentered("MAIN MENU", menuButton.x + menuButton.width / 2f, menuButton.y + 34f, Color(0.78f, 0.86f, 0.9f, 1f))
-        batch.end()
+        val w=Gdx.graphics.width.toFloat(); val h=Gdx.graphics.height.toFloat(); ui.update(w,h); ui.gameOver(w,h)
+        gameOverRenderer.draw(w,h,safeArea,singleButton,menuButton,score,highScore,wave,totalKills,bestCombo,::drawButton,::drawCentered,::fitFont)
     }
 
     private fun prepareUpgradeChoices() {
@@ -915,125 +852,8 @@ class GameScreen : Screen, InputAdapter() {
     }
 
     private fun drawSettingsOverlay() {
-        val w = Gdx.graphics.width.toFloat()
-        val h = Gdx.graphics.height.toFloat()
-        val cx = (safeArea.left + safeArea.right) / 2f
-        val bw = (w * 0.6f).coerceIn(300f, 520f)
-        val bh = 58f
-        ui.settings(w, h)
-        Gdx.gl.glEnable(GL20.GL_BLEND)
-        Gdx.gl.glBlendFunc(GL20.GL_SRC_ALPHA, GL20.GL_ONE_MINUS_SRC_ALPHA)
-        shapeRenderer.projectionMatrix = hudCamera.combined
-        shapeRenderer.begin(ShapeRenderer.ShapeType.Filled)
-        shapeRenderer.color = Color(0f, 0f, 0f, 0.9f)
-        shapeRenderer.rect(0f, 0f, w, h)
-        drawButton(toggleSfxButton, Color(0.03f, 0.12f, 0.15f, 0.92f))
-        drawButton(toggleHapticsButton, Color(0.03f, 0.12f, 0.15f, 0.92f))
-        shapeRenderer.color = Color(0.02f, 0.05f, 0.07f, 0.92f)
-        shapeRenderer.rect(volumeSlider.x, volumeSlider.y, volumeSlider.width, volumeSlider.height)
-        shapeRenderer.color = Color(0.15f, 0.72f, 1f, 0.8f)
-        shapeRenderer.rect(volumeSlider.x, volumeSlider.y, volumeSlider.width * FeedbackAudio.masterVolume(), volumeSlider.height)
-        drawButton(swapControlsButton, Color(0.03f, 0.12f, 0.15f, 0.92f))
-        drawButton(menuButton, Color(0.055f, 0.065f, 0.075f, 0.9f))
-        shapeRenderer.end()
-        Gdx.gl.glDisable(GL20.GL_BLEND)
-        batch.projectionMatrix = hudCamera.combined
-        batch.begin()
-        fitFont("SETTINGS", w * 0.6f, 2.0f, 1.2f)
-        drawCentered("SETTINGS", cx, h * 0.72f, Color(0.58f, 0.92f, 1f, 1f))
-        fitFont("SFX  " + if (FeedbackAudio.isMuted()) "OFF" else "ON", bw - 24f, 1.0f, 0.68f)
-        drawCentered("SFX  " + if (FeedbackAudio.isMuted()) "OFF" else "ON", cx, toggleSfxButton.y + 36f, Color.WHITE)
-        fitFont("HAPTICS  " + if (hapticsMuted) "OFF" else "ON", bw - 24f, 1.0f, 0.68f)
-        drawCentered("HAPTICS  " + if (hapticsMuted) "OFF" else "ON", cx, toggleHapticsButton.y + 36f, Color.WHITE)
-        fitFont("VOLUME  " + (FeedbackAudio.masterVolume() * 100f).toInt() + "%", bw - 24f, 0.82f, 0.62f)
-        drawCentered("VOLUME  " + (FeedbackAudio.masterVolume() * 100f).toInt() + "%", cx, volumeSlider.y + 40f, Color(0.72f, 0.86f, 0.92f, 1f))
-        fitFont("CONTROLS  " + if (controlsSwapped) "SWAPPED" else "DEFAULT", bw - 24f, 0.9f, 0.62f)
-        drawCentered("CONTROLS  " + if (controlsSwapped) "SWAPPED" else "DEFAULT", cx, swapControlsButton.y + 36f, Color.WHITE)
-        fitFont("MAIN MENU", bw - 24f, 0.9f, 0.62f)
-        drawCentered("MAIN MENU", cx, menuButton.y + 36f, Color(0.8f, 0.86f, 0.9f, 1f))
-        batch.end()
-    }
-
-    override fun touchDown(screenX: Int, screenY: Int, pointer: Int, button: Int): Boolean {
-        if (tutorialVisible) {
-            if (toUiRect(screenX, screenY, tutorialButton) || state == GameState.MENU) {
-                tutorialVisible = false
-                prefs.putBoolean("tutorialSeen", true).flush()
-                FeedbackAudio.play(FeedbackAudio.Cue.UI)
-            }
-            return true
-        }
-        if (state == GameState.MENU) {
-            if (toUiRect(screenX, screenY, singleButton)) startSinglePlayer()
-            else if (toUiRect(screenX, screenY, settingsButton)) state = GameState.SETTINGS
-            else if (toUiRect(screenX, screenY, multiButton)) FeedbackAudio.play(FeedbackAudio.Cue.UI)
-            return true
-        }
-        if (state == GameState.SETTINGS) {
-            if (toUiRect(screenX, screenY, toggleSfxButton)) {
-                FeedbackAudio.setMuted(!FeedbackAudio.isMuted())
-                prefs.putBoolean("muteSfx", FeedbackAudio.isMuted()).flush()
-            } else if (toUiRect(screenX, screenY, toggleHapticsButton)) {
-                hapticsMuted = !hapticsMuted
-                prefs.putBoolean("muteHaptics", hapticsMuted).flush()
-            } else if (toUiRect(screenX, screenY, volumeSlider)) {
-                val ratio = ((screenX.toFloat() - volumeSlider.x) / volumeSlider.width).coerceIn(0f, 1f)
-                FeedbackAudio.setMasterVolume(ratio)
-                prefs.putFloat("sfxVolume", ratio).flush()
-            } else if (toUiRect(screenX, screenY, swapControlsButton)) {
-                controlsSwapped = !controlsSwapped
-                prefs.putBoolean("controlsSwapped", controlsSwapped).flush()
-            } else if (toUiRect(screenX, screenY, menuButton)) {
-                state = GameState.MENU
-            }
-            return true
-        }
-        if (state == GameState.GAME_OVER) {
-            if (toUiRect(screenX, screenY, menuButton)) state = GameState.MENU
-            else if (toUiRect(screenX, screenY, singleButton)) startSinglePlayer()
-            return true
-        }
-        if (state == GameState.UPGRADE) {
-            for (i in 0 until minOf(3, upgradeChoices.size)) {
-                if (toUiRect(screenX, screenY, ui.upgradeButtons[i])) {
-                    applyUpgrade(upgradeChoices[i])
-                    FeedbackAudio.play(FeedbackAudio.Cue.POWER_UP)
-                    haptic(Input.VibrationType.MEDIUM)
-                    upgradeChoices.clear()
-                    state = GameState.PLAYING
-                    input.setPaused(false)
-                    nextWave()
-                    return true
-                }
-            }
-            return true
-        }
-        if (state == GameState.PAUSED) {
-            if (toUiRect(screenX, screenY, resumeButton)) {
-                input.setPaused(false)
-                state = GameState.PLAYING
-            } else if (toUiRect(screenX, screenY, menuButton)) {
-                input.setPaused(false)
-                state = GameState.MENU
-            }
-            return true
-        }
-        if (state == GameState.PLAYING) {
-            if (toUiRect(screenX, screenY, pauseButton)) {
-                input.setPaused(true)
-                state = GameState.PAUSED
-                return true
-            }
-            val moveOnLeft = !controlsSwapped
-            if ((screenX < Gdx.graphics.width / 2) == moveOnLeft) {
-                input.joystick.tryActivate(screenX.toFloat(), screenY.toFloat(), pointer)
-                input.joystick.drag(screenX.toFloat(), screenY.toFloat(), pointer)
-            } else {
-                input.pressFire(pointer)
-            }
-            return true
-        }
-        return true
+        val w=Gdx.graphics.width.toFloat(); val h=Gdx.graphics.height.toFloat(); ui.update(w,h); ui.settings(w,h)
+        settingsRenderer.draw(w,h,safeArea,toggleSfxButton,toggleHapticsButton,volumeSlider,swapControlsButton,menuButton,muted,hapticsMuted,FeedbackAudio.masterVolume,::drawButton,::drawCentered,::fitFont)
     }
 
     private fun toUiRect(screenX: Int, screenY: Int, rect: Rectangle): Boolean {
