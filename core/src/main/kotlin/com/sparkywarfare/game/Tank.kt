@@ -14,6 +14,7 @@ class Tank(
     fireRate: Float = 0.35f,
     var radius: Float = 14f
 ) {
+    var maxHealth = health
     var alive = true
     var aiFireTimer = 0f
     private var baseSpeed = speed
@@ -86,6 +87,7 @@ class Tank(
 
     fun resetForPlayer() {
         alive = true
+        maxHealth = GameConfig.Player.MAX_HP
         health = GameConfig.Player.START_HP
         speed = GameConfig.Player.SPEED
         fireRate = GameConfig.Player.FIRE_RATE
