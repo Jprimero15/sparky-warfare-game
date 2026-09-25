@@ -6,6 +6,7 @@ import com.badlogic.gdx.math.Rectangle
 
 /** Reusable rounded primitives for the Soft Neon Arcade UI. */
 object UiShapes {
+    private val gradientColor = Color()
     fun roundedRect(shape: ShapeRenderer, x: Float, y: Float, width: Float, height: Float, radius: Float, color: Color) {
         val r = radius.coerceAtMost(minOf(width, height) * 0.5f).coerceAtLeast(0f)
         shape.color = color
@@ -32,21 +33,21 @@ object UiShapes {
         radius: Float,
         topColor: Color,
         bottomColor: Color,
-        steps: Int = 14
+        steps: Int = 10
     ) {
         val count = steps.coerceIn(4, 24)
         roundedRect(shape, x, y, width, height, radius, bottomColor)
         val bandHeight = height / count
         for (i in 0 until count) {
             val t = (i + 0.5f) / count
-            val color = Color(
+            gradientColor.set(
                 topColor.r + (bottomColor.r - topColor.r) * t,
                 topColor.g + (bottomColor.g - topColor.g) * t,
                 topColor.b + (bottomColor.b - topColor.b) * t,
                 topColor.a + (bottomColor.a - topColor.a) * t
             )
             val bandY = y + height - (i + 1) * bandHeight
-            roundedRect(shape, x, bandY, width, bandHeight + 1.5f, radius, color)
+            roundedRect(shape, x, bandY, width, bandHeight + 1.5f, radius, gradientColor)
         }
     }
 
@@ -65,7 +66,7 @@ object UiShapes {
             (color.b * 0.52f + 1f * 0.48f).coerceIn(0f, 1f),
             color.a
         )
-        gradientRoundedRect(shape, rect.x, rect.y, rect.width, rect.height, radius, top, bottom, 16)
+        gradientRoundedRect(shape, rect.x, rect.y, rect.width, rect.height, radius, top, bottom, 10)
         roundedRect(shape, rect.x + 5f, rect.y + rect.height - 7f, rect.width - 10f, 3f, 1.5f,
             Color(1f, 1f, 1f, 0.12f))
     }
