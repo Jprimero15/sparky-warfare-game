@@ -809,7 +809,7 @@ class GameScreen : Screen, InputAdapter() {
         bodyFont.color = Color(UiTheme.TEXT_SECONDARY.r, UiTheme.TEXT_SECONDARY.g, UiTheme.TEXT_SECONDARY.b, alpha)
         layout.setText(bodyFont, sub)
         bodyFont.draw(batch, sub, cx - layout.width / 2f, y + 23f)
-        text.reset(titleFont, bodyFont)
+        uiText.reset(font, bodyFont)
         batch.end()
     }
 
@@ -860,11 +860,11 @@ class GameScreen : Screen, InputAdapter() {
         batch.projectionMatrix = hudCamera.combined
         batch.begin()
 
-        text.fitWithin(titleFont, "HOW TO PLAY", panel.width - 60f, 50f, 1.05f, 0.68f)
-        text.centered(titleFont, "HOW TO PLAY", cx, panel.y + panel.height - 52f, UiTheme.TEXT_PRIMARY)
+        uiText.fitWithin(font, "HOW TO PLAY", panel.width - 60f, 50f, 1.05f, 0.68f)
+        uiText.centered(font, "HOW TO PLAY", cx, panel.y + panel.height - 52f, UiTheme.TEXT_PRIMARY)
 
-        text.fitWithin(bodyFont, "MOVE • FIRE • SURVIVE", panel.width - 80f, 28f, 0.62f, 0.44f)
-        text.centered(bodyFont, "MOVE • FIRE • SURVIVE", cx, panel.y + panel.height - 88f, UiTheme.CYAN)
+        uiText.fitWithin(bodyFont, "MOVE • FIRE • SURVIVE", panel.width - 80f, 28f, 0.62f, 0.44f)
+        uiText.centered(bodyFont, "MOVE • FIRE • SURVIVE", cx, panel.y + panel.height - 88f, UiTheme.CYAN)
 
         val rowTextTop = firstY - 16f
         for (i in tutorialLines.indices) {
@@ -879,11 +879,11 @@ class GameScreen : Screen, InputAdapter() {
             titleFont,
             "GOT IT",
             cx,
-            tutorialButton.y + tutorialButton.height / 2f + text.height(titleFont, "GOT IT") / 2f,
+            tutorialButton.y + tutorialButton.height / 2f + uiText.height(font, "GOT IT") / 2f,
             UiTheme.TEXT_PRIMARY
         )
 
-        text.reset(titleFont, bodyFont, captionFont)
+        uiText.reset(font, bodyFont, captionFont)
         batch.end()
     }
 
