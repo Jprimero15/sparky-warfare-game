@@ -107,6 +107,8 @@ HUD, menus, settings, upgrade cards, pause controls, and touch controls use the 
 
 ## Stability and performance
 
+The current build also hardens idle/menu camera state, Android back navigation, enemy separation against wall embedding, and hot-path renderer allocations.
+
 - Tank movement uses a circular footprint instead of a center-point wall test.
 - Player and enemies are kept separated and clamped inside the arena.
 - Enemy firing is timer-based and requires line of sight.
