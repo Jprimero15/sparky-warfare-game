@@ -176,6 +176,7 @@ class GameScreen : Screen, InputAdapter() {
             radius = GameConfig.Player.RADIUS
         )
         tutorialVisible = false
+        centerCameraForIdle()
         state = GameState.MENU
     }
 
@@ -511,7 +512,6 @@ class GameScreen : Screen, InputAdapter() {
 
     private fun spawnPowerUp() {
         if (powerUps.any { it.alive }) return
-        val types = PowerUpType.values()
         val type = powerUpManager.chooseType(wave)
         repeat(12) {
             scratchSpawn.set(
@@ -575,7 +575,13 @@ class GameScreen : Screen, InputAdapter() {
     }
 
     private fun drawWorldIdle() {
+        centerCameraForIdle()
         worldRenderer.renderIdle(walls)
+    }
+
+    private fun centerCameraForIdle() {
+        camera.position.set(WORLD_WIDTH / 2f, WORLD_HEIGHT / 2f, 0f)
+        camera.update()
     }
 
     private fun persistProgress() {
@@ -1016,7 +1022,42 @@ class GameScreen : Screen, InputAdapter() {
         hudCamera.setToOrtho(false, width.toFloat(), height.toFloat())
         bloom.resize(width, height)
         ui.update(width.toFloat(), height.toFloat())
-        centerCamera(true)
+        if (state == GameState.MENU || state == GameState.SETTINGS) {
+            centerCameraForIdle()
+        } else {
+            centerCamera(true)
+        }
+    }
+
+    override fun keyDown(keycode: Int): Boolean {
+        if (keycode != Input.Keys.BACK) return false
+        when (state) {
+            GameState.PLAYING -> {
+                input.clearTransientInput()
+                input.setPaused(true)
+                state = GameState.PAUSED
+                FeedbackAudio.play(FeedbackAudio.Cue.UI)
+            }
+            GameState.PAUSED -> {
+                input.setPaused(false)
+                state = GameState.PLAYING
+                FeedbackAudio.play(FeedbackAudio.Cue.UI)
+            }
+            GameState.SETTINGS -> {
+                state = GameState.MENU
+                transition = 0f
+                transitionTarget = 0f
+                FeedbackAudio.play(FeedbackAudio.Cue.UI)
+            }
+            GameState.GAME_OVER, GameState.UPGRADE -> {
+                input.clearTransientInput()
+                state = GameState.MENU
+                transition = 0f
+                transitionTarget = 0f
+            }
+            GameState.MENU -> return false
+        }
+        return true
     }
 
     override fun pause() {

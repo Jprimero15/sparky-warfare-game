@@ -23,12 +23,29 @@ class WorldRenderer(
 ) {
     private val scratchUi = Vector2()
     private val layout = GlyphLayout()
+
     private val backdropColor = Color(0.003f, 0.005f, 0.008f, 1f)
     private val floorAccentColor = Color(0.018f, 0.028f, 0.036f, 1f)
     private val wallHighlight = Color(1f, 1f, 1f, 0.045f)
     private val wallShadow = Color(0f, 0f, 0f, 0.14f)
     private val hudTextColor = Color(0.85f, 0.95f, 1f, 0.85f)
     private val fireTextColor = Color(1f, 0.86f, 0.9f, 0.95f)
+    private val steelLine = Color(0.28f, 0.42f, 0.5f, 0.38f)
+    private val brickLine = Color(0.75f, 0.32f, 0.18f, 0.28f)
+    private val concreteLine = Color(0.55f, 0.6f, 0.64f, 0.24f)
+    private val metalLine = Color(0.22f, 0.62f, 0.7f, 0.28f)
+    private val touchBase = Color(0.015f, 0.02f, 0.025f, 0.72f)
+    private val touchAccent = Color(0.18f, 0.72f, 1f, 0.12f)
+    private val touchKnobIdle = Color(0.25f, 0.85f, 1f, 0.42f)
+    private val touchKnobActive = Color(0.25f, 0.85f, 1f, 0.7f)
+    private val fireBase = Color(0.02f, 0.008f, 0.012f, 0.72f)
+    private val fireIdle = Color(1f, 0.25f, 0.34f, 0.4f)
+    private val fireActive = Color(1f, 0.22f, 0.3f, 0.76f)
+    private val moveOutline = Color(0.65f, 0.9f, 1f, 0.55f)
+    private val fireOutline = Color(1f, 0.65f, 0.7f, 0.65f)
+    private val healthBack = Color(0f, 0f, 0f, 0.65f)
+    private val healthElite = Color(1f, 0.72f, 0.16f, 0.95f)
+    private val healthNormal = Color(0.35f, 0.9f, 1f, 0.9f)
 
     fun renderCombat(
         player: Tank,
@@ -88,32 +105,30 @@ class WorldRenderer(
         Gdx.gl.glBlendFunc(GL20.GL_SRC_ALPHA, GL20.GL_ONE_MINUS_SRC_ALPHA)
         shapeRenderer.projectionMatrix = hudCamera.combined
         shapeRenderer.begin(ShapeRenderer.ShapeType.Filled)
-        shapeRenderer.color = Color(0.015f, 0.02f, 0.025f, 0.72f)
+        shapeRenderer.color = touchBase
         shapeRenderer.circle(baseX, baseY, controlRadius, 40)
-        shapeRenderer.color = Color(0.18f, 0.72f, 1f, 0.12f)
+        shapeRenderer.color = touchAccent
         shapeRenderer.circle(baseX, baseY, controlRadius - 6f, 40)
         val knob = if (input.joystick.active) input.joystick.knobForRender(h, scratchUi) else scratchUi.set(baseX, baseY)
-        shapeRenderer.color = Color(0.25f, 0.85f, 1f, if (input.joystick.active) 0.7f else 0.42f)
+        shapeRenderer.color = if (input.joystick.active) touchKnobActive else touchKnobIdle
         shapeRenderer.circle(knob.x, knob.y, (controlRadius * 0.48f).coerceIn(38f, 50f), 36)
 
-        shapeRenderer.color = Color(0.02f, 0.008f, 0.012f, 0.72f)
+        shapeRenderer.color = fireBase
         shapeRenderer.circle(fireX, baseY, controlRadius, 40)
-        shapeRenderer.color = if (input.firing) Color(1f, 0.22f, 0.3f, 0.76f) else Color(1f, 0.25f, 0.34f, 0.4f)
+        shapeRenderer.color = if (input.firing) fireActive else fireIdle
         shapeRenderer.circle(fireX, baseY, controlRadius - 16f, 40)
         shapeRenderer.end()
 
         shapeRenderer.begin(ShapeRenderer.ShapeType.Line)
-        shapeRenderer.color = Color(0.65f, 0.9f, 1f, 0.55f)
+        shapeRenderer.color = moveOutline
         shapeRenderer.circle(baseX, baseY, controlRadius, 40)
-        shapeRenderer.color = Color(1f, 0.65f, 0.7f, 0.65f)
+        shapeRenderer.color = fireOutline
         shapeRenderer.circle(fireX, baseY, controlRadius, 40)
         shapeRenderer.end()
         Gdx.gl.glDisable(GL20.GL_BLEND)
 
         batch.projectionMatrix = hudCamera.combined
         batch.begin()
-        // Large, high-contrast labels stay inside the control rings and remain
-        // readable on landscape phones without relying on tiny text.
         font.data.setScale(1.08f)
         drawCentered("MOVE", baseX, baseY + 10f, hudTextColor)
         drawCentered("FIRE", fireX, baseY + 10f, fireTextColor)
@@ -153,10 +168,10 @@ class WorldRenderer(
             val w = wall.bounds.width
             val h = wall.bounds.height
             shapeRenderer.color = when (wall.type) {
-                WallType.STEEL -> Color(0.28f, 0.42f, 0.5f, 0.38f)
-                WallType.BRICK, WallType.RED_BRICK -> Color(0.75f, 0.32f, 0.18f, 0.28f)
-                WallType.CONCRETE -> Color(0.55f, 0.6f, 0.64f, 0.24f)
-                WallType.METAL -> Color(0.22f, 0.62f, 0.7f, 0.28f)
+                WallType.STEEL -> steelLine
+                WallType.BRICK, WallType.RED_BRICK -> brickLine
+                WallType.CONCRETE -> concreteLine
+                WallType.METAL -> metalLine
             }
             shapeRenderer.rect(x + 1f, y + 1f, w - 2f, h - 2f)
             if (wall.type == WallType.BRICK || wall.type == WallType.RED_BRICK) {
@@ -173,9 +188,9 @@ class WorldRenderer(
             if (!enemy.alive || enemy.health <= 0) continue
             val width = enemy.radius * 2.4f
             val y = enemy.position.y + enemy.radius + 6f
-            shapeRenderer.color = Color(0f, 0f, 0f, 0.65f)
+            shapeRenderer.color = healthBack
             shapeRenderer.rect(enemy.position.x - width / 2f, y, width, 3f)
-            shapeRenderer.color = if (enemy.radius >= 22f) Color(1f, 0.72f, 0.16f, 0.95f) else Color(0.35f, 0.9f, 1f, 0.9f)
+            shapeRenderer.color = if (enemy.radius >= 22f) healthElite else healthNormal
             val ratio = (enemy.health.toFloat() / enemy.maxHealth.coerceAtLeast(1)).coerceIn(0f, 1f)
             shapeRenderer.rect(enemy.position.x - width / 2f, y, width * ratio, 3f)
         }
