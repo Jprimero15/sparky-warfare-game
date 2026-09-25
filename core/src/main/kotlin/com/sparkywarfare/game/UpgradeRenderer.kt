@@ -23,24 +23,25 @@ class UpgradeRenderer(
         val left=cx-totalW/2f
         val bottom=(height*0.18f).coerceAtLeast(82f)
         shape.begin(ShapeRenderer.ShapeType.Filled)
-        shape.color=UiTheme.BLACK;shape.color.a=0.88f;shape.rect(0f,0f,width,height)
-        UiShapes.roundedRect(shape,width*0.04f,height*0.06f,width*0.92f,height*0.88f,30f,UiTheme.PANEL)
+        shape.color = UiTheme.OVERLAY
+        shape.rect(0f, 0f, width, height)
+        UiShapes.roundedRect(shape, width * 0.04f, height * 0.06f, width * 0.92f, height * 0.88f, UiTheme.Metrics.PANEL_RADIUS, UiTheme.PANEL)
         for(i in 0 until 3){
             val x=left+i*(cardW+gap)
             buttons[i].set(x,bottom,cardW,cardH)
-            UiShapes.roundedRect(shape,x,bottom,cardW,cardH,22f,UiTheme.CARD)
+            UiShapes.roundedRect(shape,x,bottom,cardW,cardH,UiTheme.Metrics.CARD_RADIUS,UiTheme.CARD)
             UiShapes.roundedRect(shape,x+10f,bottom+cardH-7f,cardW-20f,4f,2f,if(i==1)UiTheme.MAGENTA else UiTheme.CYAN)
         }
         shape.end()
         batch.begin()
         text.fit(titleFont,"UPGRADE PROTOCOL",width*0.72f,1.18f,0.76f)
-        text.centered(titleFont,"UPGRADE PROTOCOL",cx,height*0.86f,UiTheme.CYAN)
+        text.centered(titleFont,"UPGRADE PROTOCOL",cx,height*0.86f,UiTheme.ACCENT)
         for(i in 0 until minOf(3,choices.size)){
             val r=buttons[i];val choice=choices[i]
             text.fit(titleFont,choice.title,r.width-28f,0.72f,0.48f)
             text.centered(titleFont,choice.title,r.x+r.width/2f,r.y+r.height-56f,Color.WHITE)
             text.fit(bodyFont,choice.description,r.width-28f,0.78f,0.52f)
-            text.centered(bodyFont,choice.description,r.x+r.width/2f,r.y+r.height/2f,UiTheme.DIM)
+            text.centered(bodyFont,choice.description,r.x+r.width/2f,r.y+r.height/2f,UiTheme.TEXT_SECONDARY)
         }
         text.reset(titleFont,bodyFont);batch.end()
     }
