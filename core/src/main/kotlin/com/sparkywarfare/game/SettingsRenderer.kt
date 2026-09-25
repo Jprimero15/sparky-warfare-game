@@ -21,7 +21,7 @@ class SettingsRenderer(
         shape.begin(ShapeRenderer.ShapeType.Filled)
         shape.color=UiTheme.BLACK;shape.color.a=0.84f;shape.rect(0f,0f,width,height)
         UiShapes.roundedRect(shape,x,y,panelW,panelH,28f,UiTheme.PANEL)
-        UiShapes.roundedRect(shape,x+6f,y+6f,panelW-12f,y+panelH-12f,24f,UiTheme.INNER)
+        UiShapes.roundedRect(shape,x+6f,y+6f,panelW-12f,panelH-12f,24f,UiTheme.INNER)
         drawButton(sfx,if(muted)UiTheme.DANGER else UiTheme.CYAN)
         drawButton(haptics,if(hapticsMuted)UiTheme.DANGER else UiTheme.CYAN)
         UiShapes.roundedRect(shape,volume.x,volume.y,volume.width,volume.height,14f,UiTheme.PANEL_DARK)
