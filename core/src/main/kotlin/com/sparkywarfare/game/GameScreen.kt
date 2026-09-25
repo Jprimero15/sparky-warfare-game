@@ -209,7 +209,6 @@ class GameScreen : Screen, InputAdapter() {
             fireRate = GameConfig.Player.FIRE_RATE,
             radius = GameConfig.Player.RADIUS
         )
-        tutorialVisible = false
         centerCameraForIdle()
         router.goTo(GameState.MENU)
     }
@@ -643,8 +642,8 @@ class GameScreen : Screen, InputAdapter() {
 
         val left = safeArea.left
         val top = safeArea.top
-        val panelW = (w * 0.44f).coerceIn(300f, 470f)
-        val panelH = 88f
+        val panelW = (w * 0.46f).coerceIn(320f, 500f)
+        val panelH = 112f
 
         Gdx.gl.glEnable(GL20.GL_BLEND)
         Gdx.gl.glBlendFunc(GL20.GL_SRC_ALPHA, GL20.GL_ONE_MINUS_SRC_ALPHA)
@@ -658,49 +657,44 @@ class GameScreen : Screen, InputAdapter() {
         shapeRenderer.color = Color(0.78f, 0.24f, 1f, 0.55f)
         shapeRenderer.rect(left + panelW - 4f, top - 33f, 4f, 30f)
 
-        // Compact stat cells.
-        val statY = top - 74f
+        // Deliberate row separators keep SCORE/BEST and WAVE/COMBO visually isolated.
         shapeRenderer.color = Color(0.18f, 0.9f, 1f, 0.12f)
-        shapeRenderer.rect(left + 10f, statY - 4f, panelW - 20f, 2f)
+        shapeRenderer.rect(left + 12f, top - 60f, panelW - 24f, 2f)
+        shapeRenderer.rect(left + 12f, top - 91f, panelW - 24f, 2f)
 
         shapeRenderer.color = Color(0.015f, 0.035f, 0.055f, 0.96f)
         shapeRenderer.rect(pauseButton.x, pauseButton.y, pauseButton.width, pauseButton.height)
         shapeRenderer.color = Color(0.18f, 0.9f, 1f, 0.22f)
         shapeRenderer.rect(pauseButton.x, pauseButton.y + pauseButton.height - 3f, pauseButton.width, 3f)
-
         shapeRenderer.end()
         Gdx.gl.glDisable(GL20.GL_BLEND)
 
         batch.projectionMatrix = hudCamera.combined
         batch.begin()
 
-        fitFont("SPARKY // COMBAT LINK", panelW - 90f, 0.82f, 0.52f)
-        drawShadowed("SPARKY // COMBAT LINK", left + 14f, top - 24f, Color(0.55f, 0.94f, 1f, 1f))
+        // Three measured rows: no decorative title, no shared baseline collisions.
+        fitBodyFont("SCORE " + score, panelW * 0.46f, 0.9f, 0.58f)
+        drawBodyShadowed("SCORE " + score, left + 14f, top - 36f, Color.WHITE)
 
-        fitBodyFont("SCORE " + score, panelW * 0.48f, 0.95f, 0.62f)
-        drawBodyShadowed("SCORE " + score, left + 14f, top - 55f, Color.WHITE)
+        fitBodyFont("BEST " + highScore, panelW * 0.46f, 0.82f, 0.54f)
+        drawBodyRight("BEST " + highScore, left + panelW - 14f, top - 36f, Color(0.42f, 0.72f, 0.82f, 1f))
 
-        fitBodyFont("WAVE " + wave, panelW * 0.24f, 0.82f, 0.56f)
-        drawBodyRight("WAVE " + wave, left + panelW - 14f, top - 55f, Color(0.72f, 0.86f, 0.93f, 1f))
+        fitBodyFont("WAVE " + wave, panelW * 0.42f, 0.78f, 0.52f)
+        drawBodyShadowed("WAVE " + wave, left + 14f, top - 67f, Color(0.72f, 0.86f, 0.93f, 1f))
 
-        fitBodyFont("BEST " + highScore, panelW * 0.43f, 0.72f, 0.5f)
-        drawBodyShadowed("BEST " + highScore, left + 14f, top - 77f, Color(0.42f, 0.72f, 0.82f, 1f))
-
-        fitBodyFont("COMBO x" + combo, panelW * 0.31f, 0.72f, 0.5f)
-        drawBodyRight("COMBO x" + combo, left + panelW - 14f, top - 77f,
+        fitBodyFont("COMBO x" + combo, panelW * 0.42f, 0.78f, 0.52f)
+        drawBodyRight("COMBO x" + combo, left + panelW - 14f, top - 67f,
             if (combo >= 3) Color(1f, 0.72f, 0.2f, 1f) else Color(0.46f, 0.6f, 0.68f, 1f))
 
-        // Player integrity readout is deliberately docked below the pause control.
-        // Keeping these regions separate prevents the CORE text from colliding with
-        // the pause icon on compact landscape displays.
-        fitBodyFont("CORE " + player.health + "/" + player.maxHealth, 150f, 0.78f, 0.54f)
-        drawBodyRight("CORE " + player.health + "/" + player.maxHealth, safeArea.right - 12f, safeArea.top - 78f,
+        // CORE is a separate right-side stack: label, then health bar, then pause control.
+        fitBodyFont("CORE " + player.health + "/" + player.maxHealth, 150f, 0.78f, 0.52f)
+        drawBodyRight("CORE " + player.health + "/" + player.maxHealth, safeArea.right - 12f, safeArea.top - 88f,
             Color(1f, 0.42f, 0.52f, 1f))
         batch.end()
 
-        val coreW = 104f
+        val coreW = 128f
         val coreX = safeArea.right - coreW - 12f
-        val coreY = safeArea.top - 102f
+        val coreY = safeArea.top - 108f
         shapeRenderer.projectionMatrix = hudCamera.combined
         shapeRenderer.begin(ShapeRenderer.ShapeType.Filled)
         shapeRenderer.color = Color(0f, 0f, 0f, 0.68f)
@@ -729,8 +723,13 @@ class GameScreen : Screen, InputAdapter() {
         shapeRenderer.projectionMatrix = hudCamera.combined
         shapeRenderer.begin(ShapeRenderer.ShapeType.Filled)
         shapeRenderer.color = Color(0.7f,0.88f,0.95f,1f)
-        shapeRenderer.rect(rect.x+16f,rect.y+10f,4f,18f)
-        shapeRenderer.rect(rect.x+28f,rect.y+10f,4f,18f)
+        val barW = (rect.width * 0.10f).coerceAtLeast(6f)
+        val barH = (rect.height * 0.48f).coerceAtLeast(24f)
+        val gap = (rect.width * 0.12f).coerceAtLeast(7f)
+        val startX = rect.x + (rect.width - barW * 2f - gap) / 2f
+        val startY = rect.y + (rect.height - barH) / 2f
+        shapeRenderer.rect(startX, startY, barW, barH)
+        shapeRenderer.rect(startX + barW + gap, startY, barW, barH)
         shapeRenderer.end()
     }
 

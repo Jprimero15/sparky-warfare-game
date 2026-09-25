@@ -62,7 +62,7 @@ Android is explicitly configured for landscape-only presentation with both lands
 
 The launcher activity also handles orientation and screen-size configuration changes. GameScreen.resize() updates the gameplay viewport, HUD camera, bloom framebuffer, and shared UI safe-area geometry whenever the display changes.
 
-The UI does not assume a single fixed landscape resolution.
+The UI does not assume a single fixed landscape resolution. HUD text uses measured row spacing and dedicated regions for score, best, core, health, and pause controls.
 
 ## Screen layouts
 
@@ -77,8 +77,9 @@ The main menu is now explicitly landscape-oriented:
 ### Combat HUD
 - Combat/session status at upper left.
 - Wave and score information in separated rows.
-- Player core integrity at upper right.
-- Pause control isolated from gameplay information.
+- Player core integrity at upper right with a dedicated health bar.
+- Pause control uses a larger touch target and icon.
+- Score and Best are separated into distinct measured rows.
 - Large MOVE and FIRE controls anchored to safe landscape thumb zones.
 
 ### Pause
@@ -94,7 +95,8 @@ The game-over screen uses a clear failure heading, separated score/best fields, 
 Settings uses a landscape control matrix:
 - SFX and Haptics occupy separate control cards.
 - Volume receives its own full-width slider.
-- Control-side swapping and Back occupy distinct command cards.
+- `SWAP: LEFT / RIGHT` explicitly moves the MOVE joystick and FIRE control to the opposite sides.
+- Back occupies its own command card.
 - Secondary descriptions use the body font instead of the condensed display font.
 
 ### Upgrade screen
@@ -121,7 +123,7 @@ Important responsibilities are separated into focused systems:
 - GameScreen — lifecycle, state transitions, simulation coordination, persistence, resizing, and input routing.
 - UiLayout — centralized safe-area geometry and reusable interactive rectangles.
 - MenuRenderer — landscape tactical main console.
-- HudRenderer — combat HUD typography and reusable HUD helpers.
+- GameScreen — combat HUD drawing, gameplay state, and input routing.
 - PauseRenderer — pause console.
 - GameOverRenderer — combat-result screen.
 - SettingsRenderer — device/control configuration matrix.
@@ -172,7 +174,7 @@ UiLayout is the single source of truth for interactive screen geometry.
 
 It uses Android safe insets and recalculates main-menu controls, settings controls, pause controls, game-over actions, HUD pause placement, upgrade hit rectangles, and tutorial action geometry.
 
-The HUD camera is rebuilt to the actual Android pixel dimensions during GameScreen.resize().
+The HUD camera is rebuilt to the actual Android pixel dimensions during GameScreen.resize(). The pause target and touch-control geometry are recalculated with the same safe-area data.
 
 ## Assets and licensing
 
@@ -225,7 +227,7 @@ The workflow verifies the resulting APK and its LibGDX native ABI packaging befo
 
 ## Development priorities
 
-The current foundation is intentionally stable before adding larger gameplay features.
+The current foundation is intentionally stable before adding larger gameplay features. Recent hardening also covers HUD spacing, pause visibility, joystick label centering, explicit control-side labeling, and the first-run tutorial gate.
 
 1. More arena layouts.
 2. More enemy behavior and attack patterns.

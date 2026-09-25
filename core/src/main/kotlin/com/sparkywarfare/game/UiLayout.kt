@@ -64,7 +64,7 @@ class UiLayout {
     }
 
     fun hud() {
-        val size = 58f
+        val size = 72f
         pauseButton.set(safeArea.right - size, safeArea.top - size, size, size)
     }
 
