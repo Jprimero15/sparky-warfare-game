@@ -2,7 +2,7 @@
 
 Sparky Warfare is an Android-only, landscape-first top-down tank combat game built with LibGDX 1.12.1 + Kotlin.
 
-The game combines a dark cyber arena, a soft-neon arcade UI, glowing energy tanks, laser combat, destructible cover, wave-based enemies, upgrades, power-ups, particle debris, framebuffer bloom, and responsive Android multitouch controls.
+The game combines a deep atmospheric arena, a glassmorphic soft-neon arcade UI, glowing energy tanks, laser combat, destructible cover, wave-based enemies, upgrades, power-ups, particle debris, framebuffer bloom, and responsive Android multitouch controls.
 
 ## Current status
 
@@ -34,28 +34,27 @@ Current gameplay systems include:
 
 ## UI redesign
 
-The UI uses a **Soft Neon Arcade** direction: smooth rounded controls, pill-like cards, soft cyan/violet glow, large touch targets, and minimal text. It keeps the futuristic identity without the angular tactical-console look.
+The UI follows a **glassmorphic Soft Neon Arcade** direction inspired by polished mobile trivia/arcade interfaces rather than a tactical command console.
 
 ### Visual language
-- Near-black tactical panels.
-- Electric cyan structural accents.
-- Magenta system highlights.
-- Red/pink combat-danger states.
-- Rounded surfaces and soft highlights instead of angular segmented panels.
-- Real multi-stop cyan/violet gradients on primary touch buttons and wave announcements, with semantic colors blended into the shared palette.
-- Subtle arena grid.
-- Limited glow so important information remains readable.
-- Large touch targets designed around landscape thumb zones.
+- Translucent dark-glass surfaces with visible depth.
+- Soft cyan and violet/magenta edge glow.
+- Cyan-to-violet gradients used for primary actions, health, sliders, and live announcements.
+- Rounded cards with luminous highlights and restrained shadows.
+- Layered background cards on the main menu for depth.
+- Large, airy typography with measured fitting so labels do not clip or overlap.
+- Atmospheric neon pools in the arena instead of a tactical grid.
+- Large translucent MOVE and FIRE touch controls with cyan/magenta rims.
+
+The shared primitives live in UiShapes.kt: glassPanel, glassCard, softButton, glassCircle, gradientRoundedRect, and ambientGlow. Screen renderers consume these primitives so the visual language remains consistent and inexpensive to maintain.
 
 ### Typography
 
-The UI now uses two deliberate typography tiers:
-- Orbitron Medium for major tactical headings and command labels.
-- Kenney Future for secondary descriptions, statistics, instructions, and explanatory copy.
+The UI uses two deliberate typography tiers:
+- Orbitron Medium for major headings and large command labels.
+- Kenney Future for statistics, descriptions, instructions, and supporting copy.
 
-This separation is intentional. Orbitron provides the futuristic identity while the less condensed body font prevents small explanatory text from becoming visually crowded.
-
-Orbitron Medium is already bundled under the SIL Open Font License 1.1 and is documented in assets/licenses/THIRD_PARTY_ASSETS.md.
+The typography is still constrained through the shared UiText fitting helpers so compact landscape screens do not force text outside its intended surface.
 
 ## Landscape and orientation
 
@@ -69,10 +68,11 @@ The UI does not assume a single fixed landscape resolution. HUD text uses measur
 
 ### Main menu
 
-The main menu is now explicitly landscape-oriented:
-- Left side: game identity, system status, and persistent statistics.
-- Right side: large DEPLOY, NETWORK, and SYSTEM command panels.
-- The menu no longer relies on a tall portrait-style vertical stack on landscape devices.
+The main menu is explicitly landscape-oriented:
+- A large central glass panel anchors the screen.
+- Layered glass cards sit behind the main panel to create depth.
+- The left side carries the title and persistent stats.
+- The right side contains large SINGLE PLAYER, MULTIPLAYER, and SETTINGS glass buttons.
 - A compact fallback arrangement remains available for unusual window sizes.
 
 ### Combat HUD
@@ -85,15 +85,15 @@ The main menu is now explicitly landscape-oriented:
 
 ### Pause
 
-Pause is a horizontal command console with RESUME and MAIN MENU actions separated into distinct large controls.
+Pause is a centered glass card with soft-neon RESUME and MAIN MENU actions.
 
 ### Game over
 
-The game-over screen uses a clear failure heading, separated score/best fields, a wave/kills/combo status row, and two horizontal actions: REDEPLOY and MAIN MENU.
+The game-over screen uses a centered glass result card, separated score/best cards, a compact wave/kills/combo row, and two large actions: REDEPLOY and MAIN MENU.
 
 ### Settings
 
-Settings uses a landscape control matrix:
+Settings uses a landscape glass control matrix:
 - SFX and Haptics occupy separate control cards.
 - Volume receives its own full-width slider.
 - `SWAP: LEFT / RIGHT` explicitly moves the MOVE joystick and FIRE control to the opposite sides.
@@ -102,7 +102,7 @@ Settings uses a landscape control matrix:
 
 ### Upgrade screen
 
-Upgrade selection remains a three-card landscape layout with a large upgrade name, readable description, clear install action, and consistent cyber-neon framing.
+Upgrade selection remains a three-card landscape layout with glass surfaces, luminous accents, readable descriptions, and a clear INSTALL cue.
 
 ## Touch controls
 
@@ -154,7 +154,7 @@ Important responsibilities are separated into focused systems:
 
 ## Rendering
 
-The visual system uses a near-black battlefield with soft neon energy accents and rounded UI surfaces.
+The visual system uses a deep atmospheric battlefield with soft neon energy accents and glassmorphic rounded UI surfaces.
 
 TankRenderer owns the procedural tank geometry. Each tank uses a resolution-independent polygon silhouette with a separate turret aim, reactor, armor fins, and tier-specific weapon signature. Scout, assault, heavy, ranged, elite, and player tanks therefore remain visually distinguishable without sprite files.
 
@@ -162,7 +162,7 @@ GlowRenderer provides shared glow treatment for lasers, power-ups, and impact ef
 
 The glow layer is rendered into a framebuffer and processed through assets/shaders/glow.vert and assets/shaders/glow.frag. The composite uses a lightweight bright-pass/blur approach suitable for Android.
 
-The arena also contains a subtle tactical grid. It is intentionally low contrast so it adds structure without competing with combat objects.
+The arena intentionally has no tactical grid. Subtle cyan/violet atmospheric pools provide depth without adding line noise.
 
 ## Stability and performance
 
@@ -242,7 +242,7 @@ The workflow verifies the resulting APK and its LibGDX native ABI packaging befo
 
 ## Development priorities
 
-The current foundation is intentionally stable before adding larger gameplay features. The Soft Neon pass also replaces the remaining wave-announcement strip treatment with a rounded gradient card. Recent hardening also covers HUD spacing, pause visibility, joystick label centering, explicit control-side labeling, and the first-run tutorial gate.
+The current foundation is intentionally stable before adding larger gameplay features. The Soft Neon pass also replaces the remaining wave-announcement strip treatment with a rounded gradient card. Recent hardening also covers HUD spacing, pause visibility, joystick label centering, explicit control-side labeling, the first-run tutorial gate, and the shared glassmorphic UI treatment.
 
 1. More arena layouts.
 2. More enemy behavior and attack patterns.
