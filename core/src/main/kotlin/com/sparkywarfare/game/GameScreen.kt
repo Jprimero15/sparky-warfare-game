@@ -874,9 +874,9 @@ class GameScreen : Screen, InputAdapter() {
             captionFont.draw(batch, line, rowX + 14f, rowTextTop - i * (rowH + 8f))
         }
 
-        text.fitWithin(titleFont, "GOT IT", tutorialButton.width - 42f, 34f, 0.70f, 0.50f)
-        text.centered(
-            titleFont,
+        uiText.fitWithin(font, "GOT IT", tutorialButton.width - 42f, 34f, 0.70f, 0.50f)
+        uiText.centered(
+            font,
             "GOT IT",
             cx,
             tutorialButton.y + tutorialButton.height / 2f + uiText.height(font, "GOT IT") / 2f,
