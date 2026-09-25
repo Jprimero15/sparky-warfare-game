@@ -111,6 +111,14 @@ class GameScreen : Screen, InputAdapter() {
     private var waveBannerTimer = 0f
     private var waveBannerElite = false
     private var hapticsMuted = false
+    private val transitionColor = Color()
+    private val tutorialLines = arrayOf(
+        "MOVE   //   DRAG THE JOYSTICK",
+        "FIRE   //   HOLD THE FIRE CONTROL",
+        "CLEAR  //   DESTROY EVERY HOSTILE",
+        "UPGRADE // EVERY THIRD WAVE",
+        "COMBO  //   CHAIN KILLS BEFORE TIMER EXPIRES"
+    )
     private val transition get() = router.transition
     private val scratchDirection = Vector2()
     private val scratchSpawn = Vector2()
@@ -359,7 +367,8 @@ class GameScreen : Screen, InputAdapter() {
         Gdx.gl.glBlendFunc(GL20.GL_SRC_ALPHA, GL20.GL_ONE_MINUS_SRC_ALPHA)
         shapeRenderer.projectionMatrix = hudCamera.combined
         shapeRenderer.begin(ShapeRenderer.ShapeType.Filled)
-        shapeRenderer.color = Color(0f, 0f, 0f, transition.coerceIn(0f, 1f))
+        transitionColor.set(0f, 0f, 0f, transition.coerceIn(0f, 1f))
+        shapeRenderer.color = transitionColor
         shapeRenderer.rect(0f, 0f, w, h)
         shapeRenderer.end()
         Gdx.gl.glDisable(GL20.GL_BLEND)
@@ -393,9 +402,14 @@ class GameScreen : Screen, InputAdapter() {
         lasers.removeAll(laserRemove)
 
         particles.update(delta)
-        for (burst in bursts) burst.t += delta * 1.6f
-        bursts.filter { it.t >= 1f }.forEach { pools.freeBurst(it) }
-        bursts.removeAll { it.t >= 1f }
+        for (index in bursts.indices.reversed()) {
+            val burst = bursts[index]
+            burst.t += delta * 1.6f
+            if (burst.t >= 1f) {
+                bursts.removeAt(index)
+                pools.freeBurst(burst)
+            }
+        }
         screenShake = (screenShake - delta * 2.8f).coerceAtLeast(0f)
         hitFlash = (hitFlash - delta * 2.5f).coerceAtLeast(0f)
         waveBannerTimer = (waveBannerTimer - delta).coerceAtLeast(0f)
@@ -404,9 +418,14 @@ class GameScreen : Screen, InputAdapter() {
             if (comboTimer <= 0f) combo = 0
         }
         centerCamera(false)
-        for (burst in domainBursts) burst.t += delta * 0.9f
-        domainBursts.forEach { if (it.t >= 1f) pools.freeBurst(it) }
-        domainBursts.removeAll { it.t >= 1f }
+        for (index in domainBursts.indices.reversed()) {
+            val burst = domainBursts[index]
+            burst.t += delta * 0.9f
+            if (burst.t >= 1f) {
+                domainBursts.removeAt(index)
+                pools.freeBurst(burst)
+            }
+        }
 
         checkLaserCollisions()
         checkPowerUpPickups()
@@ -812,18 +831,11 @@ class GameScreen : Screen, InputAdapter() {
 
         val textX = panel.x + 36f
         val textW = panel.width - 72f
-        val lines = arrayOf(
-            "MOVE   //   DRAG THE JOYSTICK",
-            "FIRE   //   HOLD THE FIRE CONTROL",
-            "CLEAR  //   DESTROY EVERY HOSTILE",
-            "UPGRADE // EVERY THIRD WAVE",
-            "COMBO  //   CHAIN KILLS BEFORE TIMER EXPIRES"
-        )
         val top = panel.y + panel.height - 116f
-        for (i in lines.indices) {
-            uiText.fit(captionFont, lines[i], textW, 0.92f, 0.48f)
+        for (i in tutorialLines.indices) {
+            uiText.fit(captionFont, tutorialLines[i], textW, 0.92f, 0.48f)
             captionFont.color = if (i % 2 == 0) Color(0.78f, 0.9f, 0.94f, 1f) else Color(0.5f, 0.72f, 0.8f, 1f)
-            captionFont.draw(batch, lines[i], textX, top - i * 34f)
+            captionFont.draw(batch, tutorialLines[i], textX, top - i * 34f)
         }
 
         fitFont("ACKNOWLEDGE", tutorialButton.width - 30f, 0.66f, 0.46f)
@@ -1203,16 +1215,27 @@ class GameScreen : Screen, InputAdapter() {
         }
     }
 
-    override fun hide() {}
+    override fun hide() {
+        input.clearTransientInput()
+        if (Gdx.input.inputProcessor === this) Gdx.input.inputProcessor = null
+    }
 
     override fun dispose() {
         Gdx.input.inputProcessor = null
+        input.clearTransientInput()
+        enemies.clear()
+        walls.clear()
+        powerUps.clear()
+        lasers.clear()
+        bursts.clear()
+        domainBursts.clear()
+        session.clear()
+        pools.clear()
         shapeRenderer.dispose()
         batch.dispose()
         font.dispose()
         bodyFont.dispose()
         captionFont.dispose()
-        pools.clear()
         particles.dispose()
         bloom.dispose()
         FeedbackAudio.dispose()
