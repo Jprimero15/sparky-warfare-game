@@ -690,8 +690,6 @@ class GameScreen : Screen, InputAdapter() {
         // Combat statistics.
         shapeRenderer.color = Color(0.004f, 0.014f, 0.026f, 0.94f)
         shapeRenderer.rect(left, top - 108f, statsW, 108f)
-        shapeRenderer.color = Color(0.18f, 0.9f, 1f, 0.9f)
-        shapeRenderer.rect(left, top - 3f, statsW, 3f)
         shapeRenderer.color = Color(0.18f, 0.9f, 1f, 0.12f)
         shapeRenderer.rect(left + 12f, top - 58f, statsW - 24f, 2f)
         shapeRenderer.rect(left + 12f, top - 88f, statsW - 24f, 2f)
@@ -706,8 +704,6 @@ class GameScreen : Screen, InputAdapter() {
 
         shapeRenderer.color = Color(0.015f, 0.035f, 0.055f, 0.96f)
         shapeRenderer.rect(pauseButton.x, pauseButton.y, pauseButton.width, pauseButton.height)
-        shapeRenderer.color = Color(0.18f, 0.9f, 1f, 0.22f)
-        shapeRenderer.rect(pauseButton.x, pauseButton.y + pauseButton.height - 3f, pauseButton.width, 3f)
         shapeRenderer.end()
         Gdx.gl.glDisable(GL20.GL_BLEND)
 
