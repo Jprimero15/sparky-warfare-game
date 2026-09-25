@@ -717,7 +717,7 @@ class GameScreen : Screen, InputAdapter() {
 
     private fun drawMenuOverlay() {
         val w=Gdx.graphics.width.toFloat(); val h=Gdx.graphics.height.toFloat(); ui.update(w,h); ui.menu(w,h)
-        menuRenderer.draw(w,h,safeArea,singleButton,multiButton,settingsButton,::drawButton,::drawCentered,::fitFont)
+        menuRenderer.draw(w,h,safeArea,singleButton,multiButton,settingsButton,highScore,bestWave,totalKills,::drawButton,::drawCentered,::fitFont)
     }
 
     private fun drawButton(rect: Rectangle, color: Color) {
@@ -885,6 +885,15 @@ class GameScreen : Screen, InputAdapter() {
             }
 
             GameState.PLAYING -> {
+                if (tutorialVisible) {
+                    if (toUiRect(screenX, screenY, tutorialButton)) {
+                        tutorialVisible = false
+                        prefs.putBoolean("tutorialSeen", true).flush()
+                        FeedbackAudio.play(FeedbackAudio.Cue.UI)
+                    }
+                    return true
+                }
+
                 if (toUiRect(screenX, screenY, pauseButton)) {
                     input.clearTransientInput()
                     state = GameState.PAUSED
