@@ -8,7 +8,6 @@ import com.badlogic.gdx.graphics.g2d.SpriteBatch
 import com.badlogic.gdx.graphics.glutils.ShapeRenderer
 import com.badlogic.gdx.math.Rectangle
 
-
 class HudRenderer(
     private val shape: ShapeRenderer,
     private val batch: SpriteBatch,
@@ -16,12 +15,12 @@ class HudRenderer(
     private val layout: GlyphLayout,
     private val camera: OrthographicCamera
 ) {
-    fun safeArea(width: Float, height: Float): SafeArea = SafeArea(
-        Gdx.graphics.safeInsetLeft.toFloat().coerceAtLeast(GameConfig.Ui.SAFE_MARGIN),
-        (width - Gdx.graphics.safeInsetRight).coerceAtMost(width - GameConfig.Ui.SAFE_MARGIN),
-        Gdx.graphics.safeInsetBottom.toFloat().coerceAtLeast(GameConfig.Ui.SAFE_MARGIN),
-        (height - Gdx.graphics.safeInsetTop).coerceAtMost(height - GameConfig.Ui.SAFE_MARGIN)
-    )
+    private val textWidths = HashMap<String, Float>()
+
+    private fun widthAtBaseScale(text: String): Float = textWidths.getOrPut(text) {
+        layout.setText(font, text)
+        layout.width
+    }
 
     fun fit(text: String, maxWidth: Float, preferred: Float, minimum: Float) {
         font.data.setScale(1f)
@@ -56,4 +55,3 @@ class HudRenderer(
         shape.rect(rect.x, rect.y + rect.height - 3f, rect.width, 3f)
     }
 }
-
