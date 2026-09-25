@@ -1142,7 +1142,8 @@ class GameScreen : Screen, InputAdapter() {
                 state = GameState.PAUSED
                 return true
             }
-            if (screenX < Gdx.graphics.width / 2) {
+            val moveOnLeft = !controlsSwapped
+            if ((screenX < Gdx.graphics.width / 2) == moveOnLeft) {
                 input.joystick.tryActivate(screenX.toFloat(), screenY.toFloat(), pointer)
                 input.joystick.drag(screenX.toFloat(), screenY.toFloat(), pointer)
             } else {
