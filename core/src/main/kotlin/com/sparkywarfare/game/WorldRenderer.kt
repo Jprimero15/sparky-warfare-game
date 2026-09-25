@@ -16,6 +16,7 @@ class WorldRenderer(
     private val shapeRenderer: ShapeRenderer,
     private val batch: SpriteBatch,
     private val glow: GlowRenderer,
+    private val tanks: TankRenderer,
     private val bloom: BloomRenderer,
     private val particles: ParticleDebris,
     private val font: BitmapFont,
@@ -67,8 +68,8 @@ class WorldRenderer(
         drawWalls(walls)
         bloom.begin()
         glow.beginAdditive()
-        if (player.alive) glow.drawTank(player.position, player.angle, player.color, player.radius)
-        enemies.forEach { if (it.alive) glow.drawTank(it.position, it.angle, it.color, it.radius) }
+        if (player.alive) tanks.drawTank(player)
+        enemies.forEach { if (it.alive) tanks.drawTank(it) }
         lasers.forEach { glow.drawLaser(it) }
         bursts.forEach { glow.drawBurst(it.position, it.t, it.color) }
         powerUps.forEach { glow.drawPowerUp(it.position, it.pulse, it.color) }
@@ -89,7 +90,7 @@ class WorldRenderer(
         scratchUi.set(GameConfig.WORLD_WIDTH / 2f, GameConfig.WORLD_HEIGHT / 2f)
         bloom.begin()
         glow.beginAdditive()
-        glow.drawTank(scratchUi, 45f, Color(0.2f, 0.9f, 1f, 1f))
+        tanks.drawTank(Tank(scratchUi, angle = 45f, isPlayer = true, color = Color(0.2f, 0.9f, 1f, 1f), radius = 14f))
         glow.end()
         bloom.endAndComposite()
         Gdx.gl.glDisable(GL20.GL_BLEND)

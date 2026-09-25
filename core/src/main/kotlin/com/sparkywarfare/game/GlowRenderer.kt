@@ -23,28 +23,6 @@ class GlowRenderer(private val shapeRenderer: ShapeRenderer) {
         Gdx.gl.glBlendFunc(GL20.GL_SRC_ALPHA, GL20.GL_ONE_MINUS_SRC_ALPHA)
     }
 
-    fun drawTank(position: Vector2, angle: Float, color: Color, radius: Float = 14f) {
-        for (i in 5 downTo 1) {
-            val r = radius * (1f + i * 0.24f)
-            shapeRenderer.color.set(color.r, color.g, color.b, 0.025f + i * 0.015f)
-            shapeRenderer.circle(position.x, position.y, r, 24)
-        }
-        shapeRenderer.color.set(0.01f, 0.035f, 0.06f, 0.95f)
-        shapeRenderer.circle(position.x, position.y, radius * 0.98f, 24)
-        shapeRenderer.color.set(color.r, color.g, color.b, 0.95f)
-        shapeRenderer.circle(position.x, position.y, radius * 0.66f, 20)
-        shapeRenderer.color.set(1f, 1f, 1f, 0.55f)
-        shapeRenderer.circle(position.x - radius * 0.22f, position.y + radius * 0.2f, radius * 0.18f, 10)
-
-        val rad = Math.toRadians(angle.toDouble())
-        val bx = position.x + cos(rad).toFloat() * radius * 1.7f
-        val by = position.y + sin(rad).toFloat() * radius * 1.7f
-        shapeRenderer.color.set(color.r, color.g, color.b, 0.9f)
-        drawThickLine(position.x, position.y, bx, by, radius * 0.34f)
-        shapeRenderer.color.set(Color.WHITE)
-        shapeRenderer.circle(bx, by, radius * 0.18f, 10)
-    }
-
     fun drawLaser(laser: Laser) {
         val tailX = laser.position.x - laser.direction.x * laser.length * 1.6f
         val tailY = laser.position.y - laser.direction.y * laser.length * 1.6f

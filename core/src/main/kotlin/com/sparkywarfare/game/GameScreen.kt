@@ -43,6 +43,7 @@ class GameScreen : Screen, InputAdapter() {
     private lateinit var viewport: Viewport
     private lateinit var shapeRenderer: ShapeRenderer
     private lateinit var glow: GlowRenderer
+    private lateinit var tankRenderer: TankRenderer
     private lateinit var batch: SpriteBatch
     private lateinit var font: BitmapFont
     private lateinit var layout: GlyphLayout
@@ -119,6 +120,7 @@ class GameScreen : Screen, InputAdapter() {
         viewport = ExtendViewport(VIEW_WIDTH, VIEW_HEIGHT, camera)
         shapeRenderer = ShapeRenderer()
         glow = GlowRenderer(shapeRenderer)
+        tankRenderer = TankRenderer(shapeRenderer)
         batch = SpriteBatch()
         particles = ParticleDebris(batch)
         bloom = BloomRenderer()
@@ -177,7 +179,7 @@ class GameScreen : Screen, InputAdapter() {
         layout = GlyphLayout()
         hudCamera = OrthographicCamera()
         hudCamera.setToOrtho(false, Gdx.graphics.width.toFloat(), Gdx.graphics.height.toFloat())
-        worldRenderer = WorldRenderer(camera, hudCamera, shapeRenderer, batch, glow, bloom, particles, font, bodyFont, input, ui, uiText)
+        worldRenderer = WorldRenderer(camera, hudCamera, shapeRenderer, batch, glow, tankRenderer, bloom, particles, font, bodyFont, input, ui, uiText)
         menuRenderer = MenuRenderer(shapeRenderer, batch, font, bodyFont, uiText)
         settingsRenderer = SettingsRenderer(shapeRenderer, batch, font, bodyFont, uiText)
         gameOverRenderer = GameOverRenderer(shapeRenderer, batch, font, bodyFont, uiText)
