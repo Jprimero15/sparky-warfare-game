@@ -51,6 +51,33 @@ object UiShapes {
         }
     }
 
+    /** Shared full-screen dim layer used by modal screens. */
+    fun overlay(shape: ShapeRenderer, width: Float, height: Float) {
+        shape.color = UiTheme.OVERLAY
+        shape.rect(0f, 0f, width, height)
+    }
+
+    /** Shared rounded modal surface with a subtle neon edge and inset surface. */
+    fun panel(
+        shape: ShapeRenderer,
+        x: Float,
+        y: Float,
+        width: Float,
+        height: Float,
+        radius: Float = UiTheme.Metrics.PANEL_RADIUS
+    ) {
+        roundedRect(shape, x, y, width, height, radius, UiTheme.PANEL_EDGE)
+        val inset = UiTheme.Metrics.PANEL_INSET
+        roundedRect(
+            shape,
+            x + inset,
+            y + inset,
+            (width - inset * 2f).coerceAtLeast(0f),
+            (height - inset * 2f).coerceAtLeast(0f),
+            (radius - inset).coerceAtLeast(0f),
+            UiTheme.PANEL
+        )
+    }
     fun softButton(shape: ShapeRenderer, rect: Rectangle, color: Color, radius: Float = UiTheme.Metrics.BUTTON_RADIUS) {
         // Blend the requested semantic color with the shared cyan/violet palette so
         // every touch target has the soft two-tone arcade treatment.
