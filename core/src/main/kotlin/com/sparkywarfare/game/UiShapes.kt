@@ -2,6 +2,7 @@ package com.sparkywarfare.game
 
 import com.badlogic.gdx.graphics.Color
 import com.badlogic.gdx.graphics.glutils.ShapeRenderer
+import com.badlogic.gdx.math.Rectangle
 
 /** Reusable rounded primitives for the Soft Neon Arcade UI. */
 object UiShapes {
@@ -21,9 +22,44 @@ object UiShapes {
         shape.circle(x + width - r, y + height - r, r, 20)
     }
 
-    fun softButton(shape: ShapeRenderer, rect: com.badlogic.gdx.math.Rectangle, color: Color, radius: Float = 22f) {
-        roundedRect(shape, rect.x, rect.y, rect.width, rect.height, radius, color)
-        roundedRect(shape, rect.x + 4f, rect.y + rect.height - 6f, rect.width - 8f, 3f, 1.5f,
-            Color(color.r, color.g, color.b, 0.20f))
+    /** Draws a smooth vertical gradient while preserving the rounded silhouette. */
+    fun gradientRoundedRect(
+        shape: ShapeRenderer,
+        x: Float,
+        y: Float,
+        width: Float,
+        height: Float,
+        radius: Float,
+        topColor: Color,
+        bottomColor: Color,
+        steps: Int = 14
+    ) {
+        val count = steps.coerceIn(4, 24)
+        roundedRect(shape, x, y, width, height, radius, bottomColor)
+        val bandHeight = height / count
+        for (i in 0 until count) {
+            val t = (i + 0.5f) / count
+            val color = Color(
+                topColor.r + (bottomColor.r - topColor.r) * t,
+                topColor.g + (bottomColor.g - topColor.g) * t,
+                topColor.b + (bottomColor.b - topColor.b) * t,
+                topColor.a + (bottomColor.a - topColor.a) * t
+            )
+            val bandY = y + height - (i + 1) * bandHeight
+            roundedRect(shape, x, bandY, width, bandHeight + 1.5f, radius, color)
+        }
+    }
+
+    fun softButton(shape: ShapeRenderer, rect: Rectangle, color: Color, radius: Float = 22f) {
+        val top = Color(
+            (color.r + 0.16f).coerceAtMost(1f),
+            (color.g + 0.16f).coerceAtMost(1f),
+            (color.b + 0.16f).coerceAtMost(1f),
+            color.a
+        )
+        val bottom = Color(color.r * 0.72f, color.g * 0.72f, color.b * 0.78f, color.a)
+        gradientRoundedRect(shape, rect.x, rect.y, rect.width, rect.height, radius, top, bottom)
+        roundedRect(shape, rect.x + 5f, rect.y + rect.height - 7f, rect.width - 10f, 3f, 1.5f,
+            Color(1f, 1f, 1f, 0.10f))
     }
 }
