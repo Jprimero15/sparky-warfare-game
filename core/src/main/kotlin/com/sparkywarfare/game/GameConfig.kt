@@ -20,8 +20,17 @@ object GameConfig {
         const val MAX_PER_WAVE = 10
         const val MIN_SPAWN_DISTANCE = 190f
         const val SPAWN_ATTEMPTS = 32
-        const val AI_MIN_FIRE_DELAY = 0.75f
-        const val AI_MAX_FIRE_DELAY = 1.55f
+        const val AI_MIN_FIRE_DELAY = 0.85f
+        const val AI_MAX_FIRE_DELAY = 1.7f
+        const val AI_MIN_REACTION_DELAY = 0.18f
+        const val AI_MAX_REACTION_DELAY = 0.55f
+        const val AI_MAX_AIM_TURN_SPEED = 105f
+        const val AI_FIRE_ANGLE_TOLERANCE = 12f
+        const val AI_SCOUT_SPREAD = 13f
+        const val AI_ASSAULT_SPREAD = 9f
+        const val AI_HEAVY_SPREAD = 6f
+        const val AI_RANGED_SPREAD = 15f
+        const val AI_ELITE_SPREAD = 5f
     }
 
     object Combat {

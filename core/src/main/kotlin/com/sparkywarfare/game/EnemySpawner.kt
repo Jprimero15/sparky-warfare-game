@@ -23,6 +23,8 @@ class EnemySpawner {
             if (findSafePosition(preferredX, spawnY, enemy, player, walls, enemies)) {
                 enemy.position.set(candidate)
                 enemy.aiFireTimer = MathUtils.random(GameConfig.Enemy.AI_MIN_FIRE_DELAY, GameConfig.Enemy.AI_MAX_FIRE_DELAY)
+                enemy.aiAimAngle = enemy.angle
+                enemy.aiReactionTimer = MathUtils.random(GameConfig.Enemy.AI_MIN_REACTION_DELAY, GameConfig.Enemy.AI_MAX_REACTION_DELAY)
                 enemies.add(enemy)
             }
         }

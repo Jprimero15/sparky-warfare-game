@@ -18,6 +18,8 @@ class Tank(
     var maxHealth = health
     var alive = true
     var aiFireTimer = 0f
+    var aiAimAngle = angle
+    var aiReactionTimer = 0f
     private var baseSpeed = speed
     var speed = speed
         set(value) {

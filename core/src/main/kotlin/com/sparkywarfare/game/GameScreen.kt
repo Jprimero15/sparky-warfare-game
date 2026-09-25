@@ -436,15 +436,22 @@ class GameScreen : Screen, InputAdapter() {
             if (scratchDirection.len2() > 1f) {
                 val distance = scratchDirection.len()
                 scratchDirection.nor()
-                enemy.angle = scratchDirection.angleDeg()
+                val targetAngle = scratchDirection.angleDeg()
+                val turn = GameConfig.Enemy.AI_MAX_AIM_TURN_SPEED * delta
+                enemy.aiAimAngle = MathUtils.lerpAngleDeg(enemy.aiAimAngle, targetAngle, (turn / 180f).coerceIn(0f, 1f))
+                enemy.angle = enemy.aiAimAngle
                 val factor = if (distance > 95f) 0.65f else 0.28f
                 CollisionSystem.tryMoveTank(enemy, scratchDirection, enemy.speed * factor * delta, player, enemies, walls)
             }
+            enemy.aiReactionTimer = (enemy.aiReactionTimer - delta).coerceAtLeast(0f)
             enemy.aiFireTimer -= delta
-            if (enemy.aiFireTimer <= 0f && enemy.canFire() &&
+            val aimError = Math.abs(MathUtils.difference(enemy.aiAimAngle, scratchDirection.angleDeg()))
+            if (enemy.aiFireTimer <= 0f && enemy.aiReactionTimer <= 0f &&
+                enemy.canFire() && aimError <= GameConfig.Enemy.AI_FIRE_ANGLE_TOLERANCE &&
                 CollisionSystem.hasLineOfSight(enemy.position, player.position, walls)) {
                 fireLaser(enemy)
                 enemy.aiFireTimer = MathUtils.random(GameConfig.Enemy.AI_MIN_FIRE_DELAY, GameConfig.Enemy.AI_MAX_FIRE_DELAY)
+                enemy.aiReactionTimer = MathUtils.random(GameConfig.Enemy.AI_MIN_REACTION_DELAY, GameConfig.Enemy.AI_MAX_REACTION_DELAY)
             }
         }
     }
@@ -467,7 +474,16 @@ class GameScreen : Screen, InputAdapter() {
             position.x > WORLD_WIDTH - TILE || position.y > WORLD_HEIGHT - TILE
 
     private fun fireLaser(tank: Tank) {
-        val rad = Math.toRadians(tank.angle.toDouble())
+        val spread = if (tank.isPlayer) 0f else when (tank.enemyTier) {
+            EnemyTier.SCOUT -> GameConfig.Enemy.AI_SCOUT_SPREAD
+            EnemyTier.ASSAULT -> GameConfig.Enemy.AI_ASSAULT_SPREAD
+            EnemyTier.HEAVY -> GameConfig.Enemy.AI_HEAVY_SPREAD
+            EnemyTier.RANGED -> GameConfig.Enemy.AI_RANGED_SPREAD
+            EnemyTier.ELITE -> GameConfig.Enemy.AI_ELITE_SPREAD
+            null -> GameConfig.Enemy.AI_ASSAULT_SPREAD
+        }
+        val shotAngle = tank.angle + if (spread > 0f) MathUtils.random(-spread, spread) else 0f
+        val rad = Math.toRadians(shotAngle.toDouble())
         scratchDirection.set(Math.cos(rad).toFloat(), Math.sin(rad).toFloat()).nor()
         scratchSpawn.set(tank.position).mulAdd(scratchDirection, tank.radius + 3f)
         lasers.add(pools.obtainLaser(scratchSpawn, scratchDirection, tank.color, tank.isPlayer))
