@@ -8,6 +8,7 @@ import com.badlogic.gdx.graphics.Color
 import com.badlogic.gdx.graphics.GL20
 import com.badlogic.gdx.graphics.OrthographicCamera
 import com.badlogic.gdx.graphics.g2d.BitmapFont
+import com.badlogic.gdx.graphics.g2d.GlyphLayout
 import com.badlogic.gdx.graphics.g2d.freetype.FreeTypeFontGenerator
 import com.badlogic.gdx.graphics.g2d.SpriteBatch
 import com.badlogic.gdx.graphics.glutils.ShapeRenderer
@@ -44,6 +45,7 @@ class GameScreen : Screen, InputAdapter() {
     private lateinit var glow: GlowRenderer
     private lateinit var batch: SpriteBatch
     private lateinit var font: BitmapFont
+    private lateinit var layout: GlyphLayout
     private lateinit var hudCamera: OrthographicCamera
 
     private lateinit var player: Tank
@@ -172,6 +174,7 @@ class GameScreen : Screen, InputAdapter() {
         captionFont = bodyGenerator.generateFont(captionParameter)
         bodyGenerator.dispose()
         uiText = UiText(batch)
+        layout = GlyphLayout()
         hudCamera = OrthographicCamera()
         hudCamera.setToOrtho(false, Gdx.graphics.width.toFloat(), Gdx.graphics.height.toFloat())
         worldRenderer = WorldRenderer(camera, hudCamera, shapeRenderer, batch, glow, bloom, particles, font, bodyFont, input, ui, uiText)
