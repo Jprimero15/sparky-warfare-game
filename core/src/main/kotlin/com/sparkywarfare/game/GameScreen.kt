@@ -764,13 +764,17 @@ class GameScreen : Screen, InputAdapter() {
 
         shapeRenderer.projectionMatrix = hudCamera.combined
         shapeRenderer.begin(ShapeRenderer.ShapeType.Filled)
-        shapeRenderer.color = Color(0.004f, 0.016f, 0.028f, 0.86f * alpha)
-        shapeRenderer.rect(x, y, bannerW, bannerH)
-        shapeRenderer.color = if (waveBannerElite) Color(1f, 0.65f, 0.15f, 0.95f * alpha) else Color(0.18f, 0.9f, 1f, 0.92f * alpha)
-        shapeRenderer.rect(x, y + bannerH - 3f, bannerW, 3f)
-        shapeRenderer.rect(x, y, 4f, bannerH)
-        shapeRenderer.color = Color(0.78f, 0.24f, 1f, 0.5f * alpha)
-        shapeRenderer.rect(x + bannerW - 4f, y, 4f, bannerH)
+        val base = if (waveBannerElite) {
+            Color(0.48f, 0.18f, 0.05f, 0.90f * alpha)
+        } else {
+            Color(0.06f, 0.18f, 0.30f, 0.92f * alpha)
+        }
+        val top = if (waveBannerElite) {
+            Color(1f, 0.55f, 0.12f, 0.94f * alpha)
+        } else {
+            Color(0.28f, 0.92f, 1f, 0.94f * alpha)
+        }
+        UiShapes.gradientRoundedRect(shapeRenderer, x, y, bannerW, bannerH, 24f, top, base, 16)
         shapeRenderer.end()
 
         batch.projectionMatrix = hudCamera.combined
