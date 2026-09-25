@@ -165,7 +165,18 @@ class GameScreen : Screen, InputAdapter() {
         transition = 1f
         transitionTarget = 0f
         Gdx.input.inputProcessor = this
-        resetGame()
+        buildArena()
+        player = Tank(
+            position = Vector2(WORLD_WIDTH / 2f, 120f),
+            isPlayer = true,
+            color = Color(0.2f, 0.9f, 1f, 1f),
+            speed = GameConfig.Player.SPEED,
+            health = GameConfig.Player.START_HP,
+            fireRate = GameConfig.Player.FIRE_RATE,
+            radius = GameConfig.Player.RADIUS
+        )
+        if (!prefs.getBoolean("tutorialSeen", false)) tutorialVisible = false
+        state = GameState.MENU
     }
 
     private fun resetGame() {
@@ -316,8 +327,10 @@ class GameScreen : Screen, InputAdapter() {
     }
 
     private fun startSinglePlayer() {
+        // A run is created only after the player explicitly presses Single Player.
         resetGame()
         input.setPaused(false)
+        tutorialVisible = !prefs.getBoolean("tutorialSeen", false)
         state = GameState.PLAYING
         transition = 1f
         transitionTarget = 0f
@@ -891,6 +904,8 @@ class GameScreen : Screen, InputAdapter() {
                         prefs.putBoolean("tutorialSeen", true).flush()
                         FeedbackAudio.play(FeedbackAudio.Cue.UI)
                     }
+                    // Tutorial is a hard input gate: no movement, firing, pause, or gameplay
+                    // actions are accepted until the player explicitly taps GOT IT.
                     return true
                 }
 
@@ -915,8 +930,9 @@ class GameScreen : Screen, InputAdapter() {
                 val controlHitRadius = controlRadius + 18f
 
                 if (dx * dx + dy * dy <= controlHitRadius * controlHitRadius) {
-                    input.joystick.tryActivate(screenX.toFloat(), screenY.toFloat(), pointer)
-                    input.joystick.drag(screenX.toFloat(), screenY.toFloat(), pointer)
+                    if (input.joystick.tryActivate(screenX.toFloat(), screenY.toFloat(), pointer)) {
+                        input.joystick.drag(screenX.toFloat(), screenY.toFloat(), pointer)
+                    }
                     return true
                 }
 
