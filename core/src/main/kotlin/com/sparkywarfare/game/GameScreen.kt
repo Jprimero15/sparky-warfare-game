@@ -68,7 +68,7 @@ class GameScreen : Screen, InputAdapter() {
     private var scoreMultiplier = 1
     private val upgradeChoices = mutableListOf<UpgradeType>()
     private val upgradeLevels = mutableMapOf<UpgradeType, Int>()
-    private val prefs by lazy { Gdx.app.getPreferences("Sparky Warfare") }
+    private val persistence = GamePersistence()
     private var screenShake = 0f
     private var hitFlash = 0f
 
@@ -183,14 +183,16 @@ class GameScreen : Screen, InputAdapter() {
         gameOverRenderer = GameOverRenderer(shapeRenderer, batch, font, bodyFont, uiText)
         upgradeRenderer = UpgradeRenderer(shapeRenderer, batch, font, bodyFont, uiText)
         pauseRenderer = PauseRenderer(shapeRenderer, batch, font, bodyFont, uiText)
-        highScore = prefs.getInteger("highScore", 0)
-        bestWave = prefs.getInteger("bestWave", 0)
-        totalKills = prefs.getInteger("totalKills", 0)
-        FeedbackAudio.setMuted(prefs.getBoolean("muteSfx", false))
-        hapticsMuted = prefs.getBoolean("muteHaptics", false)
-        controlsSwapped = prefs.getBoolean("controlsSwapped", false)
-        FeedbackAudio.setMasterVolume(prefs.getFloat("sfxVolume", 0.8f))
-        tutorialVisible = !prefs.getBoolean("tutorialSeen", false)
+        val savedStats = persistence.stats()
+        val savedSettings = persistence.settings()
+        highScore = savedStats.highScore
+        bestWave = savedStats.bestWave
+        totalKills = savedStats.totalKills
+        FeedbackAudio.setMuted(savedSettings.muteSfx)
+        hapticsMuted = savedSettings.muteHaptics
+        controlsSwapped = savedSettings.controlsSwapped
+        FeedbackAudio.setMasterVolume(savedSettings.sfxVolume)
+        tutorialVisible = !savedSettings.tutorialSeen
         FeedbackAudio.init()
         ui.update(Gdx.graphics.width.toFloat(), Gdx.graphics.height.toFloat())
         bloom.resize(Gdx.graphics.width, Gdx.graphics.height)
@@ -364,7 +366,7 @@ class GameScreen : Screen, InputAdapter() {
         // A run is created only after the player explicitly presses Single Player.
         resetGame()
         input.setPaused(false)
-        tutorialVisible = !prefs.getBoolean("tutorialSeen", false)
+        tutorialVisible = !persistence.settings().tutorialSeen
         state = GameState.PLAYING
         transition = 1f
         transitionTarget = 0f
@@ -620,10 +622,7 @@ class GameScreen : Screen, InputAdapter() {
     private fun persistProgress() {
         if (score > highScore) highScore = score
         if (wave > bestWave) bestWave = wave
-        prefs.putInteger("highScore", highScore)
-        prefs.putInteger("bestWave", bestWave)
-        prefs.putInteger("totalKills", totalKills)
-        prefs.flush()
+        persistence.saveProgress(highScore, bestWave, totalKills)
     }
 
     private fun drawHud() {
@@ -1019,12 +1018,12 @@ class GameScreen : Screen, InputAdapter() {
                     toUiRect(screenX, screenY, toggleSfxButton) -> {
                         val mutedNow = !FeedbackAudio.isMuted()
                         FeedbackAudio.setMuted(mutedNow)
-                        prefs.putBoolean("muteSfx", mutedNow).flush()
+                        persistence.setMuteSfx(mutedNow)
                         FeedbackAudio.play(FeedbackAudio.Cue.UI)
                     }
                     toUiRect(screenX, screenY, toggleHapticsButton) -> {
                         hapticsMuted = !hapticsMuted
-                        prefs.putBoolean("muteHaptics", hapticsMuted).flush()
+                        persistence.setMuteHaptics(hapticsMuted)
                         FeedbackAudio.play(FeedbackAudio.Cue.UI)
                     }
                     toUiRect(screenX, screenY, volumeSlider) -> {
@@ -1032,11 +1031,11 @@ class GameScreen : Screen, InputAdapter() {
                         val max = volumeSlider.x + volumeSlider.width
                         val value = ((screenX.toFloat() - min) / (max - min)).coerceIn(0f, 1f)
                         FeedbackAudio.setMasterVolume(value)
-                        prefs.putFloat("sfxVolume", value).flush()
+                        persistence.setSfxVolume(value)
                     }
                     toUiRect(screenX, screenY, swapControlsButton) -> {
                         controlsSwapped = !controlsSwapped
-                        prefs.putBoolean("controlsSwapped", controlsSwapped).flush()
+                        persistence.setControlsSwapped(controlsSwapped)
                         FeedbackAudio.play(FeedbackAudio.Cue.UI)
                     }
                     toUiRect(screenX, screenY, menuButton) -> {
@@ -1101,7 +1100,7 @@ class GameScreen : Screen, InputAdapter() {
                 if (tutorialVisible) {
                     if (toUiRect(screenX, screenY, tutorialButton)) {
                         tutorialVisible = false
-                        prefs.putBoolean("tutorialSeen", true).flush()
+                        persistence.setTutorialSeen(true)
                         FeedbackAudio.play(FeedbackAudio.Cue.UI)
                     }
                     // Tutorial is a hard input gate: no movement, firing, pause, or gameplay
