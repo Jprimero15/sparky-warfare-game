@@ -45,5 +45,12 @@ object GameConfig {
         const val SAFE_MARGIN = 18f
         const val BUTTON_GAP = 12f
         const val TRANSITION_SPEED = 4.5f
+        const val PANEL_ALPHA = 0.9f
+    }
+
+    object Waves {
+        const val ELITE_INTERVAL = 5
+        const val UPGRADE_INTERVAL = 3
+        const val ELITE_BONUS = 500
     }
 }
