@@ -25,8 +25,8 @@ class PauseRenderer(
         val cy = (safe.bottom + safe.top) / 2f
         val sw = safe.right - safe.left
         val sh = safe.top - safe.bottom
-        val panelW = (sw * 0.72f).coerceIn(560f, 900f)
-        val panelH = (sh * 0.72f).coerceIn(300f, 500f)
+        val panelW = minOf(sw * 0.72f, 900f).coerceAtLeast(300f)
+        val panelH = minOf(sh * 0.72f, 500f).coerceAtLeast(240f)
         val x = cx - panelW / 2f
         val y = cy - panelH / 2f
 

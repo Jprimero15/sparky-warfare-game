@@ -23,7 +23,7 @@ class GameOverRenderer(
     fun draw(width:Float,height:Float,safe:SafeArea,retry:Rectangle,menu:Rectangle,score:Int,best:Int,wave:Int,kills:Int,combo:Int,drawButton:(Rectangle,Color)->Unit){
         val cx=(safe.left+safe.right)/2f; val cy=(safe.bottom+safe.top)/2f
         val sw=safe.right-safe.left; val sh=safe.top-safe.bottom
-        val panelW=(sw*0.78f).coerceIn(560f,980f); val panelH=(sh*0.78f).coerceIn(330f,520f)
+        val panelW=minOf(sw*0.78f,980f).coerceAtLeast(320f); val panelH=minOf(sh*0.78f,520f).coerceAtLeast(260f)
         val x=cx-panelW/2f; val y=cy-panelH/2f
         shape.begin(ShapeRenderer.ShapeType.Filled)
         shape.color=Color(0f,0f,0f,0.88f);shape.rect(0f,0f,width,height)

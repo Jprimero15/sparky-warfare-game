@@ -36,13 +36,13 @@ class UiLayout {
         val cx = (safeArea.left + safeArea.right) / 2f
         val cy = (safeArea.bottom + safeArea.top) / 2f
         if (sw >= sh * 1.35f) {
-            val panelW = (sw * 0.92f).coerceIn(620f, 1220f)
-            val panelH = (sh * 0.90f).coerceIn(320f, 680f)
+            val panelW = minOf(sw * 0.92f, 1220f).coerceAtLeast(280f)
+            val panelH = minOf(sh * 0.90f, 680f).coerceAtLeast(250f)
             val panelX = cx - panelW / 2f
             val panelY = cy - panelH / 2f
             val split = panelX + panelW * 0.54f
-            val buttonW = (panelX + panelW - split - 72f).coerceIn(250f, 500f)
-            val buttonH = (panelH * 0.18f).coerceIn(58f, 84f)
+            val buttonW = (panelX + panelW - split - 48f).coerceIn(150f, 500f)
+            val buttonH = (panelH * 0.18f).coerceIn(46f, 84f)
             val gap = (panelH * 0.035f).coerceIn(10f, 18f)
             val bx = split + (panelX + panelW - split - buttonW) / 2f
             val by = panelY + (panelH - (buttonH * 3f + gap * 2f)) / 2f
@@ -50,8 +50,8 @@ class UiLayout {
             multiButton.set(bx, by + buttonH + gap, buttonW, buttonH)
             settingsButton.set(bx, by, buttonW, buttonH)
         } else {
-            val bw = (sw * 0.78f).coerceIn(280f, 560f)
-            val bh = (sh * 0.13f).coerceIn(54f, 72f)
+            val bw = minOf(sw * 0.78f, 560f).coerceAtLeast(220f)
+            val bh = (sh * 0.13f).coerceIn(46f, 72f)
             val gap = 12f
             val total = bh * 3f + gap * 2f
             val by = cy - total / 2f
@@ -71,8 +71,8 @@ class UiLayout {
         val sh = (safeArea.top - safeArea.bottom).coerceAtLeast(1f)
         val cx = (safeArea.left + safeArea.right) / 2f
         val cy = (safeArea.bottom + safeArea.top) / 2f
-        val bw = (sw * 0.36f).coerceIn(240f, 430f)
-        val bh = (sh * 0.18f).coerceIn(54f, 72f)
+        val bw = minOf(sw * 0.36f, 430f).coerceAtLeast(150f)
+        val bh = (sh * 0.18f).coerceIn(46f, 72f)
         val gap = (sh * 0.045f).coerceIn(12f, 22f)
         val leftX = cx - bw - gap / 2f
         val rightX = cx + gap / 2f
@@ -90,8 +90,8 @@ class UiLayout {
         val sh = (safeArea.top - safeArea.bottom).coerceAtLeast(1f)
         val cx = (safeArea.left + safeArea.right) / 2f
         val cy = (safeArea.bottom + safeArea.top) / 2f
-        val bw = (sw * 0.30f).coerceIn(220f, 420f)
-        val bh = (sh * 0.18f).coerceIn(60f, 82f)
+        val bw = minOf(sw * 0.30f, 420f).coerceAtLeast(150f)
+        val bh = (sh * 0.18f).coerceIn(48f, 82f)
         val gap = (sw * 0.035f).coerceIn(16f, 30f)
         resumeButton.set(cx - bw - gap / 2f, cy - bh / 2f, bw, bh)
         menuButton.set(cx + gap / 2f, cy - bh / 2f, bw, bh)
@@ -102,8 +102,8 @@ class UiLayout {
         val sh = (safeArea.top - safeArea.bottom).coerceAtLeast(1f)
         val cx = (safeArea.left + safeArea.right) / 2f
         val cy = (safeArea.bottom + safeArea.top) / 2f
-        val panelW = (sw * 0.78f).coerceIn(560f, 980f)
-        val buttonW = ((panelW - 70f) / 2f).coerceIn(230f, 420f)
+        val panelW = minOf(sw * 0.78f, 980f).coerceAtLeast(320f)
+        val buttonW = ((panelW - 40f) / 2f).coerceIn(130f, 420f)
         val gap = 18f
         singleButton.set(cx - buttonW - gap / 2f, cy - sh * 0.28f, buttonW, 64f)
         menuButton.set(cx + gap / 2f, cy - sh * 0.28f, buttonW, 64f)

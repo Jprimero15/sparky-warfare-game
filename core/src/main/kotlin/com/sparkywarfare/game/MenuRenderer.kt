@@ -38,8 +38,8 @@ class MenuRenderer(
         val cy = (safe.bottom + safe.top) / 2f
         val sw = (safe.right - safe.left).coerceAtLeast(1f)
         val sh = (safe.top - safe.bottom).coerceAtLeast(1f)
-        val panelW = (sw * 0.92f).coerceIn(620f, 1220f)
-        val panelH = (sh * 0.90f).coerceIn(320f, 680f)
+        val panelW = minOf(sw * 0.92f, 1220f).coerceAtLeast(280f)
+        val panelH = minOf(sh * 0.90f, 680f).coerceAtLeast(250f)
         val panelX = cx - panelW / 2f
         val panelY = cy - panelH / 2f
         val split = panelX + panelW * 0.54f

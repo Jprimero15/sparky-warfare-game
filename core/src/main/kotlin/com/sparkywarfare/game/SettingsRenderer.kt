@@ -24,7 +24,7 @@ class SettingsRenderer(
     fun draw(width:Float,height:Float,safe:SafeArea,sfx:Rectangle,haptics:Rectangle,volume:Rectangle,swap:Rectangle,menu:Rectangle,muted:Boolean,hapticsMuted:Boolean,volumeValue:Float,drawButton:(Rectangle,Color)->Unit){
         val cx=(safe.left+safe.right)/2f;val cy=(safe.bottom+safe.top)/2f
         val sw=safe.right-safe.left;val sh=safe.top-safe.bottom
-        val panelW=(sw*0.82f).coerceIn(620f,1020f);val panelH=(sh*0.88f).coerceIn(330f,600f)
+        val panelW=minOf(sw*0.82f,1020f).coerceAtLeast(280f);val panelH=minOf(sh*0.88f,600f).coerceAtLeast(250f)
         val x=cx-panelW/2f;val y=cy-panelH/2f
         shape.begin(ShapeRenderer.ShapeType.Filled)
         shape.color=Color(0f,0f,0f,0.84f);shape.rect(0f,0f,width,height)

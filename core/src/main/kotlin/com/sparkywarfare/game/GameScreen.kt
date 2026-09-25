@@ -144,7 +144,7 @@ class GameScreen : Screen, InputAdapter() {
         hudCamera = OrthographicCamera()
         hudCamera.setToOrtho(false, Gdx.graphics.width.toFloat(), Gdx.graphics.height.toFloat())
         hud = HudRenderer(shapeRenderer, batch, font, layout, hudCamera)
-        worldRenderer = WorldRenderer(camera, hudCamera, shapeRenderer, batch, glow, bloom, particles, font, input)
+        worldRenderer = WorldRenderer(camera, hudCamera, shapeRenderer, batch, glow, bloom, particles, font, bodyFont, input)
         menuRenderer = MenuRenderer(shapeRenderer, batch, font, bodyFont)
         settingsRenderer = SettingsRenderer(shapeRenderer, batch, font, bodyFont)
         gameOverRenderer = GameOverRenderer(shapeRenderer, batch, font, bodyFont)
