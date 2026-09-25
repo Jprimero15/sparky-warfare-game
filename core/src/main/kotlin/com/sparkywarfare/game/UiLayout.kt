@@ -27,17 +27,25 @@ class UiLayout {
             Gdx.graphics.safeInsetLeft.toFloat().coerceAtLeast(GameConfig.Ui.SAFE_MARGIN),
             (width - Gdx.graphics.safeInsetRight).coerceAtMost(width - GameConfig.Ui.SAFE_MARGIN),
             Gdx.graphics.safeInsetBottom.toFloat().coerceAtLeast(GameConfig.Ui.SAFE_MARGIN),
-            (height - Gdx.graphics.safeInsetTop).coerceAtMost(height - GameConfig.Ui.SAFE_MARGIN)
+            (height - Gdx.graphics.safeInsetTop).toFloat().coerceAtMost(height - GameConfig.Ui.SAFE_MARGIN)
         )
     }
 
     fun menu(width: Float, height: Float) {
-        val buttonW = (width * 0.64f).coerceIn(300f, 520f)
-        val buttonH = (height * 0.11f).coerceIn(56f, 78f)
+        val safeWidth = (safeArea.right - safeArea.left).coerceAtLeast(1f)
+        val safeHeight = (safeArea.top - safeArea.bottom).coerceAtLeast(1f)
         val centerX = (safeArea.left + safeArea.right) / 2f
-        singleButton.set(centerX - buttonW / 2f, height * 0.35f, buttonW, buttonH)
-        multiButton.set(centerX - buttonW / 2f, height * 0.22f, buttonW, buttonH)
-        settingsButton.set(centerX - buttonW / 2f, height * 0.09f, buttonW, buttonH)
+
+        val buttonW = (safeWidth * 0.58f).coerceIn(280f, 560f)
+        val buttonH = (safeHeight * 0.14f).coerceIn(52f, 74f)
+        val gap = (safeHeight * 0.045f).coerceIn(10f, 20f)
+
+        val stackH = buttonH * 3f + gap * 2f
+        val stackBottom = (safeArea.bottom + safeArea.top) / 2f - stackH / 2f - 8f
+
+        singleButton.set(centerX - buttonW / 2f, stackBottom + (buttonH + gap) * 2f, buttonW, buttonH)
+        multiButton.set(centerX - buttonW / 2f, stackBottom + buttonH + gap, buttonW, buttonH)
+        settingsButton.set(centerX - buttonW / 2f, stackBottom, buttonW, buttonH)
     }
 
     fun hud() {
@@ -46,27 +54,30 @@ class UiLayout {
 
     fun settings(width: Float, height: Float) {
         val centerX = (safeArea.left + safeArea.right) / 2f
-        val bw = (width * 0.6f).coerceIn(300f, 520f)
-        val bh = 58f
-        toggleSfxButton.set(centerX - bw / 2f, height * 0.48f, bw, bh)
-        toggleHapticsButton.set(centerX - bw / 2f, height * 0.36f, bw, bh)
-        volumeSlider.set(centerX - bw / 2f, height * 0.26f, bw, 28f)
-        swapControlsButton.set(centerX - bw / 2f, height * 0.16f, bw, bh)
+        val bw = (safeArea.right - safeArea.left).coerceIn(300f, 560f) * 0.66f
+        val bh = 52f
+        toggleSfxButton.set(centerX - bw / 2f, height * 0.50f, bw, bh)
+        toggleHapticsButton.set(centerX - bw / 2f, height * 0.39f, bw, bh)
+        volumeSlider.set(centerX - bw / 2f, height * 0.29f, bw, 24f)
+        swapControlsButton.set(centerX - bw / 2f, height * 0.17f, bw, bh)
         menuButton.set(centerX - bw / 2f, height * 0.06f, bw, bh)
     }
 
     fun pause(width: Float, height: Float) {
         val centerX = (safeArea.left + safeArea.right) / 2f
-        resumeButton.set(centerX - 150f, height * 0.36f, 300f, 60f)
-        menuButton.set(centerX - 150f, height * 0.23f, 300f, 60f)
+        val bw = (safeArea.right - safeArea.left).coerceIn(300f, 520f) * 0.58f
+        resumeButton.set(centerX - bw / 2f, height * 0.37f, bw, 58f)
+        menuButton.set(centerX - bw / 2f, height * 0.23f, bw, 58f)
     }
 
     fun gameOver(width: Float, height: Float) {
-        val panelW = (width * 0.72f).coerceIn(340f, 620f)
-        val panelH = (height * 0.5f).coerceIn(260f, 370f)
-        val left = (width - panelW) / 2f
-        val bottom = (height - panelH) / 2f
-        singleButton.set(left + 18f, bottom + 18f, panelW / 2f - 27f, 54f)
-        menuButton.set(left + panelW / 2f + 9f, bottom + 18f, panelW / 2f - 27f, 54f)
+        val panelW = (safeArea.right - safeArea.left).coerceIn(340f, 660f) * 0.86f
+        val panelH = (safeArea.top - safeArea.bottom).coerceIn(280f, 420f) * 0.82f
+        val left = (safeArea.left + safeArea.right) / 2f - panelW / 2f
+        val bottom = (safeArea.bottom + safeArea.top) / 2f - panelH / 2f
+        val gap = 12f
+        val buttonW = (panelW - 36f - gap) / 2f
+        singleButton.set(left + 18f, bottom + 18f, buttonW, 54f)
+        menuButton.set(singleButton.x + buttonW + gap, bottom + 18f, buttonW, 54f)
     }
 }
