@@ -19,10 +19,8 @@ class GameOverRenderer(
         val panelW=minOf(sw*0.78f,980f).coerceAtLeast(320f); val panelH=minOf(sh*0.78f,520f).coerceAtLeast(260f)
         val x=cx-panelW/2f; val y=cy-panelH/2f
         shape.begin(ShapeRenderer.ShapeType.Filled)
-        shape.color = UiTheme.OVERLAY
-        shape.rect(0f, 0f, width, height)
-        UiShapes.roundedRect(shape, x, y, panelW, panelH, UiTheme.Metrics.PANEL_RADIUS, UiTheme.PANEL)
-        UiShapes.roundedRect(shape, x + UiTheme.Metrics.PANEL_INSET, y + UiTheme.Metrics.PANEL_INSET, panelW - UiTheme.Metrics.PANEL_INSET * 2f, panelH - UiTheme.Metrics.PANEL_INSET * 2f, UiTheme.Metrics.INNER_RADIUS, UiTheme.INNER)
+        UiShapes.overlay(shape, width, height)
+        UiShapes.panel(shape, x, y, panelW, panelH)
         drawButton(retry,UiTheme.PANEL_DARK); drawButton(menu,UiTheme.PANEL_DARK)
         shape.end()
         batch.begin()
