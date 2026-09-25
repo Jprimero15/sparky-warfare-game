@@ -6,7 +6,7 @@ The game combines a deep atmospheric arena, a glassmorphic soft-neon arcade UI, 
 
 ## Current status
 
-The single-player loop is playable and CI-validated:
+The single-player loop is playable and covered by the Android CI workflow:
 
 Main Menu → Combat → Wave Clear → Upgrade → Combat → Game Over → Retry / Main Menu
 
@@ -256,7 +256,7 @@ Multiplayer is currently presented as unavailable rather than exposing a non-fun
 
 ## CI baseline
 
-The repository's `main` branch is kept build-verified through GitHub Actions after each committed change.
+The repository's `main` branch is configured to run the Android build workflow on every push. The workflow validates the Android-only structure, builds the debug APK, and checks LibGDX native ABI packaging.
 
 
 ## UI design system
