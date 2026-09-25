@@ -842,9 +842,8 @@ class GameScreen : Screen, InputAdapter() {
     private fun drawMenuOverlay() {
         val w = Gdx.graphics.width.toFloat()
         val h = Gdx.graphics.height.toFloat()
-        safeArea = hud.safeArea(w, h)
-        val buttonW = (w * 0.64f).coerceIn(300f, 520f)
-        val buttonH = (h * 0.11f).coerceIn(56f, 78f)
+        ui.update(w, h)
+        val buttonW = ui.singleButton.width
         val centerX = (safeArea.left + safeArea.right) / 2f
         ui.menu(w, h)
 
