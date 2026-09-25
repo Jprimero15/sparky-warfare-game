@@ -648,14 +648,10 @@ class GameScreen : Screen, InputAdapter() {
         val right = safeArea.right
         val top = safeArea.top
         val pauseGap = 8f
-        val panelGap = 8f
-        val panelH = 108f
         val pauseW = pauseButton.width
-
-        // Dedicated player-core card: it never shares the score panel or pause target.
         val healthW = minOf(220f, (right - left) * 0.30f).coerceAtLeast(140f)
         val healthX = right - pauseW - pauseGap - healthW
-        val statsW = minOf(460f, (healthX - panelGap - left).coerceAtLeast(200f))
+        val statsW = minOf(460f, (healthX - 8f - left).coerceAtLeast(200f))
         val healthBarX = healthX + 12f
         val healthBarW = healthW - 24f
         val healthRatio = (player.health.toFloat() / player.maxHealth.coerceAtLeast(1)).coerceIn(0f, 1f)
@@ -667,22 +663,20 @@ class GameScreen : Screen, InputAdapter() {
         shapeRenderer.projectionMatrix = hudCamera.combined
         shapeRenderer.begin(ShapeRenderer.ShapeType.Filled)
 
+        // Combat statistics.
         shapeRenderer.color = Color(0.004f, 0.014f, 0.026f, 0.94f)
-        shapeRenderer.rect(left, top - panelH, statsW, panelH)
+        shapeRenderer.rect(left, top - 108f, statsW, 108f)
         shapeRenderer.color = Color(0.18f, 0.9f, 1f, 0.9f)
         shapeRenderer.rect(left, top - 3f, statsW, 3f)
-        shapeRenderer.color = Color(0.78f, 0.24f, 1f, 0.55f)
-        shapeRenderer.rect(left + statsW - 4f, top - 33f, 4f, 30f)
         shapeRenderer.color = Color(0.18f, 0.9f, 1f, 0.12f)
         shapeRenderer.rect(left + 12f, top - 58f, statsW - 24f, 2f)
         shapeRenderer.rect(left + 12f, top - 88f, statsW - 24f, 2f)
 
+        // Single player health card. No separate core-health indicator.
         shapeRenderer.color = Color(0.004f, 0.014f, 0.026f, 0.94f)
-        shapeRenderer.rect(healthX, top - panelH, healthW, panelH)
+        shapeRenderer.rect(healthX, top - 108f, healthW, 108f)
         shapeRenderer.color = healthColor
         shapeRenderer.rect(healthX, top - 3f, healthW, 3f)
-
-        // Larger 12px health bar with its own vertical lane, safely below CORE text.
         shapeRenderer.color = Color(0f, 0f, 0f, 0.72f)
         shapeRenderer.rect(healthBarX, top - 78f, healthBarW, 12f)
         shapeRenderer.color = healthColor
@@ -709,11 +703,11 @@ class GameScreen : Screen, InputAdapter() {
         drawBodyRight("COMBO x" + combo, left + statsW - 14f, top - 65f,
             if (combo >= 3) Color(1f, 0.72f, 0.2f, 1f) else Color(0.46f, 0.6f, 0.68f, 1f))
 
-        fitBodyFont("CORE", healthW * 0.45f, 0.72f, 0.48f)
-        drawBodyShadowed("CORE", healthBarX, top - 36f, Color(0.74f, 0.9f, 0.96f, 1f))
+        fitBodyFont("HEALTH", healthW * 0.45f, 0.72f, 0.48f)
+        drawBodyShadowed("HEALTH", healthBarX, top - 36f, Color(0.74f, 0.9f, 0.96f, 1f))
         val healthText = player.health.toString() + "/" + player.maxHealth
         fitBodyFont(healthText, healthW * 0.38f, 0.72f, 0.48f)
-        drawBodyRight(healthText, healthX + healthW - 12f, top - 36f, Color(1f, 0.55f, 0.62f, 1f))
+        drawBodyRight(healthText, healthX + healthW - 12f, top - 36f, healthColor)
 
         batch.end()
         drawPauseIcon(pauseButton)
