@@ -36,10 +36,8 @@ class MenuRenderer(
         val split = panelX + panelW * 0.54f
 
         shape.begin(ShapeRenderer.ShapeType.Filled)
-        shape.color = UiTheme.BLACK; shape.color.a = 0.74f
-        shape.rect(0f, 0f, width, height)
-        UiShapes.roundedRect(shape, panelX, panelY, panelW, panelH, UiTheme.Metrics.PANEL_RADIUS, UiTheme.PANEL)
-        UiShapes.roundedRect(shape, panelX + UiTheme.Metrics.PANEL_INSET, panelY + UiTheme.Metrics.PANEL_INSET, panelW - UiTheme.Metrics.PANEL_INSET * 2f, panelH - UiTheme.Metrics.PANEL_INSET * 2f, UiTheme.Metrics.INNER_RADIUS, UiTheme.INNER)
+        UiShapes.overlay(shape, width, height)
+        UiShapes.panel(shape, panelX, panelY, panelW, panelH)
 
         drawButton(single, UiTheme.CYAN)
         drawButton(multi, UiTheme.PANEL_DARK)
