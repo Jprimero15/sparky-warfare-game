@@ -1060,15 +1060,18 @@ class GameScreen : Screen, InputAdapter() {
 
                 val h = Gdx.graphics.height.toFloat()
                 val w = Gdx.graphics.width.toFloat()
-                val controlRadius = (h * 0.22f).coerceIn(82f, 104f)
-                val leftX = controlRadius + 54f
-                val rightX = w - controlRadius - 54f
-                val baseY = controlRadius + 46f
+                val leftSafe = Gdx.graphics.safeInsetLeft.toFloat().coerceAtLeast(GameConfig.Ui.SAFE_MARGIN)
+                val rightSafe = (w - Gdx.graphics.safeInsetRight).coerceAtMost(w - GameConfig.Ui.SAFE_MARGIN)
+                val bottomSafe = Gdx.graphics.safeInsetBottom.toFloat().coerceAtLeast(GameConfig.Ui.SAFE_MARGIN)
+                val controlRadius = (h * 0.24f).coerceIn(100f, 128f)
+                val leftX = leftSafe + controlRadius + 30f
+                val rightX = rightSafe - controlRadius - 30f
+                val baseY = bottomSafe + controlRadius + 24f
                 val moveX = if (controlsSwapped) rightX else leftX
                 val fireX = if (controlsSwapped) leftX else rightX
                 val dx = screenX - moveX
                 val dy = (h - screenY) - baseY
-                val controlHitRadius = controlRadius + 24f
+                val controlHitRadius = controlRadius + 26f
 
                 if (dx * dx + dy * dy <= controlHitRadius * controlHitRadius) {
                     val joystickCenterScreenY = h - baseY
