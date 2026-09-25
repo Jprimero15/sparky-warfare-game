@@ -257,3 +257,15 @@ Multiplayer is currently presented as unavailable rather than exposing a non-fun
 ## CI baseline
 
 The repository's `main` branch is kept build-verified through GitHub Actions after each committed change.
+
+
+## UI design system
+
+Sparky Warfare uses a shared **Soft Neon Arcade** UI system so screens remain visually consistent and inexpensive to maintain.
+
+- `UiTheme.kt` — semantic colors, text roles, and shared geometry metrics.
+- `UiShapes.kt` — reusable rounded panels, overlays, gradients, and soft-neon buttons.
+- `UiText.kt` — shared text fitting and alignment helpers that protect against clipping on compact landscape screens.
+- `UiLayout.kt` — safe-area-aware touch targets and enlarged multitouch hit regions.
+
+New UI should consume these shared primitives instead of introducing screen-specific colors, corner radii, or button treatments.
