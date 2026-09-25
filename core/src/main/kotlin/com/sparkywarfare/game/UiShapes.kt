@@ -50,7 +50,7 @@ object UiShapes {
         }
     }
 
-    fun softButton(shape: ShapeRenderer, rect: Rectangle, color: Color, radius: Float = 22f) {
+    fun softButton(shape: ShapeRenderer, rect: Rectangle, color: Color, radius: Float = UiTheme.Metrics.BUTTON_RADIUS) {
         // Blend the requested semantic color with the shared cyan/violet palette so
         // every touch target has the soft two-tone arcade treatment.
         val top = Color(
