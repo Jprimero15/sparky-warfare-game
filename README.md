@@ -1,73 +1,66 @@
 # Sparky Warfare
 
-An Android-only top-down tank-combat game built with **LibGDX + Kotlin**. The game uses glowing energy tanks, laser fire, destructible walls, waves, power-ups, and Android touch controls.
+An Android-only top-down tank-combat game built with **LibGDX 1.12.1 + Kotlin**. The game uses glowing energy tanks, laser fire, destructible walls, wave-based enemies, power-ups, particle debris, real framebuffer bloom, and Android touch controls.
 
 ## Status
 
-The complete single-player gameplay loop is playable and hardened for modern Android, with a modular gameplay pipeline and redesigned mobile presentation:
+The complete single-player gameplay loop is playable and hardened for modern Android:
 
-- Menu → play → game over → retry
+- Menu → play → upgrade → game over → retry
+- First-run field briefing explaining movement, firing, waves, upgrades, and combos
 - Player movement and continuous firing
-- Enemy chase-and-fire AI
+- Enemy chase-and-fire AI with wall line-of-sight checks
 - Destructible brick, reinforced brick, concrete, and metal barriers plus indestructible steel walls
-- Wave progression and scoring
+- Centralized wave scaling with elite-wave rules and wave-start banners
+- Visible enemy health bars, including elite tanks
+- Expanded upgrade pool with stacking limits
 - Rapid-fire, score, shield, spread-shot, and overdrive power-ups
 - Android multitouch movement/fire controls
+- Left-handed control-side swap
 - Dedicated translucent virtual joystick and fire button
+- SFX mute plus persistent master-volume slider
+- Haptic feedback toggle
 - Full-screen immersive Android presentation
-- Wide 1600×900 world with a camera that smoothly follows the player
-- Redesigned main menu with **Single Player** and **Multiplayer** placeholder
-- Upgraded HUD with aligned tactical typography, shadowed text, fixed-width HUD glyphs, and responsive panels
-- Deep-black battlefield with clean open floor space and high-contrast combat lighting
-- Layered glow, impact bursts, hit flash, and screen shake
-- Bundled CC0 sci-fi SFX for lasers, hits, explosions, power-ups, and UI feedback
-- Optional Android haptic feedback for firing, hits, explosions, pickups, and menu actions
-- Futuristic Orbitron typography generated from the bundled OFL-1.1 font at runtime through LibGDX FreeType
-- Bundled CC0 Kenney sci-fi OGG effects for offline gameplay
-- Persistent SFX/haptics settings, safe-area-aware controls, pause/resume, and a Main Menu game-over path
-- Validated enemy spawning that avoids cover/player overlap and line-of-sight-gated enemy firing
-- Player damage i-frames and pooled transient combat entities for smoother Android frame pacing
+- Wide 1600×900 world with predictive camera look-ahead
+- Persistent high score, best wave, and kill statistics
+- Game-over retry and Main Menu paths
+- Adaptive Android launcher icon with vector fallback
+- Real framebuffer-based bright-pass/blur bloom for the glow layer
+- Programmatic pooled-style particle debris for combat impacts without a fragile text-emitter parser
 
-Recent stability fixes harden the gameplay loop:
+## Architecture
 
-- Tank movement uses a circular footprint instead of a center-point wall test.
-- Player and enemies are kept separated and clamped inside the arena.
-- Enemy firing is timer-based instead of frame-rate-dependent random firing.
-- Waves cap enemy count and use bounded, composition-driven scaling instead of unbounded linear stat growth.
-- Enemy roles vary between fast scouts, assault tanks, heavy tanks, and ranged units.
-- Arena cover uses mixed obstacle layouts with different materials and durability.
-- Laser collision uses the travelled segment, preventing fast shots from skipping targets or walls.
-- Restart clears joystick and all active fire pointers.
-- Multiple Android fire touches are tracked independently.
-- Large frame deltas are capped to avoid physics jumps after a stalled frame.
-- Power-ups avoid walls, the player spawn area, and duplicate live pickups, with five distinct pickup types.
-- Input is cleared when the screen is disposed.
-- Touch-cancel and Android lifecycle pause paths clear active joystick/fire state.
-- Audio initialization failures are isolated so unsupported audio devices do not stop gameplay.
+The project remains intentionally Android-only with no desktop target. Gameplay responsibilities are separated into focused systems:
 
-## Android-only project layout
+- `CollisionSystem` — circular tank movement, separation, wall tests, laser intersections, and LOS checks
+- `CombatSystem` — damage routing and centralized kill scoring
+- `EnemySpawner` — validated spawn placement and enemy composition
+- `WaveManager` — single source of truth for wave counts, elite cadence, upgrade cadence, and bonuses
+- `PowerUpManager` — pickup selection and safe placement
+- `EntityPools` — reusable transient laser/burst entities
+- `InputController` — multitouch fire tracking, joystick lifecycle, and pause-safe input
+- `UiLayout` — safe-area geometry and reusable screen-space button rectangles
+- `HudRenderer` — shared HUD typography/layout helpers
+- `BloomRenderer` — framebuffer glow pass and shader composite
+- `ParticleDebris` — lightweight runtime debris effects
+- `GameScreen` — screen lifecycle, state transitions, simulation coordination, persistence, and input routing
 
-```
-core/           # Shared LibGDX game logic and rendering
-android/        # Only application target and Android launcher
-assets/         # Shaders and particle resources
-.github/        # Android-only GitHub Actions CI
-```
+The old unused `core/.../game/ui/` stub package has been removed so there is one UI layout source instead of duplicate renderer/safe-area classes.
 
-The desktop/LWJGL module has been removed. There is no desktop launcher, desktop dependency, or desktop Gradle target.
+## Visual direction
 
-Important gameplay files are under `core/src/main/kotlin/com/sparkywarfare/game/`.
+The visual system uses a near-black battlefield, cyan player energy, warm neon enemy accents, translucent tactical panels, bright laser cores, layered impact rings, and soft additive bloom. Orbitron remains the headline/tactical display font; the bundled LibGDX default bitmap font is used for compact body/briefing copy so small explanatory text does not require scaling the headline font.
 
 ## Android controls
 
-- Use the dedicated **MOVE** virtual joystick on the lower-left.
-- Hold the dedicated **FIRE** button on the lower-right.
-- Multiple fire touches are handled safely.
-- **Single Player** starts the current game mode.
-- **Multiplayer** is a visual placeholder for a future mode.
-- Tap after game over to retry.
-
-There is no desktop keyboard-control path.
+- Use the **MOVE** virtual joystick.
+- Hold the **FIRE** control to shoot continuously.
+- The Settings screen can swap the MOVE/FIRE sides for left-handed play.
+- Multiple fire touches are tracked independently.
+- Tap **Single Player** to start.
+- **Multiplayer** remains visibly unavailable rather than pretending to provide a working mode.
+- Pause is available during active play.
+- After game over, choose **RETRY** or **MAIN MENU**.
 
 ## Building
 
@@ -95,28 +88,51 @@ CI uses:
 - Gradle 8.7
 - Android Gradle Plugin 8.5.0
 - Kotlin 1.9.24
+- LibGDX 1.12.1
+- minSdk 24 / targetSdk 34
 
-The workflow installs the required Android SDK packages directly and does not use the obsolete SDK `tools` package.
+The workflow verifies that only `core` and `android` modules exist, rejects forbidden desktop-target references, builds the debug APK, verifies all four LibGDX native ABIs, and uploads the APK artifact.
 
-The generated `sparky-warfare-debug` artifact contains the debug APK.
+## Presentation and safe areas
 
-## Presentation upgrade
+The playable world is substantially wider and taller than the camera view, and the camera follows the player with smooth clamping plus a small movement-direction look-ahead.
 
-The game no longer treats the device screen as the whole arena. The playable world is substantially wider and taller than the camera view, and the camera follows the player with smooth clamping at the world edges.
-
-The Android presentation uses immersive full-screen mode. HUD and controls are rendered in a separate screen-space camera and respect Android display cutout/gesture safe insets so important controls stay inside the usable area.
+HUD, menus, settings, upgrade cards, pause controls, and touch controls use the shared `UiLayout` safe-area geometry. Android display-cutout and gesture insets are respected so important controls stay inside the usable region.
 
 ## Rendering
 
-`GlowRenderer` provides the shared layered glow style for tanks, lasers, power-ups and bursts. Compatible effects are rendered in batched additive passes, with reusable math/color state to reduce Android allocation churn. The presentation includes stronger bloom-like halos, brighter laser cores, multi-ring impacts, power-up pulses, varied obstacle materials, player hit flash, and subtle camera shake without a heavyweight rendering dependency.
+`GlowRenderer` draws the shared energy language for tanks, lasers, power-ups and impact rings. Those glow elements are rendered into a transparent framebuffer, then passed through the bundled `glow.vert` / `glow.frag` shader for a luminance threshold and small multi-tap blur before being composited additively over the battlefield. The post-process is deliberately lightweight for Android.
+
+`ParticleDebris` uses the bundled `particle.png` directly and generates short-lived debris bursts in code. This avoids loading the previously malformed legacy `.p` emitter resource during screen startup.
+
+## Stability and performance
+
+- Tank movement uses a circular footprint instead of a center-point wall test.
+- Player and enemies are kept separated and clamped inside the arena.
+- Enemy firing is timer-based and requires line of sight.
+- Waves use bounded, composition-driven scaling rather than unbounded linear stat growth.
+- Enemy roles vary between fast scouts, assault tanks, heavy tanks, and ranged units.
+- Elite tanks appear on the centralized elite cadence and expose their health through an on-screen bar.
+- Laser collision uses the travelled segment, preventing fast shots from skipping targets or walls.
+- Player damage has invulnerability frames.
+- Restart clears joystick and all active fire pointers.
+- Large frame deltas are capped to avoid physics jumps after a stalled frame.
+- Transient lasers and bursts are pooled.
+- Particle debris is bounded and removes expired effects backwards through its active list.
+- Audio initialization failures are isolated so unsupported audio devices do not stop gameplay.
+- Safe-area calculations are centralized rather than repeated across screens.
+
+## Assets and licensing
+
+Bundled third-party assets are documented in `assets/licenses/THIRD_PARTY_ASSETS.md`.
+
+- Orbitron Medium — OFL-1.1
+- Kenney Sci-fi Sounds — CC0
+- All new launcher icon graphics are hand-authored vector XML in the project and require no third-party license.
 
 ## Future work
 
-1. Real bloom via the included framebuffer shader.
-2. Particle debris using the included LibGDX particle resource.
-3. Additional arena layouts and deeper enemy behavior.
-4. Optional mini-boss encounters as a future stretch feature.
-5. Multiplayer remains intentionally out of scope for this pass.
-
-
-<!-- hud camera CI validation -->
+1. Additional arena layouts and deeper enemy behavior.
+2. Optional mini-boss encounters as a stretch feature.
+3. Additional distinct UI/power-up audio assets if the audio pack is expanded.
+4. Multiplayer remains intentionally out of scope for this pass.
