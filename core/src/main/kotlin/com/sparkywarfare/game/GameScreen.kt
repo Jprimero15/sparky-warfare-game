@@ -782,6 +782,145 @@ class GameScreen : Screen, InputAdapter() {
         return rect.contains(screenX.toFloat(), uiY)
     }
 
+    override fun touchDown(screenX: Int, screenY: Int, pointer: Int, button: Int): Boolean {
+        if (button != Input.Buttons.LEFT && button != Input.Buttons.RIGHT) return true
+
+        when (state) {
+            GameState.MENU -> {
+                if (toUiRect(screenX, screenY, singleButton)) {
+                    startSinglePlayer()
+                } else if (toUiRect(screenX, screenY, multiButton)) {
+                    // Multiplayer is intentionally unavailable; keep the button non-destructive.
+                    FeedbackAudio.play(FeedbackAudio.Cue.UI)
+                } else if (toUiRect(screenX, screenY, settingsButton)) {
+                    state = GameState.SETTINGS
+                    transition = 0f
+                    transitionTarget = 0f
+                    FeedbackAudio.play(FeedbackAudio.Cue.UI)
+                }
+                return true
+            }
+
+            GameState.SETTINGS -> {
+                when {
+                    toUiRect(screenX, screenY, toggleSfxButton) -> {
+                        val mutedNow = !FeedbackAudio.isMuted()
+                        FeedbackAudio.setMuted(mutedNow)
+                        prefs.putBoolean("muteSfx", mutedNow).flush()
+                        FeedbackAudio.play(FeedbackAudio.Cue.UI)
+                    }
+                    toUiRect(screenX, screenY, toggleHapticsButton) -> {
+                        hapticsMuted = !hapticsMuted
+                        prefs.putBoolean("muteHaptics", hapticsMuted).flush()
+                        FeedbackAudio.play(FeedbackAudio.Cue.UI)
+                    }
+                    toUiRect(screenX, screenY, volumeSlider) -> {
+                        val min = volumeSlider.x
+                        val max = volumeSlider.x + volumeSlider.width
+                        val value = ((screenX.toFloat() - min) / (max - min)).coerceIn(0f, 1f)
+                        FeedbackAudio.setMasterVolume(value)
+                        prefs.putFloat("sfxVolume", value).flush()
+                    }
+                    toUiRect(screenX, screenY, swapControlsButton) -> {
+                        controlsSwapped = !controlsSwapped
+                        prefs.putBoolean("controlsSwapped", controlsSwapped).flush()
+                        FeedbackAudio.play(FeedbackAudio.Cue.UI)
+                    }
+                    toUiRect(screenX, screenY, menuButton) -> {
+                        state = GameState.MENU
+                        transition = 0f
+                        transitionTarget = 0f
+                        FeedbackAudio.play(FeedbackAudio.Cue.UI)
+                    }
+                }
+                return true
+            }
+
+            GameState.PAUSED -> {
+                when {
+                    toUiRect(screenX, screenY, resumeButton) -> {
+                        input.setPaused(false)
+                        state = GameState.PLAYING
+                        FeedbackAudio.play(FeedbackAudio.Cue.UI)
+                    }
+                    toUiRect(screenX, screenY, menuButton) -> {
+                        input.setPaused(false)
+                        state = GameState.MENU
+                        transition = 0f
+                        transitionTarget = 0f
+                        FeedbackAudio.play(FeedbackAudio.Cue.UI)
+                    }
+                }
+                return true
+            }
+
+            GameState.GAME_OVER -> {
+                when {
+                    toUiRect(screenX, screenY, singleButton) -> startOrRestart()
+                    toUiRect(screenX, screenY, menuButton) -> {
+                        input.clearTransientInput()
+                        state = GameState.MENU
+                        transition = 0f
+                        transitionTarget = 0f
+                        FeedbackAudio.play(FeedbackAudio.Cue.UI)
+                    }
+                }
+                return true
+            }
+
+            GameState.UPGRADE -> {
+                for (index in ui.upgradeButtons.indices) {
+                    if (toUiRect(screenX, screenY, ui.upgradeButtons[index]) && index < upgradeChoices.size) {
+                        applyUpgrade(upgradeChoices[index])
+                        state = GameState.PLAYING
+                        input.setPaused(false)
+                        transition = 0f
+                        transitionTarget = 0f
+                        FeedbackAudio.play(FeedbackAudio.Cue.POWER_UP)
+                        haptic(Input.VibrationType.MEDIUM)
+                        break
+                    }
+                }
+                return true
+            }
+
+            GameState.PLAYING -> {
+                if (toUiRect(screenX, screenY, pauseButton)) {
+                    input.clearTransientInput()
+                    state = GameState.PAUSED
+                    input.setPaused(true)
+                    FeedbackAudio.play(FeedbackAudio.Cue.UI)
+                    return true
+                }
+
+                val h = Gdx.graphics.height.toFloat()
+                val w = Gdx.graphics.width.toFloat()
+                val controlRadius = (h * 0.17f).coerceIn(58f, 74f)
+                val leftX = controlRadius + 42f
+                val rightX = w - controlRadius - 42f
+                val baseY = controlRadius + 34f
+                val moveX = if (controlsSwapped) rightX else leftX
+                val fireX = if (controlsSwapped) leftX else rightX
+                val dx = screenX - moveX
+                val dy = (h - screenY) - baseY
+                val controlHitRadius = controlRadius + 18f
+
+                if (dx * dx + dy * dy <= controlHitRadius * controlHitRadius) {
+                    input.joystick.tryActivate(screenX.toFloat(), screenY.toFloat(), pointer)
+                    input.joystick.drag(screenX.toFloat(), screenY.toFloat(), pointer)
+                    return true
+                }
+
+                val fireDx = screenX - fireX
+                if (fireDx * fireDx + dy * dy <= controlHitRadius * controlHitRadius) {
+                    input.pressFire(pointer)
+                    return true
+                }
+                return true
+            }
+        }
+    }
+
     override fun touchDragged(screenX: Int, screenY: Int, pointer: Int): Boolean {
         input.drag(screenX, screenY, pointer)
         return true
