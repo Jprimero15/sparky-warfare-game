@@ -34,7 +34,6 @@ class PauseRenderer(
         batch.begin()
         text.fit(titleFont,"PAUSED",panelW-80f,1.25f,0.82f)
         text.centered(titleFont,"PAUSED",cx,y+panelH-58f,UiTheme.CYAN)
-        text.centered(bodyFont,"COMBAT SUSPENDED // SYSTEM HOLD",cx,y+panelH-94f,UiTheme.MAGENTA)
         command(resume,"RESUME",UiTheme.WHITE)
         command(menu,"MENU",UiTheme.WHITE)
         text.reset(titleFont,bodyFont)

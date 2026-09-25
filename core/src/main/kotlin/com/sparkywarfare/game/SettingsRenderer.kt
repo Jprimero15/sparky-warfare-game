@@ -34,7 +34,7 @@ class SettingsRenderer(
         text.fit(titleFont,"SYSTEM CONFIG",panelW-90f,1.2f,0.8f);text.centered(titleFont,"SYSTEM CONFIG",cx,y+panelH-56f,UiTheme.CYAN)
                 command(sfx,"SFX: "+if(muted)"OFF" else "ON",if(muted)UiTheme.DANGER else UiTheme.WHITE)
         command(haptics,"HAPTICS: "+if(hapticsMuted)"OFF" else "ON",if(hapticsMuted)UiTheme.DANGER else UiTheme.WHITE)
-        text.fit(bodyFont,"VOLUME "+(volumeValue*100f).toInt()+"%",volume.width-20f,0.72f,0.5f);text.centered(bodyFont,"MASTER VOLUME  "+(volumeValue*100f).toInt()+"%",volume.x+volume.width/2f,volume.y+volume.height+22f,UiTheme.DIM)
+        text.fit(bodyFont,"VOLUME "+(volumeValue*100f).toInt()+"%",volume.width-20f,0.72f,0.5f);text.centered(bodyFont,"VOLUME "+(volumeValue*100f).toInt()+"%",volume.x+volume.width/2f,volume.y+volume.height+22f,UiTheme.DIM)
         command(swap,"CONTROLS",UiTheme.WHITE)
         command(menu,"BACK",UiTheme.WHITE)
         text.reset(titleFont,bodyFont);batch.end()

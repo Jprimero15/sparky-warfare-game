@@ -72,7 +72,6 @@ class MenuRenderer(
         drawCommand(single, "PLAY", UiTheme.WHITE)
         drawCommand(multi, "MULTIPLAYER", UiTheme.DIM)
         drawCommand(settings, "SETTINGS", UiTheme.WHITE)
-        text.centered(bodyFont, "BUILD 01  //  ANDROID", split + (panelX + panelW - split) / 2f, panelY + 30f, UiTheme.DIM)
         text.reset(titleFont, bodyFont)
         batch.end()
     }
