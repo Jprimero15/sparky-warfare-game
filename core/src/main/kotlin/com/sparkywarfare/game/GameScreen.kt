@@ -85,6 +85,7 @@ class GameScreen : Screen, InputAdapter() {
     private lateinit var menuRenderer: MenuRenderer
     private lateinit var settingsRenderer: SettingsRenderer
     private lateinit var gameOverRenderer: GameOverRenderer
+    private lateinit var upgradeRenderer: UpgradeRenderer
     private val ui = UiLayout()
     private lateinit var bodyFont: BitmapFont
     private val safeArea get() = ui.safeArea
@@ -146,6 +147,7 @@ class GameScreen : Screen, InputAdapter() {
         menuRenderer = MenuRenderer(shapeRenderer, batch, font)
         settingsRenderer = SettingsRenderer(shapeRenderer, batch, font)
         gameOverRenderer = GameOverRenderer(shapeRenderer, batch, font)
+        upgradeRenderer = UpgradeRenderer(shapeRenderer, batch, font)
         highScore = prefs.getInteger("highScore", 0)
         bestWave = prefs.getInteger("bestWave", 0)
         totalKills = prefs.getInteger("totalKills", 0)
@@ -776,53 +778,7 @@ class GameScreen : Screen, InputAdapter() {
     }
 
     private fun drawUpgradeOverlay() {
-        val w = Gdx.graphics.width.toFloat()
-        val h = Gdx.graphics.height.toFloat()
-        val centerX = w / 2f
-        val cardW = (w * 0.27f).coerceIn(190f, 300f)
-        val cardH = (h * 0.42f).coerceIn(210f, 310f)
-        val gap = (w * 0.025f).coerceIn(12f, 28f)
-        val totalW = cardW * 3f + gap * 2f
-        val left = centerX - totalW / 2f
-        val bottom = (h - cardH) / 2f - 4f
-
-        Gdx.gl.glEnable(GL20.GL_BLEND)
-        Gdx.gl.glBlendFunc(GL20.GL_SRC_ALPHA, GL20.GL_ONE_MINUS_SRC_ALPHA)
-        shapeRenderer.projectionMatrix = hudCamera.combined
-        shapeRenderer.begin(ShapeRenderer.ShapeType.Filled)
-        shapeRenderer.color = Color(0f, 0f, 0f, 0.92f)
-        shapeRenderer.rect(0f, 0f, w, h)
-        shapeRenderer.color = Color(0.03f, 0.16f, 0.2f, 0.2f)
-        shapeRenderer.rect(0f, h * 0.72f, w, h * 0.28f)
-        for (i in 0 until 3) {
-            val x = left + i * (cardW + gap)
-            ui.upgradeButtons[i].set(x, bottom, cardW, cardH)
-            shapeRenderer.color = Color(0.035f, 0.055f, 0.07f, 0.96f)
-            shapeRenderer.rect(x, bottom, cardW, cardH)
-            shapeRenderer.color = Color(0.15f, 0.72f, 1f, 0.7f)
-            shapeRenderer.rect(x, bottom + cardH - 3f, cardW, 3f)
-        }
-        shapeRenderer.end()
-        Gdx.gl.glDisable(GL20.GL_BLEND)
-
-        batch.projectionMatrix = hudCamera.combined
-        batch.begin()
-        fitFont("CHOOSE YOUR UPGRADE", w * 0.72f, 1.8f, 1.0f)
-        drawCentered("CHOOSE YOUR UPGRADE", centerX, h * 0.86f, Color(0.58f, 0.92f, 1f, 1f))
-        font.data.setScale(0.65f)
-        drawCentered("WAVE " + wave + " COMPLETE", centerX, h * 0.79f, Color(0.46f, 0.62f, 0.68f, 1f))
-        for (i in 0 until minOf(3, upgradeChoices.size)) {
-            val rect = ui.upgradeButtons[i]
-            val choice = upgradeChoices[i]
-            fitFont(choice.title, rect.width - 24f, 1.08f, 0.68f)
-            drawCentered(choice.title, rect.x + rect.width / 2f, rect.y + rect.height - 52f, Color.WHITE)
-            fitFont(choice.description, rect.width - 24f, 0.7f, 0.52f)
-            drawCentered(choice.description, rect.x + rect.width / 2f, rect.y + rect.height / 2f + 6f,
-                Color(0.45f, 0.72f, 0.8f, 1f))
-            font.data.setScale(0.58f)
-            drawCentered("TAP TO SELECT", rect.x + rect.width / 2f, rect.y + 26f, Color(0.38f, 0.52f, 0.58f, 1f))
-        }
-        batch.end()
+        upgradeRenderer.draw(Gdx.graphics.width.toFloat(), Gdx.graphics.height.toFloat(), wave, upgradeChoices, ui.upgradeButtons, ::drawCentered, ::fitFont)
     }
 
     private fun drawPauseOverlay() {
