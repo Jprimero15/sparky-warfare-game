@@ -28,10 +28,10 @@ class UpgradeRenderer(
 
         val gap = (width * 0.018f).coerceIn(12f, 24f)
         val cardW = ((panelW - 56f - gap * 2f) / 3f).coerceIn(185f, 330f)
-        val cardH = (panelH * 0.58f).coerceIn(225f, 330f)
+        val cardH = (panelH * 0.52f).coerceIn(210f, 300f)
         val totalW = cardW * 3f + gap * 2f
         val left = cx - totalW / 2f
-        val bottom = panelY + 70f
+        val bottom = panelY + 48f
 
         shape.begin(ShapeRenderer.ShapeType.Filled)
         UiShapes.overlay(shape, width, height)
