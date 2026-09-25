@@ -2,23 +2,26 @@
 precision mediump float;
 #endif
 
+varying vec4 v_color;
 varying vec2 v_texCoords;
 uniform sampler2D u_texture;
-
-// How aggressively bright pixels bloom. Tune from Kotlin via
-// ShaderProgram.setUniformf("u_intensity", value).
 uniform float u_intensity;
+uniform vec2 u_texelSize;
 
 void main() {
-    vec4 color = texture2D(u_texture, v_texCoords);
-
-    // luminance-based bright-pass: only strongly-lit pixels (our glow
-    // cores and lasers) contribute to the bloom, so dark backgrounds
-    // stay clean instead of washing out.
-    float luminance = dot(color.rgb, vec3(0.2126, 0.7152, 0.0722));
-    float threshold = 0.55;
-    float brightAmount = smoothstep(threshold, 1.0, luminance);
-
-    vec3 bloom = color.rgb * brightAmount * u_intensity;
-    gl_FragColor = vec4(color.rgb + bloom, color.a);
+    vec4 center = texture2D(u_texture, v_texCoords);
+    float luminance = dot(center.rgb, vec3(0.2126, 0.7152, 0.0722));
+    float threshold = smoothstep(0.45, 0.95, luminance);
+    vec3 sum = vec3(0.0);
+    sum += texture2D(u_texture, v_texCoords + vec2(-2.0, 0.0) * u_texelSize).rgb;
+    sum += texture2D(u_texture, v_texCoords + vec2( 2.0, 0.0) * u_texelSize).rgb;
+    sum += texture2D(u_texture, v_texCoords + vec2(0.0, -2.0) * u_texelSize).rgb;
+    sum += texture2D(u_texture, v_texCoords + vec2(0.0,  2.0) * u_texelSize).rgb;
+    sum += texture2D(u_texture, v_texCoords + vec2(-1.4, -1.4) * u_texelSize).rgb;
+    sum += texture2D(u_texture, v_texCoords + vec2( 1.4, -1.4) * u_texelSize).rgb;
+    sum += texture2D(u_texture, v_texCoords + vec2(-1.4,  1.4) * u_texelSize).rgb;
+    sum += texture2D(u_texture, v_texCoords + vec2( 1.4,  1.4) * u_texelSize).rgb;
+    sum *= 0.125;
+    vec3 bloom = (sum + center.rgb * 0.35) * threshold * u_intensity;
+    gl_FragColor = vec4(bloom, max(center.a, threshold * 0.45)) * v_color;
 }
