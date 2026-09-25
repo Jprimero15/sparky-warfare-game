@@ -115,6 +115,17 @@ The combat controls are designed for landscape mobile play:
 - MOVE/FIRE sides can be swapped for left-handed play.
 - Control positions are recalculated when the display changes size or rotation.
 
+## Game-session foundation
+
+The runtime now has an explicit game-session boundary before networking is introduced:
+- GameMode identifies the current simulation mode without adding multiplayer behavior.
+- GameSession owns mode/participant metadata and the local player slot.
+- Single-player remains the only active mode today, with the existing enemy AI unchanged.
+- Human-player slots are represented independently from AI enemies so a future local/LAN mode can reuse the same Tank, CombatSystem, CollisionSystem, WorldRenderer, and TankRenderer systems.
+- No sockets, Bluetooth/Wi-Fi transport, lobby service, or multiplayer UI is included yet.
+
+This keeps networking as a future session/input layer rather than requiring a second combat implementation.
+
 ## Architecture
 
 The project intentionally remains Android-only.

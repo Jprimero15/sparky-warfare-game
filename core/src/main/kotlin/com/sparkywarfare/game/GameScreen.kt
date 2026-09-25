@@ -50,6 +50,8 @@ class GameScreen : Screen, InputAdapter() {
     private lateinit var hudCamera: OrthographicCamera
 
     private lateinit var player: Tank
+    /** Session boundary keeps game-mode ownership separate from rendering and UI. */
+    private val session = GameSession()
     private val enemies = mutableListOf<Tank>()
     private val lasers = mutableListOf<Laser>()
     private val walls = mutableListOf<Wall>()
@@ -211,6 +213,7 @@ class GameScreen : Screen, InputAdapter() {
             fireRate = GameConfig.Player.FIRE_RATE,
             radius = GameConfig.Player.RADIUS
         )
+        session.beginSinglePlayer(player)
         centerCameraForIdle()
         router.goTo(GameState.MENU)
     }
@@ -249,6 +252,7 @@ class GameScreen : Screen, InputAdapter() {
             fireRate = GameConfig.Player.FIRE_RATE,
             radius = GameConfig.Player.RADIUS
         )
+        session.beginSinglePlayer(player)
         buildArena()
         nextWave()
         centerCamera(true)
@@ -430,6 +434,7 @@ class GameScreen : Screen, InputAdapter() {
     }
 
     private fun updateEnemyAi(delta: Float) {
+        if (!session.aiEnabled) return
         for (enemy in enemies) {
             if (!enemy.alive) continue
             scratchDirection.set(player.position).sub(enemy.position)
