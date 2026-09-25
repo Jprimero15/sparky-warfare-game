@@ -23,11 +23,8 @@ class PauseRenderer(
         val y = cy - panelH / 2f
         shape.begin(ShapeRenderer.ShapeType.Filled)
         shape.color = UiTheme.BLACK; shape.color.a = 0.8f; shape.rect(0f,0f,width,height)
-        shape.color = UiTheme.PANEL; shape.rect(x,y,panelW,panelH)
-        shape.color = UiTheme.INNER; shape.rect(x+6f,y+6f,panelW-12f,panelH-12f)
-        shape.color = UiTheme.CYAN; shape.rect(x,y+panelH-4f,panelW,4f)
-        shape.color = UiTheme.MAGENTA; shape.rect(x+panelW-4f,y+panelH-38f,4f,34f)
-        shape.color = UiTheme.CYAN_SOFT; shape.rect(x+28f,y+panelH-118f,panelW-56f,2f)
+        UiShapes.roundedRect(shape,x,y,panelW,panelH,28f,UiTheme.PANEL)
+        UiShapes.roundedRect(shape,x+6f,y+6f,panelW-12f,panelH-12f,24f,UiTheme.INNER)
         drawButton(resume,UiTheme.CYAN)
         drawButton(menu,UiTheme.PANEL_DARK)
         shape.end()
