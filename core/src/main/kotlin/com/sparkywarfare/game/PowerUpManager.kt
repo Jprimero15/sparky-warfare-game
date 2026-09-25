@@ -4,7 +4,6 @@ import com.badlogic.gdx.math.Vector2
 import com.badlogic.gdx.math.MathUtils
 
 class PowerUpManager {
-    private val scratch = Vector2()
     fun chooseType(wave: Int): PowerUpType {
         return when (MathUtils.random(0, if (wave >= 8) 4 else 3)) {
             0 -> PowerUpType.RAPID_FIRE
