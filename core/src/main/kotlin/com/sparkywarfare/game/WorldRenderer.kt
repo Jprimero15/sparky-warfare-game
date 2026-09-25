@@ -8,6 +8,7 @@ import com.badlogic.gdx.graphics.g2d.BitmapFont
 import com.badlogic.gdx.graphics.g2d.GlyphLayout
 import com.badlogic.gdx.graphics.g2d.SpriteBatch
 import com.badlogic.gdx.graphics.glutils.ShapeRenderer
+import com.badlogic.gdx.math.MathUtils
 import com.badlogic.gdx.math.Vector2
 
 class WorldRenderer(
@@ -94,46 +95,85 @@ class WorldRenderer(
     fun drawTouchControls(controlsSwapped: Boolean) {
         val w = Gdx.graphics.width.toFloat()
         val h = Gdx.graphics.height.toFloat()
-        val controlRadius = (h * 0.22f).coerceIn(82f, 104f)
-        val leftX = controlRadius + 54f
-        val baseY = controlRadius + 46f
-        val rightX = w - controlRadius - 54f
+        val leftSafe = Gdx.graphics.safeInsetLeft.toFloat().coerceAtLeast(GameConfig.Ui.SAFE_MARGIN)
+        val rightSafe = (w - Gdx.graphics.safeInsetRight).coerceAtMost(w - GameConfig.Ui.SAFE_MARGIN)
+        val bottomSafe = Gdx.graphics.safeInsetBottom.toFloat().coerceAtLeast(GameConfig.Ui.SAFE_MARGIN)
+
+        val controlRadius = (h * 0.24f).coerceIn(100f, 128f)
+        val leftX = leftSafe + controlRadius + 30f
+        val rightX = rightSafe - controlRadius - 30f
+        val baseY = bottomSafe + controlRadius + 24f
         val baseX = if (controlsSwapped) rightX else leftX
         val fireX = if (controlsSwapped) leftX else rightX
+        val knobRadius = (controlRadius * 0.38f).coerceIn(42f, 54f)
+        val innerRadius = controlRadius - 15f
 
         Gdx.gl.glEnable(GL20.GL_BLEND)
         Gdx.gl.glBlendFunc(GL20.GL_SRC_ALPHA, GL20.GL_ONE_MINUS_SRC_ALPHA)
         shapeRenderer.projectionMatrix = hudCamera.combined
-        shapeRenderer.begin(ShapeRenderer.ShapeType.Filled)
-        shapeRenderer.color = touchBase
-        shapeRenderer.circle(baseX, baseY, controlRadius, 40)
-        shapeRenderer.color = touchAccent
-        shapeRenderer.circle(baseX, baseY, controlRadius - 6f, 40)
-        val knob = if (input.joystick.active) input.joystick.knobForRender(h, scratchUi) else scratchUi.set(baseX, baseY)
-        shapeRenderer.color = if (input.joystick.active) touchKnobActive else touchKnobIdle
-        shapeRenderer.circle(knob.x, knob.y, (controlRadius * 0.48f).coerceIn(38f, 50f), 36)
 
-        shapeRenderer.color = fireBase
-        shapeRenderer.circle(fireX, baseY, controlRadius, 40)
+        shapeRenderer.begin(ShapeRenderer.ShapeType.Filled)
+        shapeRenderer.color = Color(0.004f, 0.012f, 0.022f, 0.78f)
+        shapeRenderer.circle(baseX, baseY, controlRadius, 48)
+        shapeRenderer.color = Color(0.02f, 0.06f, 0.09f, 0.92f)
+        shapeRenderer.circle(baseX, baseY, innerRadius, 48)
+
+        val knob = if (input.joystick.active) {
+            input.joystick.knobForRender(h, scratchUi)
+        } else {
+            scratchUi.set(baseX, baseY)
+        }
+        shapeRenderer.color = if (input.joystick.active) touchKnobActive else touchKnobIdle
+        shapeRenderer.circle(knob.x, knob.y, knobRadius, 40)
+        shapeRenderer.color = Color(0.75f, 0.97f, 1f, if (input.joystick.active) 0.28f else 0.16f)
+        shapeRenderer.circle(knob.x, knob.y, knobRadius * 0.52f, 32)
+
+        shapeRenderer.color = Color(0.008f, 0.012f, 0.022f, 0.8f)
+        shapeRenderer.circle(fireX, baseY, controlRadius, 48)
+        shapeRenderer.color = Color(0.03f, 0.012f, 0.032f, 0.94f)
+        shapeRenderer.circle(fireX, baseY, innerRadius, 48)
         shapeRenderer.color = if (input.firing) fireActive else fireIdle
-        shapeRenderer.circle(fireX, baseY, controlRadius - 16f, 40)
+        shapeRenderer.circle(fireX, baseY, controlRadius * 0.58f, 44)
+        shapeRenderer.color = Color(1f, 0.65f, 0.72f, if (input.firing) 0.32f else 0.16f)
+        shapeRenderer.circle(fireX, baseY, controlRadius * 0.31f, 32)
         shapeRenderer.end()
 
         shapeRenderer.begin(ShapeRenderer.ShapeType.Line)
         shapeRenderer.color = moveOutline
-        shapeRenderer.circle(baseX, baseY, controlRadius, 40)
+        shapeRenderer.circle(baseX, baseY, controlRadius, 48)
+        shapeRenderer.circle(baseX, baseY, controlRadius - 7f, 48)
         shapeRenderer.color = fireOutline
-        shapeRenderer.circle(fireX, baseY, controlRadius, 40)
+        shapeRenderer.circle(fireX, baseY, controlRadius, 48)
+        shapeRenderer.circle(fireX, baseY, controlRadius - 7f, 48)
+
+        // Direction ticks make the enlarged joystick read as a real control, not a flat circle.
+        shapeRenderer.color = Color(0.42f, 0.84f, 1f, 0.5f)
+        for (i in 0 until 8) {
+            val angle = i * 45f * MathUtils.degRad
+            val inner = controlRadius - 22f
+            val outer = controlRadius - 12f
+            shapeRenderer.line(
+                baseX + kotlin.math.cos(angle.toDouble()).toFloat() * inner,
+                baseY + kotlin.math.sin(angle.toDouble()).toFloat() * inner,
+                baseX + kotlin.math.cos(angle.toDouble()).toFloat() * outer,
+                baseY + kotlin.math.sin(angle.toDouble()).toFloat() * outer
+            )
+        }
         shapeRenderer.end()
         Gdx.gl.glDisable(GL20.GL_BLEND)
 
         batch.projectionMatrix = hudCamera.combined
         batch.begin()
-        font.data.setScale(1.08f)
-        drawCentered("MOVE", baseX, baseY + 10f, hudTextColor)
-        drawCentered("FIRE", fireX, baseY + 10f, fireTextColor)
-        batch.end()
+        font.data.setScale(0.78f)
+        drawCentered("MOVE", baseX, baseY - 7f, Color(0.84f, 0.97f, 1f, 0.96f))
+        font.data.setScale(0.74f)
+        drawCentered("FIRE", fireX, baseY - 7f, Color(1f, 0.9f, 0.93f, 0.98f))
+        font.data.setScale(0.34f)
+        drawCentered("DRIVE", baseX, baseY - controlRadius + 18f, Color(0.46f, 0.72f, 0.81f, 0.92f))
+        drawCentered(if (input.firing) "ARMED" else "READY", fireX, baseY - controlRadius + 18f,
+            if (input.firing) Color(1f, 0.48f, 0.56f, 0.98f) else Color(0.62f, 0.74f, 0.8f, 0.92f))
         font.data.setScale(1f)
+        batch.end()
     }
 
     private fun drawArenaBackdrop() {
