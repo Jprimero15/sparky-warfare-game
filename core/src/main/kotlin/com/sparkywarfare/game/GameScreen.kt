@@ -145,11 +145,11 @@ class GameScreen : Screen, InputAdapter() {
         hudCamera.setToOrtho(false, Gdx.graphics.width.toFloat(), Gdx.graphics.height.toFloat())
         hud = HudRenderer(shapeRenderer, batch, font, layout, hudCamera)
         worldRenderer = WorldRenderer(camera, hudCamera, shapeRenderer, batch, glow, bloom, particles, font, input)
-        menuRenderer = MenuRenderer(shapeRenderer, batch, font)
-        settingsRenderer = SettingsRenderer(shapeRenderer, batch, font)
-        gameOverRenderer = GameOverRenderer(shapeRenderer, batch, font)
+        menuRenderer = MenuRenderer(shapeRenderer, batch, font, bodyFont)
+        settingsRenderer = SettingsRenderer(shapeRenderer, batch, font, bodyFont)
+        gameOverRenderer = GameOverRenderer(shapeRenderer, batch, font, bodyFont)
         upgradeRenderer = UpgradeRenderer(shapeRenderer, batch, font)
-        pauseRenderer = PauseRenderer(shapeRenderer, batch, font)
+        pauseRenderer = PauseRenderer(shapeRenderer, batch, font, bodyFont)
         highScore = prefs.getInteger("highScore", 0)
         bestWave = prefs.getInteger("bestWave", 0)
         totalKills = prefs.getInteger("totalKills", 0)
@@ -833,7 +833,7 @@ class GameScreen : Screen, InputAdapter() {
 
         menuRenderer.draw(
             w, h, safeArea, singleButton, multiButton, settingsButton,
-            highScore, bestWave, totalKills, ::drawButton, ::drawCentered, ::fitFont
+            highScore, bestWave, totalKills, ::drawButton
         )
     }
 
@@ -864,7 +864,7 @@ class GameScreen : Screen, InputAdapter() {
         batch.projectionMatrix = hudCamera.combined
         gameOverRenderer.draw(
             w, h, safeArea, singleButton, menuButton, score, highScore, wave,
-            totalKills, comboBest, ::drawButton, ::drawCentered, ::fitFont
+            totalKills, comboBest, ::drawButton
         )
     }
 
@@ -914,7 +914,7 @@ class GameScreen : Screen, InputAdapter() {
         ui.pause(w, h)
         shapeRenderer.projectionMatrix = hudCamera.combined
         batch.projectionMatrix = hudCamera.combined
-        pauseRenderer.draw(w, h, resumeButton, menuButton, ::drawButton, ::drawCentered, ::fitFont)
+        pauseRenderer.draw(w, h, safeArea, resumeButton, menuButton, ::drawButton)
     }
 
     private fun drawSettingsOverlay() {
@@ -927,7 +927,7 @@ class GameScreen : Screen, InputAdapter() {
         settingsRenderer.draw(
             w, h, safeArea, toggleSfxButton, toggleHapticsButton, volumeSlider,
             swapControlsButton, menuButton, FeedbackAudio.isMuted(), hapticsMuted,
-            FeedbackAudio.masterVolume(), ::drawButton, ::drawCentered, ::fitFont
+            FeedbackAudio.masterVolume(), ::drawButton
         )
     }
 
