@@ -25,8 +25,13 @@ class HudRenderer(
     fun fit(text: String, maxWidth: Float, preferred: Float, minimum: Float) {
         font.data.setScale(1f)
         val baseWidth = widthAtBaseScale(text)
-        val scale = if (baseWidth > 0f) (maxWidth / baseWidth).coerceAtMost(preferred) else preferred
-        font.data.setScale(scale.coerceAtLeast(minimum))
+        if (baseWidth <= 0f) {
+            font.data.setScale(preferred)
+            return
+        }
+        val widthScale = (maxWidth / baseWidth).coerceAtLeast(0.05f)
+        val scale = minOf(preferred, maxOf(minimum, widthScale))
+        font.data.setScale(minOf(scale, widthScale))
     }
 
     fun centered(text: String, x: Float, y: Float, color: Color) {
@@ -51,7 +56,9 @@ class HudRenderer(
     fun button(rect: Rectangle, color: Color) {
         shape.color = color
         shape.rect(rect.x, rect.y, rect.width, rect.height)
-        shape.color = Color(0.55f, 0.9f, 1f, 0.55f)
-        shape.rect(rect.x, rect.y + rect.height - 3f, rect.width, 3f)
+        shape.color = Color(0.18f, 0.9f, 1f, 0.68f)
+        shape.rect(rect.x + 3f, rect.y + rect.height - 3f, rect.width - 6f, 3f)
+        shape.color = Color(0.78f, 0.24f, 1f, 0.42f)
+        shape.rect(rect.x + rect.width - 44f, rect.y + 3f, 41f, 2f)
     }
 }
