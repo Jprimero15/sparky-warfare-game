@@ -27,7 +27,7 @@ const val VIEW_HEIGHT = GameConfig.VIEW_HEIGHT
 
 enum class GameState { MENU, PLAYING, GAME_OVER, UPGRADE, PAUSED, SETTINGS }
 
-private enum class UpgradeType(val title: String, val description: String, val maxStacks: Int) {
+enum class UpgradeType(val title: String, val description: String, val maxStacks: Int) {
     OVERCLOCK("OVERCLOCK", "25% FASTER FIRE", 3),
     THRUSTERS("THRUSTERS", "15% MORE SPEED", 3),
     REPAIR("REPAIR CORE", "+1 HP", 3),
@@ -626,6 +626,15 @@ class GameScreen : Screen, InputAdapter() {
         }
     }
 
+    private fun drawPauseIcon(rect: Rectangle) {
+        shapeRenderer.projectionMatrix = hudCamera.combined
+        shapeRenderer.begin(ShapeRenderer.ShapeType.Filled)
+        shapeRenderer.color = Color(0.7f,0.88f,0.95f,1f)
+        shapeRenderer.rect(rect.x+16f,rect.y+10f,4f,18f)
+        shapeRenderer.rect(rect.x+28f,rect.y+10f,4f,18f)
+        shapeRenderer.end()
+    }
+
     private fun drawWaveBanner() {
         val w = Gdx.graphics.width.toFloat()
         val h = Gdx.graphics.height.toFloat()
@@ -720,7 +729,7 @@ class GameScreen : Screen, InputAdapter() {
 
     private fun drawGameOverOverlay() {
         val w=Gdx.graphics.width.toFloat(); val h=Gdx.graphics.height.toFloat(); ui.update(w,h); ui.gameOver(w,h)
-        gameOverRenderer.draw(w,h,safeArea,singleButton,menuButton,score,highScore,wave,totalKills,bestCombo,::drawButton,::drawCentered,::fitFont)
+        gameOverRenderer.draw(w,h,safeArea,singleButton,menuButton,score,highScore,wave,totalKills,comboBest,::drawButton,::drawCentered,::fitFont)
     }
 
     private fun prepareUpgradeChoices() {
