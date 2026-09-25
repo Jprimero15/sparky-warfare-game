@@ -136,3 +136,6 @@ Bundled third-party assets are documented in `assets/licenses/THIRD_PARTY_ASSETS
 2. Optional mini-boss encounters as a stretch feature.
 3. Additional distinct UI/power-up audio assets if the audio pack is expanded.
 4. Multiplayer remains intentionally out of scope for this pass.
+
+
+<!-- Menu touch validation -->
