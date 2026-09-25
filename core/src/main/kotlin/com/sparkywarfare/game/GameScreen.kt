@@ -445,7 +445,8 @@ class GameScreen : Screen, InputAdapter() {
             }
             enemy.aiReactionTimer = (enemy.aiReactionTimer - delta).coerceAtLeast(0f)
             enemy.aiFireTimer -= delta
-            val aimError = Math.abs(MathUtils.difference(enemy.aiAimAngle, scratchDirection.angleDeg()))
+            val angleDelta = ((enemy.aiAimAngle - scratchDirection.angleDeg() + 540f) % 360f) - 180f
+            val aimError = Math.abs(angleDelta)
             if (enemy.aiFireTimer <= 0f && enemy.aiReactionTimer <= 0f &&
                 enemy.canFire() && aimError <= GameConfig.Enemy.AI_FIRE_ANGLE_TOLERANCE &&
                 CollisionSystem.hasLineOfSight(enemy.position, player.position, walls)) {
