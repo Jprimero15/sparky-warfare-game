@@ -86,6 +86,7 @@ class GameScreen : Screen, InputAdapter() {
     private lateinit var settingsRenderer: SettingsRenderer
     private lateinit var gameOverRenderer: GameOverRenderer
     private lateinit var upgradeRenderer: UpgradeRenderer
+    private lateinit var pauseRenderer: PauseRenderer
     private val ui = UiLayout()
     private lateinit var bodyFont: BitmapFont
     private val safeArea get() = ui.safeArea
@@ -148,6 +149,7 @@ class GameScreen : Screen, InputAdapter() {
         settingsRenderer = SettingsRenderer(shapeRenderer, batch, font)
         gameOverRenderer = GameOverRenderer(shapeRenderer, batch, font)
         upgradeRenderer = UpgradeRenderer(shapeRenderer, batch, font)
+        pauseRenderer = PauseRenderer(shapeRenderer, batch, font)
         highScore = prefs.getInteger("highScore", 0)
         bestWave = prefs.getInteger("bestWave", 0)
         totalKills = prefs.getInteger("totalKills", 0)
@@ -782,29 +784,8 @@ class GameScreen : Screen, InputAdapter() {
     }
 
     private fun drawPauseOverlay() {
-        val w = Gdx.graphics.width.toFloat()
-        val h = Gdx.graphics.height.toFloat()
-        val cx = (safeArea.left + safeArea.right) / 2f
-        ui.pause(w, h)
-        Gdx.gl.glEnable(GL20.GL_BLEND)
-        Gdx.gl.glBlendFunc(GL20.GL_SRC_ALPHA, GL20.GL_ONE_MINUS_SRC_ALPHA)
-        shapeRenderer.projectionMatrix = hudCamera.combined
-        shapeRenderer.begin(ShapeRenderer.ShapeType.Filled)
-        shapeRenderer.color = Color(0f, 0f, 0f, 0.78f)
-        shapeRenderer.rect(0f, 0f, w, h)
-        drawButton(resumeButton, Color(0.02f, 0.32f, 0.46f, 0.9f))
-        drawButton(menuButton, Color(0.055f, 0.065f, 0.075f, 0.9f))
-        shapeRenderer.end()
-        Gdx.gl.glDisable(GL20.GL_BLEND)
-        batch.projectionMatrix = hudCamera.combined
-        batch.begin()
-        fitFont("PAUSED", w * 0.5f, 2.1f, 1.2f)
-        drawCentered("PAUSED", cx, h * 0.67f, Color(0.58f, 0.92f, 1f, 1f))
-        fitFont("RESUME", resumeButton.width - 24f, 1.1f, 0.72f)
-        drawCentered("RESUME", cx, resumeButton.y + 38f, Color.WHITE)
-        fitFont("MAIN MENU", menuButton.width - 24f, 1.0f, 0.68f)
-        drawCentered("MAIN MENU", cx, menuButton.y + 38f, Color(0.8f, 0.86f, 0.9f, 1f))
-        batch.end()
+        ui.pause(Gdx.graphics.width.toFloat(), Gdx.graphics.height.toFloat())
+        pauseRenderer.draw(Gdx.graphics.width.toFloat(), Gdx.graphics.height.toFloat(), resumeButton, menuButton, ::drawButton, ::drawCentered, ::fitFont)
     }
 
     private fun drawSettingsOverlay() {
