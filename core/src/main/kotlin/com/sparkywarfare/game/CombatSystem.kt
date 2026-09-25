@@ -4,8 +4,6 @@ class CombatSystem {
     fun hasLineOfSight(from: Tank, to: Tank, walls: List<Wall>): Boolean =
         CollisionSystem.hasLineOfSight(from.position, to.position, walls)
 
-    fun tryDamage(target: Tank): Boolean = target.hit()
-
     fun scoreForKill(tank: Tank, combo: Int, multiplier: Int): Int {
         val base = when {
             tank.radius >= 22f -> 500
