@@ -25,7 +25,7 @@ class UiLayout {
     fun update(width: Float, height: Float) {
         safeArea = SafeArea(
             Gdx.graphics.safeInsetLeft.toFloat().coerceAtLeast(GameConfig.Ui.SAFE_MARGIN),
-            (width - Gdx.graphics.safeInsetRight).coerceAtMost(width - GameConfig.Ui.SAFE_MARGIN),
+            (width - Gdx.graphics.safeInsetRight).toFloat().coerceAtMost(width - GameConfig.Ui.SAFE_MARGIN),
             Gdx.graphics.safeInsetBottom.toFloat().coerceAtLeast(GameConfig.Ui.SAFE_MARGIN),
             (height - Gdx.graphics.safeInsetTop).toFloat().coerceAtMost(height - GameConfig.Ui.SAFE_MARGIN)
         )
@@ -37,11 +37,11 @@ class UiLayout {
         val centerX = (safeArea.left + safeArea.right) / 2f
 
         val buttonW = (safeWidth * 0.58f).coerceIn(280f, 560f)
-        val buttonH = (safeHeight * 0.14f).coerceIn(52f, 74f)
-        val gap = (safeHeight * 0.045f).coerceIn(10f, 20f)
+        val buttonH = (safeHeight * 0.18f).coerceIn(44f, 68f)
+        val gap = (safeHeight * 0.03f).coerceIn(8f, 18f)
 
         val stackH = buttonH * 3f + gap * 2f
-        val stackBottom = (safeArea.bottom + safeArea.top) / 2f - stackH / 2f - 8f
+        val stackBottom = (safeArea.bottom + safeArea.top) / 2f - stackH / 2f - 2f
 
         singleButton.set(centerX - buttonW / 2f, stackBottom + (buttonH + gap) * 2f, buttonW, buttonH)
         multiButton.set(centerX - buttonW / 2f, stackBottom + buttonH + gap, buttonW, buttonH)
