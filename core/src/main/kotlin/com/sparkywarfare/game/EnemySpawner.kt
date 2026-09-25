@@ -8,14 +8,15 @@ class EnemySpawner {
     private val candidate = Vector2()
 
     fun spawnWave(wave: Int, player: Tank, walls: List<Wall>, enemies: MutableList<Tank>) {
-        val count = minOf(GameConfig.Enemy.MAX_PER_WAVE, 2 + wave)
+        val waveManager = WaveManager()
+        val count = waveManager.enemyCount(wave)
         val spawnY = (player.position.y + GameConfig.VIEW_HEIGHT * 0.65f).coerceAtMost(GameConfig.WORLD_HEIGHT - 70f)
         val left = (player.position.x - GameConfig.VIEW_WIDTH * 0.9f).coerceAtLeast(70f)
         val right = (player.position.x + GameConfig.VIEW_WIDTH * 0.9f).coerceAtMost(GameConfig.WORLD_WIDTH - 70f)
         val spacing = ((right - left) / (count + 1)).coerceAtLeast(48f)
 
         for (i in 0 until count) {
-            val elite = wave % 5 == 0 && i == count - 1
+            val elite = waveManager.isEliteWave(wave) && i == count - 1
             val role = (i + wave) % 4
             val enemy = createEnemy(wave, role, elite)
             val preferredX = (left + spacing * (i + 1)).coerceIn(60f, GameConfig.WORLD_WIDTH - 60f)
