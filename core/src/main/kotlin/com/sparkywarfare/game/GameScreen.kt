@@ -56,7 +56,8 @@ class GameScreen : Screen, InputAdapter() {
     private val powerUps = mutableListOf<PowerUp>()
     private val domainBursts = mutableListOf<Burst>()
 
-    private var state = GameState.MENU
+    private val router = GameStateRouter()
+    private val state get() = router.state
     private var score = 0
     private var wave = 0
     private var highScore = 0
@@ -107,8 +108,7 @@ class GameScreen : Screen, InputAdapter() {
     private var waveBannerTimer = 0f
     private var waveBannerElite = false
     private var hapticsMuted = false
-    private var transition = 1f
-    private var transitionTarget = 1f
+    private val transition get() = router.transition
     private val scratchDirection = Vector2()
     private val scratchSpawn = Vector2()
     private val scratchUi = Vector2()
@@ -197,8 +197,7 @@ class GameScreen : Screen, InputAdapter() {
         ui.update(Gdx.graphics.width.toFloat(), Gdx.graphics.height.toFloat())
         bloom.resize(Gdx.graphics.width, Gdx.graphics.height)
         // Start with the fade overlay opaque, then fade into the menu instead of staying black.
-        transition = 1f
-        transitionTarget = 0f
+        router.beginFadeIn()
         Gdx.input.inputProcessor = this
         buildArena()
         player = Tank(
@@ -212,7 +211,7 @@ class GameScreen : Screen, InputAdapter() {
         )
         tutorialVisible = false
         centerCameraForIdle()
-        state = GameState.MENU
+        router.goTo(GameState.MENU)
     }
 
     private fun resetGame() {
@@ -316,7 +315,7 @@ class GameScreen : Screen, InputAdapter() {
         Wall(Rectangle(col * TILE, row * TILE, TILE, TILE), type)
 
     override fun render(delta: Float) {
-        transition += (transitionTarget - transition) * (delta * GameConfig.Ui.TRANSITION_SPEED).coerceAtMost(1f)
+        router.update(delta)
         when (state) {
             GameState.MENU -> {
                 drawWorldIdle()
@@ -367,9 +366,7 @@ class GameScreen : Screen, InputAdapter() {
         resetGame()
         input.setPaused(false)
         tutorialVisible = !persistence.settings().tutorialSeen
-        state = GameState.PLAYING
-        transition = 1f
-        transitionTarget = 0f
+        router.goTo(GameState.PLAYING, fadeIn = true)
         FeedbackAudio.play(FeedbackAudio.Cue.UI)
         haptic(Input.VibrationType.LIGHT)
     }
@@ -393,11 +390,7 @@ class GameScreen : Screen, InputAdapter() {
 
         particles.update(delta)
         for (burst in bursts) burst.t += delta * 1.6f
-        laserRemove.clear()
-        for (burst in bursts) if (burst.t >= 1f) {
-            pools.freeBurst(burst)
-            // reused list below
-        }
+        bursts.filter { it.t >= 1f }.forEach { pools.freeBurst(it) }
         bursts.removeAll { it.t >= 1f }
         screenShake = (screenShake - delta * 2.8f).coerceAtLeast(0f)
         hitFlash = (hitFlash - delta * 2.5f).coerceAtLeast(0f)
@@ -418,7 +411,7 @@ class GameScreen : Screen, InputAdapter() {
 
         if (!player.alive) {
             persistProgress()
-            state = GameState.GAME_OVER
+            router.goTo(GameState.GAME_OVER)
             FeedbackAudio.play(FeedbackAudio.Cue.EXPLOSION)
             haptic(Input.VibrationType.HEAVY)
         }
@@ -426,7 +419,7 @@ class GameScreen : Screen, InputAdapter() {
             spawnPowerUp()
             if (waveManager.isUpgradeWave(wave)) {
                 prepareUpgradeChoices()
-                state = GameState.UPGRADE
+                router.goTo(GameState.UPGRADE)
                 input.clearTransientInput()
                 FeedbackAudio.play(FeedbackAudio.Cue.POWER_UP)
                 haptic(Input.VibrationType.MEDIUM)
@@ -1005,9 +998,7 @@ class GameScreen : Screen, InputAdapter() {
                     // Multiplayer is intentionally unavailable; keep the button non-destructive.
                     FeedbackAudio.play(FeedbackAudio.Cue.UI)
                 } else if (toUiRect(screenX, screenY, settingsButton)) {
-                    state = GameState.SETTINGS
-                    transition = 0f
-                    transitionTarget = 0f
+                    router.goTo(GameState.SETTINGS)
                     FeedbackAudio.play(FeedbackAudio.Cue.UI)
                 }
                 return true
@@ -1039,10 +1030,8 @@ class GameScreen : Screen, InputAdapter() {
                         FeedbackAudio.play(FeedbackAudio.Cue.UI)
                     }
                     toUiRect(screenX, screenY, menuButton) -> {
-                        state = GameState.MENU
-                        transition = 0f
-                        transitionTarget = 0f
-                        FeedbackAudio.play(FeedbackAudio.Cue.UI)
+                        router.goTo(GameState.MENU)
+                                                        FeedbackAudio.play(FeedbackAudio.Cue.UI)
                     }
                 }
                 return true
@@ -1052,15 +1041,13 @@ class GameScreen : Screen, InputAdapter() {
                 when {
                     toUiRect(screenX, screenY, resumeButton) -> {
                         input.setPaused(false)
-                        state = GameState.PLAYING
+                        router.goTo(GameState.PLAYING)
                         FeedbackAudio.play(FeedbackAudio.Cue.UI)
                     }
                     toUiRect(screenX, screenY, menuButton) -> {
                         input.setPaused(false)
-                        state = GameState.MENU
-                        transition = 0f
-                        transitionTarget = 0f
-                        FeedbackAudio.play(FeedbackAudio.Cue.UI)
+                        router.goTo(GameState.MENU)
+                                                        FeedbackAudio.play(FeedbackAudio.Cue.UI)
                     }
                 }
                 return true
@@ -1071,10 +1058,8 @@ class GameScreen : Screen, InputAdapter() {
                     toUiRect(screenX, screenY, singleButton) -> startOrRestart()
                     toUiRect(screenX, screenY, menuButton) -> {
                         input.clearTransientInput()
-                        state = GameState.MENU
-                        transition = 0f
-                        transitionTarget = 0f
-                        FeedbackAudio.play(FeedbackAudio.Cue.UI)
+                        router.goTo(GameState.MENU)
+                                                        FeedbackAudio.play(FeedbackAudio.Cue.UI)
                     }
                 }
                 return true
@@ -1084,11 +1069,9 @@ class GameScreen : Screen, InputAdapter() {
                 for (index in ui.upgradeButtons.indices) {
                     if (toUiRect(screenX, screenY, ui.upgradeButtons[index]) && index < upgradeChoices.size) {
                         applyUpgrade(upgradeChoices[index])
-                        state = GameState.PLAYING
+                        router.goTo(GameState.PLAYING)
                         input.setPaused(false)
-                        transition = 0f
-                        transitionTarget = 0f
-                        FeedbackAudio.play(FeedbackAudio.Cue.POWER_UP)
+                                                        FeedbackAudio.play(FeedbackAudio.Cue.POWER_UP)
                         haptic(Input.VibrationType.MEDIUM)
                         break
                     }
@@ -1110,7 +1093,7 @@ class GameScreen : Screen, InputAdapter() {
 
                 if (toUiRect(screenX, screenY, pauseButton)) {
                     input.clearTransientInput()
-                    state = GameState.PAUSED
+                    router.goTo(GameState.PAUSED)
                     input.setPaused(true)
                     FeedbackAudio.play(FeedbackAudio.Cue.UI)
                     return true
@@ -1173,32 +1156,14 @@ class GameScreen : Screen, InputAdapter() {
 
     override fun keyDown(keycode: Int): Boolean {
         if (keycode != Input.Keys.BACK) return false
-        when (state) {
-            GameState.PLAYING -> {
-                input.clearTransientInput()
-                input.setPaused(true)
-                state = GameState.PAUSED
-                FeedbackAudio.play(FeedbackAudio.Cue.UI)
-            }
-            GameState.PAUSED -> {
-                input.setPaused(false)
-                state = GameState.PLAYING
-                FeedbackAudio.play(FeedbackAudio.Cue.UI)
-            }
-            GameState.SETTINGS -> {
-                state = GameState.MENU
-                transition = 0f
-                transitionTarget = 0f
-                FeedbackAudio.play(FeedbackAudio.Cue.UI)
-            }
-            GameState.GAME_OVER, GameState.UPGRADE -> {
-                input.clearTransientInput()
-                state = GameState.MENU
-                transition = 0f
-                transitionTarget = 0f
-            }
-            GameState.MENU -> return false
+        val next = router.goBack() ?: return false
+        when (next) {
+            GameState.PAUSED -> input.clearTransientInput()
+            GameState.PLAYING -> input.setPaused(false)
+            GameState.MENU -> input.clearTransientInput()
+            else -> Unit
         }
+        FeedbackAudio.play(FeedbackAudio.Cue.UI)
         return true
     }
 
