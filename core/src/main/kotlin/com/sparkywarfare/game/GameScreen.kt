@@ -121,7 +121,7 @@ class GameScreen : Screen, InputAdapter() {
         batch = SpriteBatch()
         particles = ParticleDebris(batch)
         bloom = BloomRenderer()
-        val fontGenerator = FreeTypeFontGenerator(Gdx.files.internal("fonts/Orbitron-Medium.ttf"))
+        val fontGenerator = FreeTypeFontGenerator(Gdx.files.internal("fonts/Kenney-Future.ttf"))
         val fontParameter = FreeTypeFontGenerator.FreeTypeFontParameter().apply {
             size = 48
             color = Color.WHITE

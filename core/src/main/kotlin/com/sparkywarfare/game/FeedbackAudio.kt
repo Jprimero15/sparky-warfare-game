@@ -7,6 +7,7 @@ object FeedbackAudio {
     enum class Cue { UI, LASER, HIT, EXPLOSION, POWER_UP }
 
     private var laser: Sound? = null
+    private var uiConfirm: Sound? = null
     private var hit: Sound? = null
     private var explosion: Sound? = null
     private var available = true
@@ -17,6 +18,7 @@ object FeedbackAudio {
         if (!available || laser != null) return
         try {
             laser = Gdx.audio.newSound(Gdx.files.internal("audio/laser.ogg"))
+            uiConfirm = Gdx.audio.newSound(Gdx.files.internal("audio/ui_confirm.ogg"))
             hit = Gdx.audio.newSound(Gdx.files.internal("audio/hit.ogg"))
             explosion = Gdx.audio.newSound(Gdx.files.internal("audio/explosion.ogg"))
         } catch (_: Throwable) {
@@ -40,7 +42,7 @@ object FeedbackAudio {
         val volume = masterVolume
         try {
             when (cue) {
-                Cue.UI -> hit?.play(volume * 0.28f, 1.65f, 0f)
+                Cue.UI -> uiConfirm?.play(volume * 0.32f, 1.1f, 0f)
                 Cue.LASER -> laser?.play(volume * 0.34f, 1.05f, 0f)
                 Cue.HIT -> hit?.play(volume * 0.5f, 0.9f, 0f)
                 Cue.EXPLOSION -> explosion?.play(volume * 0.78f, 0.82f, 0f)
@@ -60,8 +62,10 @@ object FeedbackAudio {
         try { laser?.dispose() } catch (_: Throwable) {}
         try { hit?.dispose() } catch (_: Throwable) {}
         try { explosion?.dispose() } catch (_: Throwable) {}
+        try { uiConfirm?.dispose() } catch (_: Throwable) {}
         laser = null
         hit = null
         explosion = null
+        uiConfirm = null
     }
 }

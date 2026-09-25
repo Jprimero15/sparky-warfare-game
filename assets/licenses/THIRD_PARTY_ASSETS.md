@@ -13,3 +13,18 @@
 - License: Creative Commons CC0
 - Source: https://kenney.nl/assets/sci-fi-sounds
 - The files are bundled locally for offline playback.
+
+
+## Kenney Future
+- Asset: assets/fonts/Kenney-Future.ttf
+- Source pack: Kenney UI Pack - Sci-Fi
+- License: Creative Commons CC0
+- Source: https://kenney.nl/assets/ui-pack-sci-fi
+- Bundled locally and used for primary tactical UI typography.
+
+## Kenney Interface Sounds
+- Asset: assets/audio/ui_confirm.ogg
+- Original source: Kenney Interface Sounds
+- License: Creative Commons CC0
+- Source: https://opengameart.org/content/interface-sounds
+- Retrieved from a public game repository mirror; bundled locally and used for UI confirmation feedback.
