@@ -20,6 +20,7 @@ class WorldRenderer(
     private val bloom: BloomRenderer,
     private val particles: ParticleDebris,
     private val font: BitmapFont,
+    private val bodyFont: BitmapFont,
     private val input: InputController
 ) {
     private val scratchUi = Vector2()
