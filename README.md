@@ -1,87 +1,207 @@
 # Sparky Warfare
 
-An Android-only top-down tank-combat game built with **LibGDX 1.12.1 + Kotlin**. The game uses glowing energy tanks, laser fire, destructible walls, wave-based enemies, power-ups, particle debris, real framebuffer bloom, and Android touch controls.
+Sparky Warfare is an Android-only, landscape-first top-down tank combat game built with LibGDX 1.12.1 + Kotlin.
 
-## Status
+The game combines a dark cyber arena, cyan/magenta tactical UI, glowing energy tanks, laser combat, destructible cover, wave-based enemies, upgrades, power-ups, particle debris, framebuffer bloom, and responsive Android multitouch controls.
 
-The complete single-player gameplay loop is playable and hardened for modern Android:
+## Current status
 
-- Menu → play → upgrade → game over → retry
-- First-run field briefing explaining movement, firing, waves, upgrades, and combos
-- Player movement and continuous firing
-- Enemy chase-and-fire AI with wall line-of-sight checks
-- Destructible brick, reinforced brick, concrete, and metal barriers plus indestructible steel walls
-- Centralized wave scaling with elite-wave rules and wave-start banners
-- Visible enemy health bars, including elite tanks
-- Expanded upgrade pool with stacking limits
-- Rapid-fire, score, shield, spread-shot, and overdrive power-ups
-- Android multitouch movement/fire controls
-- Left-handed control-side swap
-- Dedicated translucent virtual joystick and fire button
-- SFX mute plus persistent master-volume slider
-- Haptic feedback toggle
-- Full-screen immersive Android presentation
-- Wide 1600×900 world with predictive camera look-ahead
-- Persistent high score, best wave, and kill statistics
-- Game-over retry and Main Menu paths
-- Adaptive Android launcher icon with vector fallback
-- Real framebuffer-based bright-pass/blur bloom for the glow layer
-- Programmatic pooled-style particle debris for combat impacts without a fragile text-emitter parser
+The single-player loop is playable and CI-validated:
+
+Main Menu → Combat → Wave Clear → Upgrade → Combat → Game Over → Retry / Main Menu
+
+Current gameplay systems include:
+- Single-player tank combat.
+- Continuous player firing.
+- Responsive virtual joystick movement.
+- Independent multitouch fire tracking.
+- Left/right control-side swapping.
+- Enemy chase-and-fire AI.
+- Wall-aware line-of-sight checks.
+- Destructible brick, reinforced brick, concrete, and metal cover.
+- Indestructible steel arena boundaries.
+- Centralized wave scaling and elite-wave rules.
+- Enemy health bars.
+- Fast scouts, assault tanks, heavy tanks, and ranged units.
+- Stacking upgrades with per-upgrade limits.
+- Rapid-fire, shield, spread-shot, score, repair, and overdrive effects.
+- Persistent high score, best wave, and total-kill statistics.
+- Game-over retry and Main Menu flows.
+- First-run combat briefing.
+- Android immersive presentation.
+- Real framebuffer bloom and additive glow.
+- Pooled transient combat entities and bounded particle debris.
+
+## UI redesign
+
+The UI has been rebuilt as a cyber-neon tactical console with a landscape-first layout instead of treating a phone screen like a portrait menu.
+
+### Visual language
+- Near-black tactical panels.
+- Electric cyan structural accents.
+- Magenta system highlights.
+- Red/pink combat-danger states.
+- Thin angular borders and segmented HUD rules.
+- Subtle arena grid.
+- Limited glow so important information remains readable.
+- Large touch targets designed around landscape thumb zones.
+
+### Typography
+
+The UI now uses two deliberate typography tiers:
+- Orbitron Medium for major tactical headings and command labels.
+- The bundled LibGDX bitmap font for secondary descriptions, statistics, instructions, and explanatory copy.
+
+This separation is intentional. Orbitron provides the futuristic identity while the less condensed body font prevents small explanatory text from becoming visually crowded.
+
+Orbitron Medium is already bundled under the SIL Open Font License 1.1 and is documented in assets/licenses/THIRD_PARTY_ASSETS.md.
+
+## Landscape and orientation
+
+Android is explicitly configured for landscape-only presentation with both landscape rotations using sensorLandscape.
+
+The launcher activity also handles orientation and screen-size configuration changes. GameScreen.resize() updates the gameplay viewport, HUD camera, bloom framebuffer, and shared UI safe-area geometry whenever the display changes.
+
+The UI does not assume a single fixed landscape resolution.
+
+## Screen layouts
+
+### Main menu
+
+The main menu is now explicitly landscape-oriented:
+- Left side: game identity, system status, and persistent statistics.
+- Right side: large DEPLOY, NETWORK, and SYSTEM command panels.
+- The menu no longer relies on a tall portrait-style vertical stack on landscape devices.
+- A compact fallback arrangement remains available for unusual window sizes.
+
+### Combat HUD
+- Combat/session status at upper left.
+- Wave and score information in separated rows.
+- Player core integrity at upper right.
+- Pause control isolated from gameplay information.
+- Large MOVE and FIRE controls anchored to safe landscape thumb zones.
+
+### Pause
+
+Pause is a horizontal command console with RESUME and MAIN MENU actions separated into distinct large controls.
+
+### Game over
+
+The game-over screen uses a clear failure heading, separated score/best fields, a wave/kills/combo status row, and two horizontal actions: REDEPLOY and MAIN MENU.
+
+### Settings
+
+Settings uses a landscape control matrix:
+- SFX and Haptics occupy separate control cards.
+- Volume receives its own full-width slider.
+- Control-side swapping and Back occupy distinct command cards.
+- Secondary descriptions use the body font instead of the condensed display font.
+
+### Upgrade screen
+
+Upgrade selection remains a three-card landscape layout with a large upgrade name, readable description, clear install action, and consistent cyber-neon framing.
+
+## Touch controls
+
+The combat controls are designed for landscape mobile play:
+- Large MOVE joystick.
+- Large FIRE control.
+- Independent multitouch pointer tracking.
+- Safe-area-aware placement.
+- Enlarged hit zones.
+- Visual joystick travel clamped to its actual movement radius.
+- MOVE/FIRE sides can be swapped for left-handed play.
+- Control positions are recalculated when the display changes size or rotation.
 
 ## Architecture
 
-The project remains intentionally Android-only with no desktop target. Gameplay responsibilities are separated into focused systems:
+The project intentionally remains Android-only.
 
-- `CollisionSystem` — circular tank movement, separation, wall tests, laser intersections, and LOS checks
-- `CombatSystem` — damage routing and centralized kill scoring
-- `EnemySpawner` — validated spawn placement and enemy composition
-- `WaveManager` — single source of truth for wave counts, elite cadence, upgrade cadence, and bonuses
-- `PowerUpManager` — pickup selection and safe placement
-- `EntityPools` — reusable transient laser/burst entities
-- `InputController` — multitouch fire tracking, joystick lifecycle, and pause-safe input
-- `UiLayout` — safe-area geometry and reusable screen-space button rectangles
-- `HudRenderer` — shared HUD typography/layout helpers
-- `BloomRenderer` — framebuffer glow pass and shader composite
-- `ParticleDebris` — lightweight runtime debris effects
-- `GameScreen` — screen lifecycle, state transitions, simulation coordination, persistence, and input routing
+Important responsibilities are separated into focused systems:
+- GameScreen — lifecycle, state transitions, simulation coordination, persistence, resizing, and input routing.
+- UiLayout — centralized safe-area geometry and reusable interactive rectangles.
+- MenuRenderer — landscape tactical main console.
+- HudRenderer — combat HUD typography and reusable HUD helpers.
+- PauseRenderer — pause console.
+- GameOverRenderer — combat-result screen.
+- SettingsRenderer — device/control configuration matrix.
+- UpgradeRenderer — three-card upgrade selection.
+- WorldRenderer — arena, walls, enemy bars, and touch controls.
+- InputController — multitouch state and joystick lifecycle.
+- CollisionSystem — tank movement, separation, wall tests, laser intersections, and line-of-sight checks.
+- CombatSystem — damage routing and kill scoring.
+- EnemySpawner — validated enemy placement and composition.
+- WaveManager — wave, elite, upgrade, and bonus rules.
+- PowerUpManager — pickup selection and safe placement.
+- EntityPools — reusable transient laser/burst objects.
+- BloomRenderer — framebuffer glow pass.
+- ParticleDebris — bounded runtime debris effects.
 
-The old unused `core/.../game/ui/` stub package has been removed so there is one UI layout source instead of duplicate renderer/safe-area classes.
+## Rendering
 
-## Visual direction
+The visual system uses a near-black battlefield with neon energy accents.
 
-The visual system uses a near-black battlefield, cyan player energy, warm neon enemy accents, translucent tactical panels, bright laser cores, layered impact rings, and soft additive bloom. Orbitron remains the headline/tactical display font; the bundled LibGDX default bitmap font is used for compact body/briefing copy so small explanatory text does not require scaling the headline font.
+GlowRenderer provides shared glow treatment for tanks, lasers, power-ups, and impact effects.
 
-## Android controls
+The glow layer is rendered into a framebuffer and processed through assets/shaders/glow.vert and assets/shaders/glow.frag. The composite uses a lightweight bright-pass/blur approach suitable for Android.
 
-- Use the **MOVE** virtual joystick.
-- Hold the **FIRE** control to shoot continuously.
-- The Settings screen can swap the MOVE/FIRE sides for left-handed play.
-- Multiple fire touches are tracked independently.
-- Tap **Single Player** to start.
-- **Multiplayer** remains visibly unavailable rather than pretending to provide a working mode.
-- Pause is available during active play.
-- After game over, choose **RETRY** or **MAIN MENU**.
+The arena also contains a subtle tactical grid. It is intentionally low contrast so it adds structure without competing with combat objects.
 
-## Building
+## Stability and performance
 
-With Gradle installed:
+The runtime has been hardened around common mobile failure points:
+- Circular tank footprints for collision.
+- Player/enemy separation with post-separation bounds correction.
+- Enemy firing requires line of sight.
+- Laser collision uses travelled segments to reduce fast-shot tunnelling.
+- Player damage has invulnerability handling.
+- Restart clears transient input.
+- Large frame deltas are capped.
+- Transient lasers and bursts are pooled.
+- Particle effects are bounded and cleaned up.
+- Audio initialization failures do not terminate gameplay.
+- Idle/menu camera positioning is deterministic.
+- Android back handling is state-aware.
+- Renderer hot paths reuse common objects where practical.
+- UI geometry is centralized instead of duplicated across screens.
+- Text fitting never allows the readability minimum to exceed the actual available width.
 
-```bash
-gradle :android:assembleDebug --no-daemon
-```
+## Safe-area and resize rules
 
-The APK is generated at:
+UiLayout is the single source of truth for interactive screen geometry.
 
-```
-android/build/outputs/apk/debug/
-```
+It uses Android safe insets and recalculates main-menu controls, settings controls, pause controls, game-over actions, HUD pause placement, upgrade hit rectangles, and tutorial action geometry.
+
+The HUD camera is rebuilt to the actual Android pixel dimensions during GameScreen.resize().
+
+## Assets and licensing
+
+Third-party assets are documented in assets/licenses/THIRD_PARTY_ASSETS.md.
+
+Current documented assets include:
+- Orbitron Medium — SIL Open Font License 1.1.
+- Kenney Sci-fi Sounds — CC0.
+- Launcher icon graphics — project-authored vector XML.
+
+No proprietary game franchise assets are required by the project.
+
+## Building locally
+
+With Java 17, Android SDK, and Gradle available:
+
+    gradle :android:assembleDebug --no-daemon
+
+The debug APK is produced under:
+
+    android/build/outputs/apk/debug/
 
 ## GitHub Actions
 
-`.github/workflows/build.yml` builds only the Android debug APK on pushes to `main`, pull requests, and manual runs.
+The Android workflow is defined in .github/workflows/build.yml.
 
-CI uses:
+CI validates the Android project and builds the debug APK.
 
+Current build environment:
 - JDK 17
 - Android platform API 34
 - Android build-tools 34.0.0
@@ -89,52 +209,30 @@ CI uses:
 - Android Gradle Plugin 8.5.0
 - Kotlin 1.9.24
 - LibGDX 1.12.1
-- minSdk 24 / targetSdk 34
+- minSdk 24
+- targetSdk 34
 
-The workflow verifies that only `core` and `android` modules exist, rejects forbidden desktop-target references, builds the debug APK, verifies all four LibGDX native ABIs, and uploads the APK artifact.
+The workflow verifies the resulting APK and its LibGDX native ABI packaging before uploading the debug APK artifact.
 
-## Presentation and safe areas
+## Repository structure
 
-The playable world is substantially wider and taller than the camera view, and the camera follows the player with smooth clamping plus a small movement-direction look-ahead.
+    android/                         Android launcher and packaging
+    core/                            Game logic and LibGDX rendering
+    assets/                          Fonts, shaders, audio, particles
+    assets/licenses/                 Third-party asset attribution
+    .github/workflows/build.yml      Android CI
+    README.md                        Project documentation
 
-HUD, menus, settings, upgrade cards, pause controls, and touch controls use the shared `UiLayout` safe-area geometry. Android display-cutout and gesture insets are respected so important controls stay inside the usable region.
+## Development priorities
 
-## Rendering
+The current foundation is intentionally stable before adding larger gameplay features.
 
-`GlowRenderer` draws the shared energy language for tanks, lasers, power-ups and impact rings. Those glow elements are rendered into a transparent framebuffer, then passed through the bundled `glow.vert` / `glow.frag` shader for a luminance threshold and small multi-tap blur before being composited additively over the battlefield. The post-process is deliberately lightweight for Android.
+1. More arena layouts.
+2. More enemy behavior and attack patterns.
+3. Optional mini-boss encounters.
+4. More upgrade effects.
+5. Additional combat feedback and audio polish.
+6. Expanded multiplayer only if a real networking architecture is introduced.
 
-`ParticleDebris` uses the bundled `particle.png` directly and generates short-lived debris bursts in code. This avoids loading the previously malformed legacy `.p` emitter resource during screen startup.
+Multiplayer is currently presented as unavailable rather than exposing a non-functional fake mode.
 
-## Stability and performance
-
-The current build also hardens idle/menu camera state, Android back navigation, enemy separation against wall embedding, and hot-path renderer allocations.
-
-- Tank movement uses a circular footprint instead of a center-point wall test.
-- Player and enemies are kept separated and clamped inside the arena.
-- Enemy firing is timer-based and requires line of sight.
-- Waves use bounded, composition-driven scaling rather than unbounded linear stat growth.
-- Enemy roles vary between fast scouts, assault tanks, heavy tanks, and ranged units.
-- Elite tanks appear on the centralized elite cadence and expose their health through an on-screen bar.
-- Laser collision uses the travelled segment, preventing fast shots from skipping targets or walls.
-- Player damage has invulnerability frames.
-- Restart clears joystick and all active fire pointers.
-- Large frame deltas are capped to avoid physics jumps after a stalled frame.
-- Transient lasers and bursts are pooled.
-- Particle debris is bounded and removes expired effects backwards through its active list.
-- Audio initialization failures are isolated so unsupported audio devices do not stop gameplay.
-- Safe-area calculations are centralized rather than repeated across screens.
-
-## Assets and licensing
-
-Bundled third-party assets are documented in `assets/licenses/THIRD_PARTY_ASSETS.md`.
-
-- Orbitron Medium — OFL-1.1
-- Kenney Sci-fi Sounds — CC0
-- All new launcher icon graphics are hand-authored vector XML in the project and require no third-party license.
-
-## Future work
-
-1. Additional arena layouts and deeper enemy behavior.
-2. Optional mini-boss encounters as a stretch feature.
-3. Additional distinct UI/power-up audio assets if the audio pack is expanded.
-4. Multiplayer remains intentionally out of scope for this pass.
