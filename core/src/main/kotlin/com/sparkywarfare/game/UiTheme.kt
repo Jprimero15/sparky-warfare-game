@@ -19,6 +19,26 @@ object UiTheme {
     val BLACK = Color(0f, 0f, 0f, 1f)
     val SHADOW = Color(0f, 0f, 0f, 0.8f)
 
+    // Semantic surfaces: screens use these instead of inventing per-screen colors.
+    val OVERLAY = Color(0f, 0f, 0f, 0.78f)
+    val PANEL_EDGE = Color(0.22f, 0.9f, 1f, 0.14f)
+    val ACCENT = CYAN
+    val ACCENT_ALT = MAGENTA
+    val TEXT_PRIMARY = WHITE
+    val TEXT_SECONDARY = DIM
+    val TEXT_MUTED = DIM_DARK
+
+    object Metrics {
+        const val PANEL_RADIUS = 28f
+        const val INNER_RADIUS = 24f
+        const val BUTTON_RADIUS = 22f
+        const val CARD_RADIUS = 22f
+        const val PANEL_INSET = 6f
+        const val TOUCH_EXTRA_HIT = 26f
+        const val BUTTON_TEXT_SCALE = 0.84f
+        const val BUTTON_TEXT_MIN_SCALE = 0.58f
+    }
+
     val TOUCH_BASE = Color(0.035f, 0.03f, 0.09f, 0.68f)
     val TOUCH_INNER = Color(0.08f, 0.055f, 0.16f, 0.86f)
     val TOUCH_KNOB_IDLE = Color(0.25f, 0.85f, 1f, 0.42f)
