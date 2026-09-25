@@ -2,6 +2,7 @@ package com.sparkywarfare.game
 
 import com.badlogic.gdx.graphics.Color
 import com.badlogic.gdx.graphics.g2d.BitmapFont
+import com.badlogic.gdx.graphics.g2d.GlyphLayout
 import com.badlogic.gdx.graphics.g2d.SpriteBatch
 import com.badlogic.gdx.graphics.glutils.ShapeRenderer
 import com.badlogic.gdx.math.Rectangle
@@ -9,17 +10,17 @@ import com.badlogic.gdx.math.Rectangle
 class MenuRenderer(
     private val shape: ShapeRenderer,
     private val batch: SpriteBatch,
-    private val font: BitmapFont
+    private val titleFont: BitmapFont,
+    private val bodyFont: BitmapFont
 ) {
-    private val bg = Color(0.004f, 0.008f, 0.014f, 0.96f)
-    private val panel = Color(0.008f, 0.02f, 0.032f, 0.97f)
-    private val panelInner = Color(0.012f, 0.035f, 0.052f, 0.96f)
+    private val panel = Color(0.006f, 0.016f, 0.028f, 0.98f)
+    private val inner = Color(0.012f, 0.032f, 0.05f, 0.98f)
     private val cyan = Color(0.18f, 0.9f, 1f, 1f)
-    private val cyanSoft = Color(0.18f, 0.9f, 1f, 0.24f)
+    private val cyanSoft = Color(0.18f, 0.9f, 1f, 0.22f)
     private val magenta = Color(0.78f, 0.24f, 1f, 1f)
-    private val magentaSoft = Color(0.78f, 0.24f, 1f, 0.28f)
-    private val dim = Color(0.38f, 0.56f, 0.64f, 1f)
-    private val white = Color(0.92f, 0.98f, 1f, 1f)
+    private val dim = Color(0.46f, 0.64f, 0.7f, 1f)
+    private val white = Color(0.94f, 0.98f, 1f, 1f)
+    private val layout = GlyphLayout()
 
     fun draw(
         width: Float,
@@ -31,85 +32,95 @@ class MenuRenderer(
         highScore: Int,
         bestWave: Int,
         totalKills: Int,
-        drawButton: (Rectangle, Color) -> Unit,
-        drawCentered: (String, Float, Float, Color) -> Unit,
-        fit: (String, Float, Float, Float) -> Float
+        drawButton: (Rectangle, Color) -> Unit
     ) {
         val cx = (safe.left + safe.right) / 2f
-        val safeW = (safe.right - safe.left).coerceAtLeast(320f)
-        val panelW = safeW.coerceIn(360f, 920f) * 0.88f
+        val cy = (safe.bottom + safe.top) / 2f
+        val sw = (safe.right - safe.left).coerceAtLeast(1f)
+        val sh = (safe.top - safe.bottom).coerceAtLeast(1f)
+        val panelW = (sw * 0.92f).coerceIn(620f, 1220f)
+        val panelH = (sh * 0.90f).coerceIn(320f, 680f)
         val panelX = cx - panelW / 2f
-        val panelTop = safe.top - 10f
-        val panelBottom = safe.bottom + 10f
-        val panelH = (panelTop - panelBottom).coerceAtLeast(320f)
+        val panelY = cy - panelH / 2f
+        val split = panelX + panelW * 0.54f
 
         shape.begin(ShapeRenderer.ShapeType.Filled)
-        shape.color = Color(0f, 0f, 0f, 0.76f)
+        shape.color = Color(0f, 0f, 0f, 0.74f)
         shape.rect(0f, 0f, width, height)
-
         shape.color = panel
-        shape.rect(panelX, panelBottom, panelW, panelH)
-        shape.color = panelInner
-        shape.rect(panelX + 6f, panelBottom + 6f, panelW - 12f, panelH - 12f)
-
-        // Cyber frame.
+        shape.rect(panelX, panelY, panelW, panelH)
+        shape.color = inner
+        shape.rect(panelX + 6f, panelY + 6f, panelW - 12f, panelH - 12f)
         shape.color = cyan
-        shape.rect(panelX, panelTop - 3f, panelW, 3f)
+        shape.rect(panelX, panelY + panelH - 4f, panelW, 4f)
         shape.color = magenta
-        shape.rect(panelX + panelW - 4f, panelTop - 34f, 4f, 31f)
+        shape.rect(panelX + panelW - 4f, panelY + panelH - 38f, 4f, 34f)
         shape.color = cyanSoft
-        shape.rect(panelX, panelBottom + 3f, 3f, panelH - 6f)
-
-        val scanY = panelTop - 146f
+        shape.rect(split, panelY + 34f, 2f, panelH - 68f)
         shape.color = cyanSoft
-        shape.rect(panelX + 28f, scanY, panelW - 56f, 2f)
-        shape.color = magentaSoft
-        shape.rect(panelX + 28f, panelBottom + 68f, panelW - 56f, 2f)
+        shape.rect(panelX + 28f, panelY + panelH * 0.42f, split - panelX - 56f, 2f)
+        shape.color = Color(0.78f, 0.24f, 1f, 0.16f)
+        shape.rect(split + 28f, panelY + 34f, panelX + panelW - split - 56f, 2f)
 
         drawButton(single, Color(0.02f, 0.22f, 0.34f, 0.98f))
-        drawButton(multi, Color(0.025f, 0.05f, 0.075f, 0.98f))
-        drawButton(settings, Color(0.065f, 0.08f, 0.16f, 0.98f))
+        drawButton(multi, Color(0.025f, 0.055f, 0.085f, 0.98f))
+        drawButton(settings, Color(0.06f, 0.06f, 0.14f, 0.98f))
         shape.end()
 
         batch.begin()
-        fit("SPARKY WARFARE", panelW - 78f, 1.48f, 0.86f)
-        drawCentered("SPARKY WARFARE", cx, panelTop - 62f, cyan)
+        titleFont.data.setScale(1f)
+        fit(titleFont, "SPARKY WARFARE", split - panelX - 72f, 1.55f, 0.9f)
+        centered(titleFont, "SPARKY WARFARE", panelX + (split - panelX) / 2f, panelY + panelH - 72f, cyan)
 
-        fit("CYBER COMBAT // TACTICAL NETWORK", panelW - 104f, 0.52f, 0.36f)
-        drawCentered("CYBER COMBAT // TACTICAL NETWORK", cx, panelTop - 101f, dim)
+        fit(bodyFont, "CYBER COMBAT", split - panelX - 72f, 1.0f, 0.72f)
+        centered(bodyFont, "CYBER COMBAT", panelX + (split - panelX) / 2f, panelY + panelH - 122f, magenta)
 
-        fit("SYSTEM STATUS  //  READY", panelW - 150f, 0.44f, 0.32f)
-        drawCentered("SYSTEM STATUS  //  READY", cx, panelTop - 128f, magenta)
+        fit(bodyFont, "TACTICAL NETWORK // LOCAL", split - panelX - 72f, 0.72f, 0.52f)
+        centered(bodyFont, "TACTICAL NETWORK // LOCAL", panelX + (split - panelX) / 2f, panelY + panelH - 151f, dim)
 
-        drawCommand(single, "DEPLOY", "START NEW COMBAT RUN", white, cyan, drawCentered, fit)
-        drawCommand(multi, "NETWORK", "MULTIPLAYER // OFFLINE", Color(0.56f, 0.68f, 0.73f, 1f), dim, drawCentered, fit)
-        drawCommand(settings, "SYSTEM", "AUDIO / CONTROLS / DEVICE", Color(0.86f, 0.9f, 1f, 1f), magenta, drawCentered, fit)
+        fit(bodyFont, "SYSTEM READY", split - panelX - 72f, 0.72f, 0.52f)
+        centered(bodyFont, "SYSTEM READY", panelX + (split - panelX) / 2f, panelY + panelH * 0.47f, cyan)
 
-        fit("BEST  $highScore    //    WAVE  $bestWave    //    KILLS  $totalKills",
-            panelW - 70f, 0.46f, 0.34f)
-        drawCentered(
-            "BEST  $highScore    //    WAVE  $bestWave    //    KILLS  $totalKills",
-            cx, panelBottom + 46f, dim
-        )
-        fit("TACTICAL CONSOLE  //  BUILD 01", panelW - 100f, 0.34f, 0.26f)
-        drawCentered("TACTICAL CONSOLE  //  BUILD 01", cx, panelBottom + 22f, Color(0.25f, 0.42f, 0.5f, 1f))
-        font.data.setScale(1f)
+        fit(bodyFont, "BEST SCORE  $highScore", split - panelX - 72f, 0.68f, 0.48f)
+        centered(bodyFont, "BEST SCORE  $highScore", panelX + (split - panelX) / 2f, panelY + 92f, white)
+        fit(bodyFont, "BEST WAVE  $bestWave", split - panelX - 72f, 0.62f, 0.44f)
+        centered(bodyFont, "BEST WAVE  $bestWave", panelX + (split - panelX) / 2f, panelY + 66f, dim)
+        fit(bodyFont, "TOTAL KILLS  $totalKills", split - panelX - 72f, 0.62f, 0.44f)
+        centered(bodyFont, "TOTAL KILLS  $totalKills", panelX + (split - panelX) / 2f, panelY + 40f, dim)
+
+        drawCommand(single, "DEPLOY", "START COMBAT", white, cyan)
+        drawCommand(multi, "NETWORK", "MULTIPLAYER UNAVAILABLE", Color(0.7f, 0.8f, 0.84f, 1f), dim)
+        drawCommand(settings, "SYSTEM", "AUDIO // CONTROLS", white, magenta)
+
+        fit(bodyFont, "BUILD 01  //  ANDROID", panelX + panelW - split - 70f, 0.56f, 0.4f)
+        centered(bodyFont, "BUILD 01  //  ANDROID", split + (panelX + panelW - split) / 2f, panelY + 30f, dim)
+        reset()
         batch.end()
     }
 
-    private fun drawCommand(
-        rect: Rectangle,
-        title: String,
-        subtitle: String,
-        titleColor: Color,
-        subtitleColor: Color,
-        centered: (String, Float, Float, Color) -> Unit,
-        fit: (String, Float, Float, Float) -> Float
-    ) {
-        val centerX = rect.x + rect.width / 2f
-        fit(title, rect.width - 42f, 0.76f, 0.58f)
-        centered(title, centerX, rect.y + rect.height * 0.62f, titleColor)
-        fit(subtitle, rect.width - 42f, 0.39f, 0.29f)
-        centered(subtitle, centerX, rect.y + rect.height * 0.24f, subtitleColor)
+    private fun drawCommand(rect: Rectangle, title: String, subtitle: String, titleColor: Color, subtitleColor: Color) {
+        val cx = rect.x + rect.width / 2f
+        fit(titleFont, title, rect.width - 46f, 0.82f, 0.56f)
+        centered(titleFont, title, cx, rect.y + rect.height * 0.66f, titleColor)
+        fit(bodyFont, subtitle, rect.width - 46f, 0.62f, 0.42f)
+        centered(bodyFont, subtitle, cx, rect.y + rect.height * 0.25f, subtitleColor)
+    }
+
+    private fun fit(font: BitmapFont, text: String, maxWidth: Float, preferred: Float, minimum: Float) {
+        font.data.setScale(1f)
+        layout.setText(font, text)
+        val widthScale = if (layout.width > 0f) maxWidth / layout.width else preferred
+        font.data.setScale(minOf(preferred, widthScale.coerceAtLeast(minimum), widthScale))
+    }
+
+    private fun centered(font: BitmapFont, text: String, x: Float, y: Float, color: Color) {
+        layout.setText(font, text)
+        font.color = color
+        font.draw(batch, text, x - layout.width / 2f, y)
+    }
+
+    private fun reset() {
+        titleFont.data.setScale(1f)
+        bodyFont.data.setScale(1f)
     }
 }
