@@ -148,7 +148,7 @@ class GameScreen : Screen, InputAdapter() {
         menuRenderer = MenuRenderer(shapeRenderer, batch, font, bodyFont)
         settingsRenderer = SettingsRenderer(shapeRenderer, batch, font, bodyFont)
         gameOverRenderer = GameOverRenderer(shapeRenderer, batch, font, bodyFont)
-        upgradeRenderer = UpgradeRenderer(shapeRenderer, batch, font)
+        upgradeRenderer = UpgradeRenderer(shapeRenderer, batch, font, bodyFont)
         pauseRenderer = PauseRenderer(shapeRenderer, batch, font, bodyFont)
         highScore = prefs.getInteger("highScore", 0)
         bestWave = prefs.getInteger("bestWave", 0)
