@@ -699,8 +699,6 @@ class GameScreen : Screen, InputAdapter() {
         // Single player health card. No separate core-health indicator.
         shapeRenderer.color = Color(0.004f, 0.014f, 0.026f, 0.94f)
         shapeRenderer.rect(healthX, top - 108f, healthW, 108f)
-        shapeRenderer.color = healthColor
-        shapeRenderer.rect(healthX, top - 3f, healthW, 3f)
         shapeRenderer.color = Color(0f, 0f, 0f, 0.72f)
         shapeRenderer.rect(healthBarX, top - 78f, healthBarW, 12f)
         shapeRenderer.color = healthColor

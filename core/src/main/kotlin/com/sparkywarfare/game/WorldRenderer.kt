@@ -172,11 +172,6 @@ class WorldRenderer(
         text.centered(bodyFont, "MOVE", baseX, baseY + text.height(bodyFont, "MOVE") / 2f, UiTheme.WHITE)
         text.fit(bodyFont, "FIRE", knobRadius * 2.4f, 0.72f, 0.48f)
         text.centered(bodyFont, "FIRE", fireX, baseY + text.height(bodyFont, "FIRE") / 2f, UiTheme.WHITE)
-        text.fit(bodyFont, "DRIVE", controlRadius * 1.4f, 0.44f, 0.3f)
-        text.centered(bodyFont, "DRIVE", baseX, baseY - controlRadius + 18f + text.height(bodyFont, "DRIVE") / 2f, UiTheme.DIM)
-        val status = if (input.firing) "ARMED" else "READY"
-        text.fit(bodyFont, status, controlRadius * 1.4f, 0.44f, 0.3f)
-        text.centered(bodyFont, status, fireX, baseY - controlRadius + 18f + text.height(bodyFont, status) / 2f, if (input.firing) UiTheme.DANGER else UiTheme.DIM)
         text.reset(bodyFont)
         batch.end()
     }

@@ -65,7 +65,8 @@ class UiLayout {
 
     fun hud() {
         val size = 72f
-        pauseButton.set(safeArea.right - size, safeArea.top - size, size, size)
+        val inset = 16f
+        pauseButton.set(safeArea.right - size - inset, safeArea.top - size - inset, size, size)
     }
 
     fun touchControls(width: Float, height: Float, controlsSwapped: Boolean) {
