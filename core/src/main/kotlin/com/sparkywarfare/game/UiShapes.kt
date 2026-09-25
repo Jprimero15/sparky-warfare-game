@@ -51,15 +51,22 @@ object UiShapes {
     }
 
     fun softButton(shape: ShapeRenderer, rect: Rectangle, color: Color, radius: Float = 22f) {
+        // Blend the requested semantic color with the shared cyan/violet palette so
+        // every touch target has the soft two-tone arcade treatment.
         val top = Color(
-            (color.r + 0.16f).coerceAtMost(1f),
-            (color.g + 0.16f).coerceAtMost(1f),
-            (color.b + 0.16f).coerceAtMost(1f),
+            (color.r * 0.58f + 0.18f * 0.42f).coerceIn(0f, 1f),
+            (color.g * 0.58f + 0.9f * 0.42f).coerceIn(0f, 1f),
+            (color.b * 0.58f + 1f * 0.42f).coerceIn(0f, 1f),
             color.a
         )
-        val bottom = Color(color.r * 0.72f, color.g * 0.72f, color.b * 0.78f, color.a)
-        gradientRoundedRect(shape, rect.x, rect.y, rect.width, rect.height, radius, top, bottom)
+        val bottom = Color(
+            (color.r * 0.52f + 0.78f * 0.48f).coerceIn(0f, 1f),
+            (color.g * 0.52f + 0.24f * 0.48f).coerceIn(0f, 1f),
+            (color.b * 0.52f + 1f * 0.48f).coerceIn(0f, 1f),
+            color.a
+        )
+        gradientRoundedRect(shape, rect.x, rect.y, rect.width, rect.height, radius, top, bottom, 16)
         roundedRect(shape, rect.x + 5f, rect.y + rect.height - 7f, rect.width - 10f, 3f, 1.5f,
-            Color(1f, 1f, 1f, 0.10f))
+            Color(1f, 1f, 1f, 0.12f))
     }
 }
