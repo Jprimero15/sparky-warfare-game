@@ -917,7 +917,7 @@ class GameScreen : Screen, InputAdapter() {
         val y = rect.y
         val w = rect.width
         val h = rect.height
-        UiShapes.softButton(shapeRenderer, rect, color, 24f)
+        UiShapes.softButton(shapeRenderer, rect, color, UiTheme.Metrics.BUTTON_RADIUS)
     }
 
     private fun drawGameOverOverlay() {
