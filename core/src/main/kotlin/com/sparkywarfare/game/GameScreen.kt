@@ -79,7 +79,7 @@ class GameScreen : Screen, InputAdapter() {
     private val waveManager = WaveManager()
     private val pools = EntityPools()
     private lateinit var particles: ParticleDebris
-    private lateinit var hud: HudRenderer
+    private lateinit var uiText: UiText
     private lateinit var bloom: BloomRenderer
     private lateinit var worldRenderer: WorldRenderer
     private lateinit var menuRenderer: MenuRenderer
@@ -140,16 +140,17 @@ class GameScreen : Screen, InputAdapter() {
         fontGenerator.dispose()
         bodyFont = BitmapFont()
         bodyFont.data.setScale(1.0f)
+        uiText = UiText(batch)
         layout = GlyphLayout()
         hudCamera = OrthographicCamera()
         hudCamera.setToOrtho(false, Gdx.graphics.width.toFloat(), Gdx.graphics.height.toFloat())
         hud = HudRenderer(shapeRenderer, batch, font, layout, hudCamera)
         worldRenderer = WorldRenderer(camera, hudCamera, shapeRenderer, batch, glow, bloom, particles, font, bodyFont, input)
-        menuRenderer = MenuRenderer(shapeRenderer, batch, font, bodyFont)
-        settingsRenderer = SettingsRenderer(shapeRenderer, batch, font, bodyFont)
-        gameOverRenderer = GameOverRenderer(shapeRenderer, batch, font, bodyFont)
-        upgradeRenderer = UpgradeRenderer(shapeRenderer, batch, font, bodyFont)
-        pauseRenderer = PauseRenderer(shapeRenderer, batch, font, bodyFont)
+        menuRenderer = MenuRenderer(shapeRenderer, batch, font, bodyFont, uiText)
+        settingsRenderer = SettingsRenderer(shapeRenderer, batch, font, bodyFont, uiText)
+        gameOverRenderer = GameOverRenderer(shapeRenderer, batch, font, bodyFont, uiText)
+        upgradeRenderer = UpgradeRenderer(shapeRenderer, batch, font, bodyFont, uiText)
+        pauseRenderer = PauseRenderer(shapeRenderer, batch, font, bodyFont, uiText)
         highScore = prefs.getInteger("highScore", 0)
         bestWave = prefs.getInteger("bestWave", 0)
         totalKills = prefs.getInteger("totalKills", 0)
@@ -930,7 +931,7 @@ class GameScreen : Screen, InputAdapter() {
         batch.projectionMatrix = hudCamera.combined
         upgradeRenderer.draw(
             Gdx.graphics.width.toFloat(), Gdx.graphics.height.toFloat(),
-            wave, upgradeChoices, ui.upgradeButtons, ::drawCentered, ::fitFont
+            wave, upgradeChoices, ui.upgradeButtons
         )
     }
 
