@@ -932,12 +932,17 @@ class GameScreen : Screen, InputAdapter() {
                 val fireX = if (controlsSwapped) leftX else rightX
                 val dx = screenX - moveX
                 val dy = (h - screenY) - baseY
-                val controlHitRadius = controlRadius + 18f
+                val controlHitRadius = controlRadius + 24f
 
                 if (dx * dx + dy * dy <= controlHitRadius * controlHitRadius) {
-                    if (input.joystick.tryActivate(screenX.toFloat(), screenY.toFloat(), pointer)) {
-                        input.joystick.drag(screenX.toFloat(), screenY.toFloat(), pointer)
-                    }
+                    val joystickCenterScreenY = h - baseY
+                    input.joystick.tryActivate(
+                        moveX,
+                        joystickCenterScreenY,
+                        screenX.toFloat(),
+                        screenY.toFloat(),
+                        pointer
+                    )
                     return true
                 }
 
