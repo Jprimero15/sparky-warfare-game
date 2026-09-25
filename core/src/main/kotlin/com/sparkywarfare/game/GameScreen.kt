@@ -609,9 +609,6 @@ class GameScreen : Screen, InputAdapter() {
         shapeRenderer.projectionMatrix = hudCamera.combined
         shapeRenderer.begin(ShapeRenderer.ShapeType.Filled)
 
-        shapeRenderer.color = Color(0f, 0f, 0f, 0.62f)
-        shapeRenderer.rect(0f, 0f, w, h)
-
         shapeRenderer.color = Color(0.004f, 0.014f, 0.026f, 0.94f)
         shapeRenderer.rect(left, top - panelH, panelW, panelH)
         shapeRenderer.color = Color(0.18f, 0.9f, 1f, 0.9f)
@@ -651,9 +648,13 @@ class GameScreen : Screen, InputAdapter() {
         drawRight("COMBO x" + combo, left + panelW - 14f, top - 77f,
             if (combo >= 3) Color(1f, 0.72f, 0.2f, 1f) else Color(0.46f, 0.6f, 0.68f, 1f))
 
-        // Player integrity readout: label plus segmented health bar.
+        // Player integrity readout. Text stays in the sprite batch; geometry is drawn
+        // only after the batch closes to keep GL state transitions deterministic.
         fitFont("CORE " + player.health + "/" + player.maxHealth, 150f, 0.55f, 0.38f)
-        drawRight("CORE " + player.health + "/" + player.maxHealth, safeArea.right - 12f, safeArea.top - 22f, Color(1f, 0.42f, 0.52f, 1f))
+        drawRight("CORE " + player.health + "/" + player.maxHealth, safeArea.right - 12f, safeArea.top - 22f,
+            Color(1f, 0.42f, 0.52f, 1f))
+        batch.end()
+
         val coreW = 104f
         val coreX = safeArea.right - coreW - 12f
         val coreY = safeArea.top - 46f
@@ -662,11 +663,10 @@ class GameScreen : Screen, InputAdapter() {
         shapeRenderer.color = Color(0f, 0f, 0f, 0.68f)
         shapeRenderer.rect(coreX, coreY, coreW, 7f)
         shapeRenderer.color = if (player.health <= 1) Color(1f, 0.18f, 0.3f, 0.95f) else Color(0.18f, 0.9f, 1f, 0.9f)
-        shapeRenderer.rect(coreX, coreY, coreW * (player.health.toFloat() / player.maxHealth.coerceAtLeast(1)).coerceIn(0f, 1f), 7f)
+        shapeRenderer.rect(coreX, coreY,
+            coreW * (player.health.toFloat() / player.maxHealth.coerceAtLeast(1)).coerceIn(0f, 1f), 7f)
         shapeRenderer.end()
-
         drawPauseIcon(pauseButton)
-        batch.end()
 
         if (waveBannerTimer > 0f) drawWaveBanner()
         if (tutorialVisible) drawTutorialOverlay()
