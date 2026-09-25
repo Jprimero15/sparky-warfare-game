@@ -734,8 +734,20 @@ class GameScreen : Screen, InputAdapter() {
     }
 
     private fun drawMenuOverlay() {
-        val w=Gdx.graphics.width.toFloat(); val h=Gdx.graphics.height.toFloat(); ui.update(w,h); ui.menu(w,h)
-        menuRenderer.draw(w,h,safeArea,singleButton,multiButton,settingsButton,highScore,bestWave,totalKills,::drawButton,::drawCentered,::fitFont)
+        val w = Gdx.graphics.width.toFloat()
+        val h = Gdx.graphics.height.toFloat()
+        ui.update(w, h)
+        ui.menu(w, h)
+
+        // Menu/settings overlays live in HUD screen coordinates. Always restore
+        // the HUD projection after the world/idle renderer has drawn.
+        shapeRenderer.projectionMatrix = hudCamera.combined
+        batch.projectionMatrix = hudCamera.combined
+
+        menuRenderer.draw(
+            w, h, safeArea, singleButton, multiButton, settingsButton,
+            highScore, bestWave, totalKills, ::drawButton, ::drawCentered, ::fitFont
+        )
     }
 
     private fun drawButton(rect: Rectangle, color: Color) {
@@ -746,8 +758,16 @@ class GameScreen : Screen, InputAdapter() {
     }
 
     private fun drawGameOverOverlay() {
-        val w=Gdx.graphics.width.toFloat(); val h=Gdx.graphics.height.toFloat(); ui.update(w,h); ui.gameOver(w,h)
-        gameOverRenderer.draw(w,h,safeArea,singleButton,menuButton,score,highScore,wave,totalKills,comboBest,::drawButton,::drawCentered,::fitFont)
+        val w = Gdx.graphics.width.toFloat()
+        val h = Gdx.graphics.height.toFloat()
+        ui.update(w, h)
+        ui.gameOver(w, h)
+        shapeRenderer.projectionMatrix = hudCamera.combined
+        batch.projectionMatrix = hudCamera.combined
+        gameOverRenderer.draw(
+            w, h, safeArea, singleButton, menuButton, score, highScore, wave,
+            totalKills, comboBest, ::drawButton, ::drawCentered, ::fitFont
+        )
     }
 
     private fun prepareUpgradeChoices() {
@@ -782,17 +802,35 @@ class GameScreen : Screen, InputAdapter() {
     }
 
     private fun drawUpgradeOverlay() {
-        upgradeRenderer.draw(Gdx.graphics.width.toFloat(), Gdx.graphics.height.toFloat(), wave, upgradeChoices, ui.upgradeButtons, ::drawCentered, ::fitFont)
+        shapeRenderer.projectionMatrix = hudCamera.combined
+        batch.projectionMatrix = hudCamera.combined
+        upgradeRenderer.draw(
+            Gdx.graphics.width.toFloat(), Gdx.graphics.height.toFloat(),
+            wave, upgradeChoices, ui.upgradeButtons, ::drawCentered, ::fitFont
+        )
     }
 
     private fun drawPauseOverlay() {
-        ui.pause(Gdx.graphics.width.toFloat(), Gdx.graphics.height.toFloat())
-        pauseRenderer.draw(Gdx.graphics.width.toFloat(), Gdx.graphics.height.toFloat(), resumeButton, menuButton, ::drawButton, ::drawCentered, ::fitFont)
+        val w = Gdx.graphics.width.toFloat()
+        val h = Gdx.graphics.height.toFloat()
+        ui.pause(w, h)
+        shapeRenderer.projectionMatrix = hudCamera.combined
+        batch.projectionMatrix = hudCamera.combined
+        pauseRenderer.draw(w, h, resumeButton, menuButton, ::drawButton, ::drawCentered, ::fitFont)
     }
 
     private fun drawSettingsOverlay() {
-        val w=Gdx.graphics.width.toFloat(); val h=Gdx.graphics.height.toFloat(); ui.update(w,h); ui.settings(w,h)
-        settingsRenderer.draw(w,h,safeArea,toggleSfxButton,toggleHapticsButton,volumeSlider,swapControlsButton,menuButton,FeedbackAudio.isMuted(),hapticsMuted,FeedbackAudio.masterVolume(),::drawButton,::drawCentered,::fitFont)
+        val w = Gdx.graphics.width.toFloat()
+        val h = Gdx.graphics.height.toFloat()
+        ui.update(w, h)
+        ui.settings(w, h)
+        shapeRenderer.projectionMatrix = hudCamera.combined
+        batch.projectionMatrix = hudCamera.combined
+        settingsRenderer.draw(
+            w, h, safeArea, toggleSfxButton, toggleHapticsButton, volumeSlider,
+            swapControlsButton, menuButton, FeedbackAudio.isMuted(), hapticsMuted,
+            FeedbackAudio.masterVolume(), ::drawButton, ::drawCentered, ::fitFont
+        )
     }
 
     private fun toUiRect(screenX: Int, screenY: Int, rect: Rectangle): Boolean {
