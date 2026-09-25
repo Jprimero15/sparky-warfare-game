@@ -236,3 +236,7 @@ The current foundation is intentionally stable before adding larger gameplay fea
 
 Multiplayer is currently presented as unavailable rather than exposing a non-functional fake mode.
 
+
+## CI baseline
+
+The repository's `main` branch is kept build-verified through GitHub Actions after each committed change.
