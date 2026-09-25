@@ -223,7 +223,6 @@ class GameScreen : Screen, InputAdapter() {
         lasers.clear()
         bursts.forEach { pools.freeBurst(it) }
         bursts.clear()
-        particles.clear()
         domainBursts.forEach { pools.freeBurst(it) }
         domainBursts.clear()
         particles.clear()
@@ -441,8 +440,8 @@ class GameScreen : Screen, InputAdapter() {
                 val turn = GameConfig.Enemy.AI_MAX_AIM_TURN_SPEED * delta
                 enemy.aiAimAngle = MathUtils.lerpAngleDeg(enemy.aiAimAngle, targetAngle, (turn / 180f).coerceIn(0f, 1f))
                 enemy.turretAngle = enemy.aiAimAngle
-                // The hull follows movement; the turret tracks independently.
-                enemy.angle = scratchDirection.angleDeg()
+                // The hull follows its movement vector; the turret tracks independently.
+                enemy.angle = targetAngle
                 val factor = if (distance > 95f) 0.65f else 0.28f
                 CollisionSystem.tryMoveTank(enemy, scratchDirection, enemy.speed * factor * delta, player, enemies, walls)
             }
@@ -467,11 +466,8 @@ class GameScreen : Screen, InputAdapter() {
             if (scratchDirection.len2() > 0.0001f) {
                 scratchDirection.nor()
                 player.angle = scratchDirection.angleDeg()
-                player.turretAngle = MathUtils.lerpAngleDeg(
-                    player.turretAngle,
-                    player.angle,
-                    (GameConfig.Enemy.AI_MAX_AIM_TURN_SPEED * delta / 180f).coerceIn(0f, 1f)
-                )
+                // Player aiming is intentionally coupled to movement for fast, predictable touch control.
+                player.turretAngle = player.angle
                 CollisionSystem.tryMoveTank(player, scratchDirection, player.speed * delta, player, enemies, walls)
             }
         }
