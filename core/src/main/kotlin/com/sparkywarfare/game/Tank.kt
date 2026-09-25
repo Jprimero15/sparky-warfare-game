@@ -20,6 +20,9 @@ class Tank(
     var aiFireTimer = 0f
     var aiAimAngle = angle
     var aiReactionTimer = 0f
+    /** Direction the weapon/turret is visually and physically aimed. */
+    var turretAngle = angle
+
     private var baseSpeed = speed
     var speed = speed
         set(value) {
@@ -100,5 +103,6 @@ class Tank(
         rapidFireTimer = 0f
         spreadTimer = 0f
         overdriveTimer = 0f
+        turretAngle = angle
     }
 }

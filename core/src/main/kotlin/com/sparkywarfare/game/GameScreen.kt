@@ -440,7 +440,9 @@ class GameScreen : Screen, InputAdapter() {
                 val targetAngle = scratchDirection.angleDeg()
                 val turn = GameConfig.Enemy.AI_MAX_AIM_TURN_SPEED * delta
                 enemy.aiAimAngle = MathUtils.lerpAngleDeg(enemy.aiAimAngle, targetAngle, (turn / 180f).coerceIn(0f, 1f))
-                enemy.angle = enemy.aiAimAngle
+                enemy.turretAngle = enemy.aiAimAngle
+                // The hull follows movement; the turret tracks independently.
+                enemy.angle = scratchDirection.angleDeg()
                 val factor = if (distance > 95f) 0.65f else 0.28f
                 CollisionSystem.tryMoveTank(enemy, scratchDirection, enemy.speed * factor * delta, player, enemies, walls)
             }
@@ -465,6 +467,11 @@ class GameScreen : Screen, InputAdapter() {
             if (scratchDirection.len2() > 0.0001f) {
                 scratchDirection.nor()
                 player.angle = scratchDirection.angleDeg()
+                player.turretAngle = MathUtils.lerpAngleDeg(
+                    player.turretAngle,
+                    player.angle,
+                    (GameConfig.Enemy.AI_MAX_AIM_TURN_SPEED * delta / 180f).coerceIn(0f, 1f)
+                )
                 CollisionSystem.tryMoveTank(player, scratchDirection, player.speed * delta, player, enemies, walls)
             }
         }
@@ -484,13 +491,13 @@ class GameScreen : Screen, InputAdapter() {
             EnemyTier.ELITE -> GameConfig.Enemy.AI_ELITE_SPREAD
             null -> GameConfig.Enemy.AI_ASSAULT_SPREAD
         }
-        val shotAngle = tank.angle + if (spread > 0f) MathUtils.random(-spread, spread) else 0f
+        val shotAngle = tank.turretAngle + if (spread > 0f) MathUtils.random(-spread, spread) else 0f
         val rad = Math.toRadians(shotAngle.toDouble())
         scratchDirection.set(Math.cos(rad).toFloat(), Math.sin(rad).toFloat()).nor()
         scratchSpawn.set(tank.position).mulAdd(scratchDirection, tank.radius + 3f)
         lasers.add(pools.obtainLaser(scratchSpawn, scratchDirection, tank.color, tank.isPlayer))
         if (tank.hasSpreadShot()) {
-            val base = tank.angle
+            val base = tank.turretAngle
             repeat(2) { index ->
                 val offset = if (index == 0) -14f else 14f
                 val a = Math.toRadians((base + offset).toDouble())

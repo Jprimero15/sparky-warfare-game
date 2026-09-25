@@ -16,7 +16,7 @@ Current gameplay systems include:
 - Responsive virtual joystick movement.
 - Independent multitouch fire tracking.
 - Left/right control-side swapping.
-- Enemy chase-and-fire AI.
+- Enemy chase-and-fire AI with delayed turret tracking and independent hull/turret rotation.
 - Wall-aware line-of-sight checks.
 - Destructible brick, reinforced brick, concrete, and metal cover.
 - Indestructible steel arena boundaries.
@@ -129,6 +129,7 @@ Important responsibilities are separated into focused systems:
 - SettingsRenderer — device/control configuration matrix.
 - UpgradeRenderer — three-card upgrade selection.
 - WorldRenderer — arena, walls, enemy bars, and touch controls.
+- TankRenderer — procedural polygon hulls, independent turrets, reactor cores, and tier-specific weapon silhouettes.
 - InputController — multitouch state and joystick lifecycle.
 - CollisionSystem — tank movement, separation, wall tests, laser intersections, and line-of-sight checks.
 - CombatSystem — damage routing and kill scoring.
@@ -143,7 +144,9 @@ Important responsibilities are separated into focused systems:
 
 The visual system uses a near-black battlefield with neon energy accents.
 
-GlowRenderer provides shared glow treatment for tanks, lasers, power-ups, and impact effects.
+TankRenderer owns the procedural tank geometry. Each tank uses a resolution-independent polygon silhouette with a separate turret aim, reactor, armor fins, and tier-specific weapon signature. Scout, assault, heavy, ranged, elite, and player tanks therefore remain visually distinguishable without sprite files.
+
+GlowRenderer provides shared glow treatment for lasers, power-ups, and impact effects.
 
 The glow layer is rendered into a framebuffer and processed through assets/shaders/glow.vert and assets/shaders/glow.frag. The composite uses a lightweight bright-pass/blur approach suitable for Android.
 
