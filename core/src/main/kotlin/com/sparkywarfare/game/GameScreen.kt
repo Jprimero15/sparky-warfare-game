@@ -68,7 +68,6 @@ class GameScreen : Screen, InputAdapter() {
     private var scoreMultiplier = 1
     private val upgradeChoices = mutableListOf<UpgradeType>()
     private val upgradeLevels = mutableMapOf<UpgradeType, Int>()
-    private val upgradeButtons = Array(3) { Rectangle() }
     private val prefs by lazy { Gdx.app.getPreferences("Sparky Warfare") }
     private var screenShake = 0f
     private var hitFlash = 0f
@@ -979,7 +978,7 @@ class GameScreen : Screen, InputAdapter() {
         shapeRenderer.rect(0f, h * 0.72f, w, h * 0.28f)
         for (i in 0 until 3) {
             val x = left + i * (cardW + gap)
-            ui.upgradeButtons[i].set(x, bottom, cardW, cardH)
+            ui.ui.upgradeButtons[i].set(x, bottom, cardW, cardH)
             shapeRenderer.color = Color(0.035f, 0.055f, 0.07f, 0.96f)
             shapeRenderer.rect(x, bottom, cardW, cardH)
             shapeRenderer.color = Color(0.15f, 0.72f, 1f, 0.7f)
@@ -995,7 +994,7 @@ class GameScreen : Screen, InputAdapter() {
         font.data.setScale(0.65f)
         drawCentered("WAVE " + wave + " COMPLETE", centerX, h * 0.79f, Color(0.46f, 0.62f, 0.68f, 1f))
         for (i in 0 until minOf(3, upgradeChoices.size)) {
-            val rect = ui.upgradeButtons[i]
+            val rect = ui.ui.upgradeButtons[i]
             val choice = upgradeChoices[i]
             fitFont(choice.title, rect.width - 24f, 1.08f, 0.68f)
             drawCentered(choice.title, rect.x + rect.width / 2f, rect.y + rect.height - 52f, Color.WHITE)
@@ -1115,7 +1114,7 @@ class GameScreen : Screen, InputAdapter() {
         }
         if (state == GameState.UPGRADE) {
             for (i in 0 until minOf(3, upgradeChoices.size)) {
-                if (toUiRect(screenX, screenY, ui.upgradeButtons[i])) {
+                if (toUiRect(screenX, screenY, ui.ui.upgradeButtons[i])) {
                     applyUpgrade(upgradeChoices[i])
                     FeedbackAudio.play(FeedbackAudio.Cue.POWER_UP)
                     haptic(Input.VibrationType.MEDIUM)
