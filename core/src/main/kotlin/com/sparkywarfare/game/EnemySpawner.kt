@@ -6,9 +6,9 @@ import com.badlogic.gdx.math.Vector2
 
 class EnemySpawner {
     private val candidate = Vector2()
+    private val waveManager = WaveManager()
 
     fun spawnWave(wave: Int, player: Tank, walls: List<Wall>, enemies: MutableList<Tank>) {
-        val waveManager = WaveManager()
         val count = waveManager.enemyCount(wave)
         val spawnY = (player.position.y + GameConfig.VIEW_HEIGHT * 0.65f).coerceAtMost(GameConfig.WORLD_HEIGHT - 70f)
         val left = (player.position.x - GameConfig.VIEW_WIDTH * 0.9f).coerceAtLeast(70f)
