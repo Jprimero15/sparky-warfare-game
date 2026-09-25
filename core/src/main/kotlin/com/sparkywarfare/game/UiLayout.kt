@@ -8,6 +8,7 @@ data class SafeArea(val left: Float, val right: Float, val bottom: Float, val to
 
 class UiLayout {
     val singleButton = Rectangle()
+    val multiButton = Rectangle()
     val settingsButton = Rectangle()
     val pauseButton = Rectangle()
     val resumeButton = Rectangle()
