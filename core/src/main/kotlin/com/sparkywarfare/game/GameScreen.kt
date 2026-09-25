@@ -774,7 +774,7 @@ class GameScreen : Screen, InputAdapter() {
 
     private fun drawSettingsOverlay() {
         val w=Gdx.graphics.width.toFloat(); val h=Gdx.graphics.height.toFloat(); ui.update(w,h); ui.settings(w,h)
-        settingsRenderer.draw(w,h,safeArea,toggleSfxButton,toggleHapticsButton,volumeSlider,swapControlsButton,menuButton,muted,hapticsMuted,FeedbackAudio.masterVolume(),::drawButton,::drawCentered,::fitFont)
+        settingsRenderer.draw(w,h,safeArea,toggleSfxButton,toggleHapticsButton,volumeSlider,swapControlsButton,menuButton,FeedbackAudio.isMuted(),hapticsMuted,FeedbackAudio.masterVolume(),::drawButton,::drawCentered,::fitFont)
     }
 
     private fun toUiRect(screenX: Int, screenY: Int, rect: Rectangle): Boolean {
