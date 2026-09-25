@@ -36,12 +36,14 @@ class UiLayout {
         val safeHeight = (safeArea.top - safeArea.bottom).coerceAtLeast(1f)
         val centerX = (safeArea.left + safeArea.right) / 2f
 
-        val buttonW = (safeWidth * 0.58f).coerceIn(280f, 560f)
-        val buttonH = (safeHeight * 0.18f).coerceIn(44f, 68f)
-        val gap = (safeHeight * 0.03f).coerceIn(8f, 18f)
+        val buttonW = (safeWidth * 0.58f).coerceIn(300f, 580f)
+        val buttonH = (safeHeight * 0.105f).coerceIn(56f, 70f)
+        val gap = (safeHeight * 0.026f).coerceIn(10f, 18f)
 
+        // Keep the command stack in the lower-middle band so the title block
+        // has its own vertical lane and can never collide with button text.
         val stackH = buttonH * 3f + gap * 2f
-        val stackBottom = (safeArea.bottom + safeArea.top) / 2f - stackH / 2f - 2f
+        val stackBottom = safeArea.bottom + safeHeight * 0.18f
 
         singleButton.set(centerX - buttonW / 2f, stackBottom + (buttonH + gap) * 2f, buttonW, buttonH)
         multiButton.set(centerX - buttonW / 2f, stackBottom + buttonH + gap, buttonW, buttonH)
@@ -72,7 +74,7 @@ class UiLayout {
 
     fun gameOver(width: Float, height: Float) {
         val panelW = (safeArea.right - safeArea.left).coerceIn(340f, 660f) * 0.86f
-        val panelH = (safeArea.top - safeArea.bottom).coerceIn(280f, 420f) * 0.82f
+        val panelH = (safeArea.top - safeArea.bottom).coerceIn(300f, 440f) * 0.82f
         val left = (safeArea.left + safeArea.right) / 2f - panelW / 2f
         val bottom = (safeArea.bottom + safeArea.top) / 2f - panelH / 2f
         val gap = 12f
