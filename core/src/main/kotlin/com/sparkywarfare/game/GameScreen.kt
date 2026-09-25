@@ -1171,14 +1171,14 @@ class GameScreen : Screen, InputAdapter() {
         input.clearTransientInput()
         if (state == GameState.PLAYING) {
             input.setPaused(true)
-            state = GameState.PAUSED
+            router.goTo(GameState.PAUSED)
         }
     }
 
     override fun resume() {
         if (state == GameState.PAUSED) {
             input.setPaused(false)
-            state = GameState.PLAYING
+            router.goTo(GameState.PLAYING)
         }
     }
 
