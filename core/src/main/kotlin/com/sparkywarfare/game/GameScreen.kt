@@ -597,37 +597,74 @@ class GameScreen : Screen, InputAdapter() {
         val w = Gdx.graphics.width.toFloat()
         val h = Gdx.graphics.height.toFloat()
         ui.update(w, h)
-        val panelW = (w * 0.43f).coerceIn(280f, 430f)
-        val panelH = 92f
+        ui.hud()
+
         val left = safeArea.left
         val top = safeArea.top
-        ui.hud()
+        val panelW = (w * 0.44f).coerceIn(300f, 470f)
+        val panelH = 88f
 
         Gdx.gl.glEnable(GL20.GL_BLEND)
         Gdx.gl.glBlendFunc(GL20.GL_SRC_ALPHA, GL20.GL_ONE_MINUS_SRC_ALPHA)
         shapeRenderer.projectionMatrix = hudCamera.combined
         shapeRenderer.begin(ShapeRenderer.ShapeType.Filled)
-        shapeRenderer.color = Color(0f, 0f, 0f, 0.72f)
+
+        shapeRenderer.color = Color(0f, 0f, 0f, 0.62f)
+        shapeRenderer.rect(0f, 0f, w, h)
+
+        shapeRenderer.color = Color(0.004f, 0.014f, 0.026f, 0.94f)
         shapeRenderer.rect(left, top - panelH, panelW, panelH)
-        shapeRenderer.color = Color(0.15f, 0.72f, 1f, 0.5f)
-        shapeRenderer.rect(left, top - 2f, panelW, 2f)
-        shapeRenderer.color = Color(0.06f, 0.08f, 0.1f, 0.7f)
+        shapeRenderer.color = Color(0.18f, 0.9f, 1f, 0.9f)
+        shapeRenderer.rect(left, top - 3f, panelW, 3f)
+        shapeRenderer.color = Color(0.78f, 0.24f, 1f, 0.55f)
+        shapeRenderer.rect(left + panelW - 4f, top - 33f, 4f, 30f)
+
+        // Compact stat cells.
+        val statY = top - 74f
+        shapeRenderer.color = Color(0.18f, 0.9f, 1f, 0.12f)
+        shapeRenderer.rect(left + 10f, statY - 4f, panelW - 20f, 2f)
+
+        shapeRenderer.color = Color(0.015f, 0.035f, 0.055f, 0.96f)
         shapeRenderer.rect(pauseButton.x, pauseButton.y, pauseButton.width, pauseButton.height)
+        shapeRenderer.color = Color(0.18f, 0.9f, 1f, 0.22f)
+        shapeRenderer.rect(pauseButton.x, pauseButton.y + pauseButton.height - 3f, pauseButton.width, 3f)
+
         shapeRenderer.end()
         Gdx.gl.glDisable(GL20.GL_BLEND)
 
         batch.projectionMatrix = hudCamera.combined
         batch.begin()
-        fitFont("SPARKY WARFARE", panelW - 28f, 1.35f, 0.82f)
-        drawShadowed("SPARKY WARFARE", left + 14f, top - 27f, Color(0.55f, 0.9f, 1f, 1f))
-        font.data.setScale(0.94f)
-        drawShadowed("SCORE " + score, left + 14f, top - 57f, Color.WHITE)
-        drawRight("WAVE " + wave, left + panelW - 14f, top - 57f, Color(0.72f, 0.82f, 0.9f, 1f))
-        font.data.setScale(0.68f)
-        drawShadowed("BEST " + highScore, left + 14f, top - 79f, Color(0.46f, 0.72f, 0.8f, 1f))
-        drawRight("COMBO x" + combo, left + panelW - 14f, top - 79f, if (combo >= 3) Color(1f, 0.78f, 0.2f, 1f) else Color(0.46f, 0.58f, 0.64f, 1f))
-        font.data.setScale(0.82f)
-        drawRight("HP " + player.health, safeArea.right - 70f, safeArea.top - 34f, Color(0.95f, 0.35f, 0.42f, 1f))
+
+        fitFont("SPARKY // COMBAT LINK", panelW - 90f, 0.82f, 0.52f)
+        drawShadowed("SPARKY // COMBAT LINK", left + 14f, top - 24f, Color(0.55f, 0.94f, 1f, 1f))
+
+        fitFont("SCORE " + score, panelW * 0.48f, 0.72f, 0.44f)
+        drawShadowed("SCORE " + score, left + 14f, top - 55f, Color.WHITE)
+
+        fitFont("WAVE " + wave, panelW * 0.24f, 0.58f, 0.38f)
+        drawRight("WAVE " + wave, left + panelW - 14f, top - 55f, Color(0.72f, 0.86f, 0.93f, 1f))
+
+        fitFont("BEST " + highScore, panelW * 0.43f, 0.5f, 0.34f)
+        drawShadowed("BEST " + highScore, left + 14f, top - 77f, Color(0.42f, 0.72f, 0.82f, 1f))
+
+        fitFont("COMBO x" + combo, panelW * 0.31f, 0.5f, 0.34f)
+        drawRight("COMBO x" + combo, left + panelW - 14f, top - 77f,
+            if (combo >= 3) Color(1f, 0.72f, 0.2f, 1f) else Color(0.46f, 0.6f, 0.68f, 1f))
+
+        // Player integrity readout: label plus segmented health bar.
+        fitFont("CORE " + player.health + "/" + player.maxHealth, 150f, 0.55f, 0.38f)
+        drawRight("CORE " + player.health + "/" + player.maxHealth, safeArea.right - 12f, safeArea.top - 22f, Color(1f, 0.42f, 0.52f, 1f))
+        val coreW = 104f
+        val coreX = safeArea.right - coreW - 12f
+        val coreY = safeArea.top - 46f
+        shapeRenderer.projectionMatrix = hudCamera.combined
+        shapeRenderer.begin(ShapeRenderer.ShapeType.Filled)
+        shapeRenderer.color = Color(0f, 0f, 0f, 0.68f)
+        shapeRenderer.rect(coreX, coreY, coreW, 7f)
+        shapeRenderer.color = if (player.health <= 1) Color(1f, 0.18f, 0.3f, 0.95f) else Color(0.18f, 0.9f, 1f, 0.9f)
+        shapeRenderer.rect(coreX, coreY, coreW * (player.health.toFloat() / player.maxHealth.coerceAtLeast(1)).coerceIn(0f, 1f), 7f)
+        shapeRenderer.end()
+
         drawPauseIcon(pauseButton)
         batch.end()
 
@@ -638,7 +675,7 @@ class GameScreen : Screen, InputAdapter() {
             Gdx.gl.glBlendFunc(GL20.GL_SRC_ALPHA, GL20.GL_ONE_MINUS_SRC_ALPHA)
             shapeRenderer.projectionMatrix = hudCamera.combined
             shapeRenderer.begin(ShapeRenderer.ShapeType.Filled)
-            shapeRenderer.color = Color(1f, 0.04f, 0.08f, hitFlash * 0.28f)
+            shapeRenderer.color = Color(1f, 0.04f, 0.08f, hitFlash * 0.20f)
             shapeRenderer.rect(0f, 0f, w, h)
             shapeRenderer.end()
             Gdx.gl.glDisable(GL20.GL_BLEND)
@@ -658,20 +695,37 @@ class GameScreen : Screen, InputAdapter() {
         val w = Gdx.graphics.width.toFloat()
         val h = Gdx.graphics.height.toFloat()
         val cx = (safeArea.left + safeArea.right) / 2f
-        val alpha = (waveBannerTimer / 0.5f).coerceAtMost(1f).coerceAtMost((2.2f - waveBannerTimer) / 0.5f + 1f).coerceIn(0f, 1f)
+        val alpha = ((waveBannerTimer / 0.45f).coerceAtMost(1f) *
+            ((2.2f - waveBannerTimer) / 0.7f).coerceIn(0f, 1f)).coerceIn(0f, 1f)
+        val bannerW = (w * 0.46f).coerceIn(320f, 560f)
+        val bannerH = 62f
+        val x = cx - bannerW / 2f
+        val y = h * 0.68f
+
         shapeRenderer.projectionMatrix = hudCamera.combined
         shapeRenderer.begin(ShapeRenderer.ShapeType.Filled)
-        shapeRenderer.color = Color(0.01f, 0.03f, 0.05f, 0.72f * alpha)
-        shapeRenderer.rect(cx - 190f, h * 0.67f, 380f, 58f)
-        shapeRenderer.color = if (waveBannerElite) Color(1f, 0.65f, 0.15f, 0.85f * alpha) else Color(0.15f, 0.72f, 1f, 0.8f * alpha)
-        shapeRenderer.rect(cx - 190f, h * 0.67f, 4f, 58f)
+        shapeRenderer.color = Color(0.004f, 0.016f, 0.028f, 0.86f * alpha)
+        shapeRenderer.rect(x, y, bannerW, bannerH)
+        shapeRenderer.color = if (waveBannerElite) Color(1f, 0.65f, 0.15f, 0.95f * alpha) else Color(0.18f, 0.9f, 1f, 0.92f * alpha)
+        shapeRenderer.rect(x, y + bannerH - 3f, bannerW, 3f)
+        shapeRenderer.rect(x, y, 4f, bannerH)
+        shapeRenderer.color = Color(0.78f, 0.24f, 1f, 0.5f * alpha)
+        shapeRenderer.rect(x + bannerW - 4f, y, 4f, bannerH)
         shapeRenderer.end()
+
         batch.projectionMatrix = hudCamera.combined
         batch.begin()
-        fitFont(if (waveBannerElite) "ELITE WAVE" else "WAVE " + wave, 330f, 1.5f, 0.9f)
-        drawCentered(if (waveBannerElite) "ELITE WAVE" else "WAVE " + wave, cx, h * 0.67f + 34f, Color(0.7f, 0.94f, 1f, alpha))
-        bodyFont.color = Color(0.5f, 0.68f, 0.74f, alpha)
-        bodyFont.draw(batch, if (waveBannerElite) "HEAVY CONTACT DETECTED" else "HOSTILES INBOUND", cx - 100f, h * 0.67f + 16f)
+        val title = if (waveBannerElite) "ELITE WAVE" else "WAVE " + wave
+        fitFont(title, bannerW - 38f, 1.0f, 0.62f)
+        drawCentered(title, cx, y + 36f, Color(0.74f, 0.97f, 1f, alpha))
+        fitFont(
+            if (waveBannerElite) "HEAVY CONTACT DETECTED" else "HOSTILES INBOUND",
+            bannerW - 42f, 0.42f, 0.28f
+        )
+        drawCentered(
+            if (waveBannerElite) "HEAVY CONTACT DETECTED" else "HOSTILES INBOUND",
+            cx, y + 15f, Color(0.55f, 0.7f, 0.78f, alpha)
+        )
         batch.end()
     }
 
@@ -679,43 +733,70 @@ class GameScreen : Screen, InputAdapter() {
         val w = Gdx.graphics.width.toFloat()
         val h = Gdx.graphics.height.toFloat()
         val cx = (safeArea.left + safeArea.right) / 2f
-        val panelW = (safeArea.right - safeArea.left).coerceIn(360f, 720f) * 0.86f
-        val panelH = (safeArea.top - safeArea.bottom).coerceIn(330f, 620f) * 0.72f
+        val safeH = (safeArea.top - safeArea.bottom).coerceAtLeast(300f)
+        val panelW = (safeArea.right - safeArea.left).coerceIn(400f, 760f) * 0.86f
+        val panelH = safeH.coerceIn(340f, 610f) * 0.74f
         val panel = Rectangle(cx - panelW / 2f, (safeArea.bottom + safeArea.top) / 2f - panelH / 2f, panelW, panelH)
-        tutorialButton.set(panel.x + 28f, panel.y + 22f, panel.width - 56f, (panel.height * 0.16f).coerceIn(54f, 72f))
+        tutorialButton.set(
+            panel.x + 26f,
+            panel.y + 22f,
+            panel.width - 52f,
+            (panel.height * 0.17f).coerceIn(58f, 76f)
+        )
+
         shapeRenderer.projectionMatrix = hudCamera.combined
         shapeRenderer.begin(ShapeRenderer.ShapeType.Filled)
-        shapeRenderer.color = Color(0f, 0f, 0f, 0.82f)
+        shapeRenderer.color = Color(0f, 0f, 0f, 0.86f)
         shapeRenderer.rect(0f, 0f, w, h)
-        shapeRenderer.color = Color(0.025f, 0.07f, 0.09f, 0.97f)
+        shapeRenderer.color = Color(0.006f, 0.018f, 0.032f, 0.98f)
         shapeRenderer.rect(panel.x, panel.y, panel.width, panel.height)
-        shapeRenderer.color = Color(0.15f, 0.72f, 1f, 0.85f)
+        shapeRenderer.color = Color(0.18f, 0.9f, 1f, 0.92f)
         shapeRenderer.rect(panel.x, panel.y + panel.height - 3f, panel.width, 3f)
-        drawButton(tutorialButton, Color(0.02f, 0.32f, 0.46f, 0.92f))
+        shapeRenderer.color = Color(0.78f, 0.24f, 1f, 0.7f)
+        shapeRenderer.rect(panel.x + panel.width - 4f, panel.y + panel.height - 34f, 4f, 31f)
+        shapeRenderer.color = Color(0.18f, 0.9f, 1f, 0.15f)
+        shapeRenderer.rect(panel.x + 26f, panel.y + panel.height - 112f, panel.width - 52f, 2f)
+        drawButton(tutorialButton, Color(0.02f, 0.22f, 0.34f, 0.98f))
         shapeRenderer.end()
+
         batch.projectionMatrix = hudCamera.combined
         batch.begin()
-        fitFont("FIELD BRIEFING", panel.width - 40f, 1.8f, 1f)
-        drawCentered("FIELD BRIEFING", cx, panel.y + panel.height - 48f, Color(0.62f, 0.94f, 1f, 1f))
-        font.data.setScale(0.60f)
-        font.color = Color(0.78f, 0.88f, 0.92f, 1f)
-        val textX = panel.x + 34f
-        val top = panel.y + panel.height - 104f
-        font.draw(batch, "MOVE: drag the joystick", textX, top)
-        font.draw(batch, "FIRE: hold the fire control", textX, top - 38f)
-        font.draw(batch, "Destroy every enemy to advance the wave.", textX, top - 76f)
-        font.draw(batch, "Every third wave offers three upgrades.", textX, top - 114f)
-        font.draw(batch, "Chain kills before the combo timer expires.", textX, top - 152f)
-        fitFont("GOT IT", tutorialButton.width - 24f, 1f, 0.62f)
-        drawCentered("GOT IT", cx, tutorialButton.y + tutorialButton.height * 0.62f, Color.WHITE)
+        fitFont("FIELD BRIEFING // COMBAT BASICS", panel.width - 50f, 0.92f, 0.56f)
+        drawCentered("FIELD BRIEFING // COMBAT BASICS", cx, panel.y + panel.height - 50f, Color(0.64f, 0.95f, 1f, 1f))
+
+        val textX = panel.x + 36f
+        val textW = panel.width - 72f
+        val lines = arrayOf(
+            "MOVE   //   DRAG THE JOYSTICK",
+            "FIRE   //   HOLD THE FIRE CONTROL",
+            "CLEAR  //   DESTROY EVERY HOSTILE",
+            "UPGRADE // EVERY THIRD WAVE",
+            "COMBO  //   CHAIN KILLS BEFORE TIMER EXPIRES"
+        )
+        val top = panel.y + panel.height - 116f
+        for (i in lines.indices) {
+            fitFont(lines[i], textW, 0.5f, 0.32f)
+            font.color = if (i % 2 == 0) Color(0.78f, 0.9f, 0.94f, 1f) else Color(0.5f, 0.72f, 0.8f, 1f)
+            font.draw(batch, lines[i], textX, top - i * 34f)
+        }
+
+        fitFont("ACKNOWLEDGE", tutorialButton.width - 30f, 0.66f, 0.46f)
+        drawCentered("ACKNOWLEDGE", cx, tutorialButton.y + tutorialButton.height * 0.62f, Color.WHITE)
         batch.end()
     }
 
     private fun fitFont(text: String, maxWidth: Float, preferred: Float, minimum: Float): Float {
         font.data.setScale(1f)
         layout.setText(font, text)
-        val scale = if (layout.width > 0f) (maxWidth / layout.width).coerceAtMost(preferred) else preferred
-        font.data.setScale(scale.coerceAtLeast(minimum))
+        if (layout.width <= 0f) {
+            font.data.setScale(preferred)
+            return preferred
+        }
+        // Never let the readability floor override the available width.
+        // This prevents the Orbitron glyphs from escaping panels on short screens.
+        val widthScale = (maxWidth / layout.width).coerceAtLeast(0.05f)
+        val scale = minOf(preferred, maxOf(minimum, widthScale))
+        font.data.setScale(minOf(scale, widthScale))
         layout.setText(font, text)
         return font.data.scaleX
     }
@@ -757,10 +838,21 @@ class GameScreen : Screen, InputAdapter() {
     }
 
     private fun drawButton(rect: Rectangle, color: Color) {
+        val x = rect.x
+        val y = rect.y
+        val w = rect.width
+        val h = rect.height
         shapeRenderer.color = color
-        shapeRenderer.rect(rect.x, rect.y, rect.width, rect.height)
-        shapeRenderer.color = Color(0.55f, 0.9f, 1f, 0.55f)
-        shapeRenderer.rect(rect.x, rect.y + rect.height - 3f, rect.width, 3f)
+        shapeRenderer.rect(x, y, w, h)
+        // Angular corner cuts make every command button read as one cyber UI family.
+        shapeRenderer.color = Color(0.006f, 0.014f, 0.024f, 0.9f)
+        shapeRenderer.triangle(x, y + h, x + 16f, y + h, x, y + h - 16f)
+        shapeRenderer.triangle(x + w, y, x + w - 16f, y, x + w, y + 16f)
+        shapeRenderer.color = Color(0.18f, 0.9f, 1f, 0.68f)
+        shapeRenderer.rect(x + 3f, y + h - 4f, w - 6f, 4f)
+        shapeRenderer.rect(x + 3f, y + 3f, 42f, 2f)
+        shapeRenderer.color = Color(0.78f, 0.24f, 1f, 0.42f)
+        shapeRenderer.rect(x + w - 44f, y + 3f, 41f, 2f)
     }
 
     private fun drawGameOverOverlay() {
