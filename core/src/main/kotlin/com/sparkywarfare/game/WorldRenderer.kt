@@ -47,6 +47,8 @@ class WorldRenderer(
     private val healthBack = Color(0f, 0f, 0f, 0.65f)
     private val healthElite = Color(1f, 0.72f, 0.16f, 0.95f)
     private val healthNormal = Color(0.35f, 0.9f, 1f, 0.9f)
+    private val gridLine = Color(0.08f, 0.34f, 0.42f, 0.13f)
+    private val gridStrong = Color(0.15f, 0.72f, 0.86f, 0.2f)
 
     fun renderCombat(
         player: Tank,
@@ -182,6 +184,19 @@ class WorldRenderer(
         shapeRenderer.rect(0f, 0f, GameConfig.WORLD_WIDTH, GameConfig.WORLD_HEIGHT)
         shapeRenderer.color = floorAccentColor
         shapeRenderer.rect(GameConfig.TILE, GameConfig.TILE, GameConfig.WORLD_WIDTH - GameConfig.TILE * 2f, 3f)
+        shapeRenderer.end()
+
+        // Subtle tactical grid: enough structure to sell the cyber arena without
+        // competing with tanks, projectiles, or UI.
+        shapeRenderer.begin(ShapeRenderer.ShapeType.Line)
+        for (x in 64 until GameConfig.WORLD_WIDTH.toInt() step 64) {
+            shapeRenderer.color = if (x % 256 == 0) gridStrong else gridLine
+            shapeRenderer.line(x.toFloat(), 32f, x.toFloat(), GameConfig.WORLD_HEIGHT - 32f)
+        }
+        for (y in 64 until GameConfig.WORLD_HEIGHT.toInt() step 64) {
+            shapeRenderer.color = if (y % 256 == 0) gridStrong else gridLine
+            shapeRenderer.line(32f, y.toFloat(), GameConfig.WORLD_WIDTH - 32f, y.toFloat())
+        }
         shapeRenderer.end()
     }
 
