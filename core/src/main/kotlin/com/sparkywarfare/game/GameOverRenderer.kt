@@ -24,35 +24,46 @@ class GameOverRenderer(
         combo: Int,
         drawButton: (Rectangle, Color) -> Unit,
         drawCentered: (String, Float, Float, Color) -> Unit,
-        fit: (String, Float, Float, Float) -> Unit
+        fit: (String, Float, Float, Float) -> Float
     ) {
+        val cx = (safe.left + safe.right) / 2f
+        val panelW = (safe.right - safe.left).coerceIn(360f, 900f) * 0.86f
+        val panelH = (safe.top - safe.bottom).coerceIn(320f, 460f) * 0.82f
+        val panelX = cx - panelW / 2f
+        val panelY = (safe.bottom + safe.top) / 2f - panelH / 2f
+
         shape.begin(ShapeRenderer.ShapeType.Filled)
         shape.color = Color(0f, 0f, 0f, 0.9f)
         shape.rect(0f, 0f, width, height)
-        val panelX = width * 0.14f
-        val panelY = height * 0.20f
-        val panelW = width * 0.72f
-        val panelH = height * 0.60f
-        shape.color = Color(0.035f, 0.012f, 0.02f, 0.98f)
+        shape.color = Color(0.035f, 0.008f, 0.018f, 0.98f)
         shape.rect(panelX, panelY, panelW, panelH)
-        shape.color = Color(1f, 0.22f, 0.3f, 0.82f)
+        shape.color = Color(1f, 0.2f, 0.3f, 0.88f)
         shape.rect(panelX, panelY + panelH - 4f, panelW, 4f)
-        drawButton(retry, Color(0.02f, 0.32f, 0.46f, 0.92f))
-        drawButton(menu, Color(0.04f, 0.06f, 0.08f, 0.94f))
+        shape.color = Color(1f, 0.2f, 0.3f, 0.18f)
+        shape.rect(panelX + 8f, panelY + 8f, panelW - 16f, 2f)
+        drawButton(retry, Color(0.02f, 0.34f, 0.49f, 0.96f))
+        drawButton(menu, Color(0.04f, 0.065f, 0.085f, 0.96f))
         shape.end()
 
         batch.begin()
-        fit("RUN TERMINATED", width * 0.52f, 2f, 1.15f)
-        drawCentered("RUN TERMINATED", width / 2f, panelY + panelH - 48f, Color(1f, 0.35f, 0.4f, 1f))
-        font.data.setScale(0.62f)
-        drawCentered("COMBAT SESSION ENDED", width / 2f, panelY + panelH - 78f, Color(0.5f, 0.62f, 0.66f, 1f))
-        font.data.setScale(0.72f)
-        drawCentered("SCORE  $score     BEST  $best", width / 2f, panelY + panelH - 132f, Color.WHITE)
-        font.data.setScale(0.58f)
-        drawCentered("WAVE  $wave    KILLS  $kills    COMBO  x$combo", width / 2f, panelY + panelH - 164f, Color(0.58f, 0.72f, 0.76f, 1f))
-        font.data.setScale(0.68f)
+        fit("RUN TERMINATED", panelW - 80f, 1.02f, 0.78f)
+        drawCentered("RUN TERMINATED", cx, panelY + panelH - 58f, Color(1f, 0.34f, 0.42f, 1f))
+
+        fit("COMBAT SESSION ENDED", panelW - 110f, 0.52f, 0.40f)
+        drawCentered("COMBAT SESSION ENDED", cx, panelY + panelH - 100f, Color(0.52f, 0.66f, 0.7f, 1f))
+
+        fit("SCORE  $score     BEST  $best", panelW - 90f, 0.66f, 0.50f)
+        drawCentered("SCORE  $score     BEST  $best", cx, panelY + panelH - 145f, Color.WHITE)
+
+        fit("WAVE  $wave    KILLS  $kills    COMBO  x$combo", panelW - 90f, 0.50f, 0.38f)
+        drawCentered("WAVE  $wave    KILLS  $kills    COMBO  x$combo", cx, panelY + panelH - 176f, Color(0.6f, 0.74f, 0.78f, 1f))
+
+        fit("RETRY", retry.width - 20f, 0.66f, 0.50f)
         drawCentered("RETRY", retry.x + retry.width / 2f, retry.y + retry.height / 2f + 8f, Color.WHITE)
-        drawCentered("MAIN MENU", menu.x + menu.width / 2f, menu.y + menu.height / 2f + 8f, Color(0.78f, 0.86f, 0.9f, 1f))
+        fit("MAIN MENU", menu.width - 20f, 0.66f, 0.50f)
+        drawCentered("MAIN MENU", menu.x + menu.width / 2f, menu.y + menu.height / 2f + 8f, Color(0.82f, 0.9f, 0.94f, 1f))
+
+        font.data.setScale(1f)
         batch.end()
     }
 }
