@@ -22,10 +22,8 @@ class PauseRenderer(
         val x = cx - panelW / 2f
         val y = cy - panelH / 2f
         shape.begin(ShapeRenderer.ShapeType.Filled)
-        shape.color = UiTheme.OVERLAY
-        shape.rect(0f, 0f, width, height)
-        UiShapes.roundedRect(shape, x, y, panelW, panelH, UiTheme.Metrics.PANEL_RADIUS, UiTheme.PANEL)
-        UiShapes.roundedRect(shape, x + UiTheme.Metrics.PANEL_INSET, y + UiTheme.Metrics.PANEL_INSET, panelW - UiTheme.Metrics.PANEL_INSET * 2f, panelH - UiTheme.Metrics.PANEL_INSET * 2f, UiTheme.Metrics.INNER_RADIUS, UiTheme.INNER)
+        UiShapes.overlay(shape, width, height)
+        UiShapes.panel(shape, x, y, panelW, panelH)
         drawButton(resume,UiTheme.ACCENT)
         drawButton(menu,UiTheme.PANEL_DARK)
         shape.end()
