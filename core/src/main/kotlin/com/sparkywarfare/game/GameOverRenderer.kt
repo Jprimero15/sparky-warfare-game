@@ -11,6 +11,12 @@ class GameOverRenderer(
     private val batch: SpriteBatch,
     private val font: BitmapFont
 ) {
+    private val panel = Color(0.028f, 0.008f, 0.018f, 0.98f)
+    private val inner = Color(0.055f, 0.018f, 0.035f, 0.96f)
+    private val danger = Color(1f, 0.2f, 0.34f, 1f)
+    private val cyan = Color(0.18f, 0.9f, 1f, 1f)
+    private val dim = Color(0.52f, 0.64f, 0.7f, 1f)
+
     fun draw(
         width: Float,
         height: Float,
@@ -27,43 +33,59 @@ class GameOverRenderer(
         fit: (String, Float, Float, Float) -> Float
     ) {
         val cx = (safe.left + safe.right) / 2f
-        val panelW = (safe.right - safe.left).coerceIn(360f, 900f) * 0.86f
-        val panelH = (safe.top - safe.bottom).coerceIn(320f, 460f) * 0.82f
+        val panelW = (safe.right - safe.left).coerceIn(380f, 920f) * 0.88f
+        val panelH = (safe.top - safe.bottom).coerceIn(340f, 520f) * 0.82f
         val panelX = cx - panelW / 2f
         val panelY = (safe.bottom + safe.top) / 2f - panelH / 2f
 
         shape.begin(ShapeRenderer.ShapeType.Filled)
-        shape.color = Color(0f, 0f, 0f, 0.9f)
+        shape.color = Color(0f, 0f, 0f, 0.88f)
         shape.rect(0f, 0f, width, height)
-        shape.color = Color(0.035f, 0.008f, 0.018f, 0.98f)
+        shape.color = panel
         shape.rect(panelX, panelY, panelW, panelH)
-        shape.color = Color(1f, 0.2f, 0.3f, 0.88f)
+        shape.color = inner
+        shape.rect(panelX + 6f, panelY + 6f, panelW - 12f, panelH - 12f)
+        shape.color = danger
         shape.rect(panelX, panelY + panelH - 4f, panelW, 4f)
-        shape.color = Color(1f, 0.2f, 0.3f, 0.18f)
-        shape.rect(panelX + 8f, panelY + 8f, panelW - 16f, 2f)
-        drawButton(retry, Color(0.02f, 0.34f, 0.49f, 0.96f))
-        drawButton(menu, Color(0.04f, 0.065f, 0.085f, 0.96f))
+        shape.color = Color(1f, 0.2f, 0.34f, 0.2f)
+        shape.rect(panelX + 26f, panelY + panelH - 126f, panelW - 52f, 2f)
+        shape.color = cyan
+        shape.rect(panelX, panelY + 4f, panelW * 0.36f, 3f)
+        drawButton(retry, Color(0.02f, 0.22f, 0.34f, 0.98f))
+        drawButton(menu, Color(0.06f, 0.05f, 0.1f, 0.98f))
         shape.end()
 
         batch.begin()
-        fit("RUN TERMINATED", panelW - 80f, 1.02f, 0.78f)
-        drawCentered("RUN TERMINATED", cx, panelY + panelH - 58f, Color(1f, 0.34f, 0.42f, 1f))
+        fit("SYSTEM FAILURE", panelW - 70f, 1.3f, 0.82f)
+        drawCentered("SYSTEM FAILURE", cx, panelY + panelH - 58f, danger)
+        fit("COMBAT SESSION TERMINATED", panelW - 90f, 0.5f, 0.36f)
+        drawCentered("COMBAT SESSION TERMINATED", cx, panelY + panelH - 91f, dim)
 
-        fit("COMBAT SESSION ENDED", panelW - 110f, 0.52f, 0.40f)
-        drawCentered("COMBAT SESSION ENDED", cx, panelY + panelH - 100f, Color(0.52f, 0.66f, 0.7f, 1f))
+        fit("SCORE  $score      BEST  $best", panelW - 76f, 0.68f, 0.5f)
+        drawCentered("SCORE  $score      BEST  $best", cx, panelY + panelH - 141f, Color.WHITE)
 
-        fit("SCORE  $score     BEST  $best", panelW - 90f, 0.66f, 0.50f)
-        drawCentered("SCORE  $score     BEST  $best", cx, panelY + panelH - 145f, Color.WHITE)
+        fit("WAVE  $wave    KILLS  $kills    COMBO  x$combo", panelW - 78f, 0.48f, 0.35f)
+        drawCentered("WAVE  $wave    KILLS  $kills    COMBO  x$combo", cx, panelY + panelH - 174f, Color(0.64f, 0.76f, 0.81f, 1f))
 
-        fit("WAVE  $wave    KILLS  $kills    COMBO  x$combo", panelW - 90f, 0.50f, 0.38f)
-        drawCentered("WAVE  $wave    KILLS  $kills    COMBO  x$combo", cx, panelY + panelH - 176f, Color(0.6f, 0.74f, 0.78f, 1f))
-
-        fit("RETRY", retry.width - 20f, 0.66f, 0.50f)
-        drawCentered("RETRY", retry.x + retry.width / 2f, retry.y + retry.height / 2f + 8f, Color.WHITE)
-        fit("MAIN MENU", menu.width - 20f, 0.66f, 0.50f)
-        drawCentered("MAIN MENU", menu.x + menu.width / 2f, menu.y + menu.height / 2f + 8f, Color(0.82f, 0.9f, 0.94f, 1f))
-
+        drawCommand(retry, "REDEPLOY", "START ANOTHER RUN", Color(0.92f, 0.98f, 1f, 1f), cyan, drawCentered, fit)
+        drawCommand(menu, "MAIN CONSOLE", "RETURN TO MENU", Color(0.86f, 0.9f, 0.96f, 1f), dim, drawCentered, fit)
         font.data.setScale(1f)
         batch.end()
+    }
+
+    private fun drawCommand(
+        rect: Rectangle,
+        title: String,
+        subtitle: String,
+        titleColor: Color,
+        subtitleColor: Color,
+        centered: (String, Float, Float, Color) -> Unit,
+        fit: (String, Float, Float, Float) -> Float
+    ) {
+        val cx = rect.x + rect.width / 2f
+        fit(title, rect.width - 42f, 0.72f, 0.52f)
+        centered(title, cx, rect.y + rect.height * 0.62f, titleColor)
+        fit(subtitle, rect.width - 42f, 0.36f, 0.28f)
+        centered(subtitle, cx, rect.y + rect.height * 0.22f, subtitleColor)
     }
 }
