@@ -4,10 +4,23 @@ import com.badlogic.gdx.graphics.Color
 import com.badlogic.gdx.graphics.glutils.ShapeRenderer
 import com.badlogic.gdx.math.Rectangle
 
-/** Reusable rounded primitives for the Soft Neon Arcade UI. */
+/** Reusable glassmorphic primitives for the Soft Neon Arcade UI. */
 object UiShapes {
     private val gradientColor = Color()
-    fun roundedRect(shape: ShapeRenderer, x: Float, y: Float, width: Float, height: Float, radius: Float, color: Color) {
+    private val topColor = Color()
+    private val bottomColor = Color()
+    private val glowColor = Color()
+    private val accentColor = Color()
+
+    fun roundedRect(
+        shape: ShapeRenderer,
+        x: Float,
+        y: Float,
+        width: Float,
+        height: Float,
+        radius: Float,
+        color: Color
+    ) {
         val r = radius.coerceAtMost(minOf(width, height) * 0.5f).coerceAtLeast(0f)
         shape.color = color
         if (r <= 0.5f) {
@@ -23,7 +36,7 @@ object UiShapes {
         shape.circle(x + width - r, y + height - r, r, 20)
     }
 
-    /** Draws a smooth vertical gradient while preserving the rounded silhouette. */
+    /** Smooth vertical gradient with the rounded silhouette retained. */
     fun gradientRoundedRect(
         shape: ShapeRenderer,
         x: Float,
@@ -33,9 +46,10 @@ object UiShapes {
         radius: Float,
         topColor: Color,
         bottomColor: Color,
-        steps: Int = 10
+        steps: Int = 8
     ) {
-        val count = steps.coerceIn(4, 24)
+        if (width <= 0f || height <= 0f) return
+        val count = steps.coerceIn(4, 20)
         roundedRect(shape, x, y, width, height, radius, bottomColor)
         val bandHeight = height / count
         for (i in 0 until count) {
@@ -47,18 +61,34 @@ object UiShapes {
                 topColor.a + (bottomColor.a - topColor.a) * t
             )
             val bandY = y + height - (i + 1) * bandHeight
-            roundedRect(shape, x, bandY, width, bandHeight + 1.5f, radius, gradientColor)
+            roundedRect(shape, x, bandY, width, bandHeight + 1.4f, radius, gradientColor)
         }
     }
 
-    /** Shared full-screen dim layer used by modal screens. */
+    /** Full-screen glass dimmer. */
     fun overlay(shape: ShapeRenderer, width: Float, height: Float) {
         shape.color = UiTheme.OVERLAY
         shape.rect(0f, 0f, width, height)
     }
 
-    /** Shared rounded modal surface with a subtle neon edge and inset surface. */
-    fun panel(
+    /** Soft atmospheric glow behind a surface. */
+    fun ambientGlow(
+        shape: ShapeRenderer,
+        x: Float,
+        y: Float,
+        width: Float,
+        height: Float,
+        radius: Float,
+        accent: Color = UiTheme.CYAN
+    ) {
+        glowColor.set(accent.r, accent.g, accent.b, 0.035f)
+        roundedRect(shape, x - 20f, y - 20f, width + 40f, height + 40f, radius + 20f, glowColor)
+        glowColor.set(UiTheme.MAGENTA.r, UiTheme.MAGENTA.g, UiTheme.MAGENTA.b, 0.025f)
+        roundedRect(shape, x - 9f, y - 9f, width + 18f, height + 18f, radius + 9f, glowColor)
+    }
+
+    /** Glass panel: translucent depth, soft bloom, luminous edge, and inner highlight. */
+    fun glassPanel(
         shape: ShapeRenderer,
         x: Float,
         y: Float,
@@ -66,7 +96,14 @@ object UiShapes {
         height: Float,
         radius: Float = UiTheme.Metrics.PANEL_RADIUS
     ) {
-        roundedRect(shape, x, y, width, height, radius, UiTheme.PANEL_EDGE)
+        ambientGlow(shape, x, y, width, height, radius)
+        roundedRect(shape, x - 5f, y - 5f, width + 10f, height + 10f, radius + 5f, UiTheme.CYAN_GLOW)
+        roundedRect(shape, x - 2f, y - 2f, width + 4f, height + 4f, radius + 2f, UiTheme.PANEL_EDGE)
+
+        topColor.set(UiTheme.INNER).lerp(UiTheme.CYAN, 0.035f)
+        bottomColor.set(UiTheme.PANEL_DARK).lerp(UiTheme.MAGENTA, 0.035f)
+        gradientRoundedRect(shape, x, y, width, height, radius, topColor, bottomColor, 9)
+
         val inset = UiTheme.Metrics.PANEL_INSET
         roundedRect(
             shape,
@@ -75,26 +112,100 @@ object UiShapes {
             (width - inset * 2f).coerceAtLeast(0f),
             (height - inset * 2f).coerceAtLeast(0f),
             (radius - inset).coerceAtLeast(0f),
-            UiTheme.PANEL
+            UiTheme.GLASS_SHADOW
+        )
+        roundedRect(
+            shape,
+            x + 2f,
+            y + height - 5f,
+            width - 4f,
+            2f,
+            1f,
+            UiTheme.GLASS_HIGHLIGHT
+        )
+        roundedRect(
+            shape,
+            x + 5f,
+            y + height - 8f,
+            width * 0.40f,
+            3f,
+            1.5f,
+            UiTheme.CYAN_SOFT
+        )
+        roundedRect(
+            shape,
+            x + width * 0.60f,
+            y + 5f,
+            width * 0.35f,
+            2f,
+            1f,
+            UiTheme.MAGENTA_SOFT
         )
     }
-    fun softButton(shape: ShapeRenderer, rect: Rectangle, color: Color, radius: Float = UiTheme.Metrics.BUTTON_RADIUS) {
-        // Blend the requested semantic color with the shared cyan/violet palette so
-        // every touch target has the soft two-tone arcade treatment.
-        val top = Color(
-            (color.r * 0.58f + 0.18f * 0.42f).coerceIn(0f, 1f),
-            (color.g * 0.58f + 0.9f * 0.42f).coerceIn(0f, 1f),
-            (color.b * 0.58f + 1f * 0.42f).coerceIn(0f, 1f),
-            color.a
-        )
-        val bottom = Color(
-            (color.r * 0.52f + 0.78f * 0.48f).coerceIn(0f, 1f),
-            (color.g * 0.52f + 0.24f * 0.48f).coerceIn(0f, 1f),
-            (color.b * 0.52f + 1f * 0.48f).coerceIn(0f, 1f),
-            color.a
-        )
-        gradientRoundedRect(shape, rect.x, rect.y, rect.width, rect.height, radius, top, bottom, 10)
-        roundedRect(shape, rect.x + 5f, rect.y + rect.height - 7f, rect.width - 10f, 3f, 1.5f,
-            Color(1f, 1f, 1f, 0.12f))
+
+    /** Smaller glass card used for stats and upgrade choices. */
+    fun glassCard(
+        shape: ShapeRenderer,
+        x: Float,
+        y: Float,
+        width: Float,
+        height: Float,
+        radius: Float = UiTheme.Metrics.CARD_RADIUS,
+        accent: Color = UiTheme.CYAN
+    ) {
+        glowColor.set(accent.r, accent.g, accent.b, 0.045f)
+        roundedRect(shape, x - 4f, y - 4f, width + 8f, height + 8f, radius + 4f, glowColor)
+        roundedRect(shape, x, y, width, height, radius, UiTheme.CARD)
+        accentColor.set(accent.r, accent.g, accent.b, 0.24f)
+        roundedRect(shape, x + 1.5f, y + height - 3.5f, width - 3f, 2f, 1f, accentColor)
+        roundedRect(shape, x + 4f, y + 4f, width - 8f, 1.5f, 0.75f, UiTheme.GLASS_HIGHLIGHT)
+    }
+
+    /** Glass button with dark translucent fill and cyan-to-violet edge glow. */
+    fun softButton(
+        shape: ShapeRenderer,
+        rect: Rectangle,
+        color: Color,
+        radius: Float = UiTheme.Metrics.BUTTON_RADIUS
+    ) {
+        if (rect.width <= 0f || rect.height <= 0f) return
+
+        glowColor.set(color.r, color.g, color.b, 0.06f)
+        roundedRect(shape, rect.x - 7f, rect.y - 7f, rect.width + 14f, rect.height + 14f, radius + 7f, glowColor)
+        glowColor.set(UiTheme.MAGENTA.r, UiTheme.MAGENTA.g, UiTheme.MAGENTA.b, 0.045f)
+        roundedRect(shape, rect.x - 3f, rect.y - 3f, rect.width + 6f, rect.height + 6f, radius + 3f, glowColor)
+
+        topColor.set(UiTheme.INNER).lerp(color, 0.13f)
+        topColor.a = 0.88f
+        bottomColor.set(UiTheme.PANEL_DARK).lerp(color, 0.08f)
+        bottomColor.a = 0.92f
+        gradientRoundedRect(shape, rect.x, rect.y, rect.width, rect.height, radius, topColor, bottomColor, 8)
+
+        // Thin luminous edge accents, intentionally softer than a hard sci-fi console.
+        accentColor.set(UiTheme.CYAN.r, UiTheme.CYAN.g, UiTheme.CYAN.b, 0.26f)
+        roundedRect(shape, rect.x + 2f, rect.y + rect.height - 3f, rect.width * 0.56f, 2f, 1f, accentColor)
+        accentColor.set(UiTheme.MAGENTA.r, UiTheme.MAGENTA.g, UiTheme.MAGENTA.b, 0.22f)
+        roundedRect(shape, rect.x + rect.width * 0.58f, rect.y + 2f, rect.width * 0.40f, 2f, 1f, accentColor)
+        roundedRect(shape, rect.x + 6f, rect.y + rect.height - 8f, rect.width - 12f, 2f, 1f, UiTheme.GLASS_HIGHLIGHT)
+    }
+
+    /** Circular glass touch control with a soft neon rim. */
+    fun glassCircle(
+        shape: ShapeRenderer,
+        cx: Float,
+        cy: Float,
+        radius: Float,
+        accent: Color
+    ) {
+        glowColor.set(accent.r, accent.g, accent.b, 0.045f)
+        shape.color = glowColor
+        shape.circle(cx, cy, radius + 12f, 56)
+        shape.color = UiTheme.TOUCH_BASE
+        shape.circle(cx, cy, radius, 56)
+        shape.color = UiTheme.TOUCH_INNER
+        shape.circle(cx, cy, radius - 10f, 56)
+        accentColor.set(accent.r, accent.g, accent.b, 0.24f)
+        shape.color = accentColor
+        shape.circle(cx, cy, radius - 3f, 56)
     }
 }
