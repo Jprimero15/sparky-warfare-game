@@ -5,7 +5,6 @@ import com.badlogic.gdx.graphics.Color
 import com.badlogic.gdx.graphics.GL20
 import com.badlogic.gdx.graphics.OrthographicCamera
 import com.badlogic.gdx.graphics.g2d.BitmapFont
-import com.badlogic.gdx.graphics.g2d.GlyphLayout
 import com.badlogic.gdx.graphics.g2d.SpriteBatch
 import com.badlogic.gdx.graphics.glutils.ShapeRenderer
 import com.badlogic.gdx.math.MathUtils
@@ -21,10 +20,11 @@ class WorldRenderer(
     private val particles: ParticleDebris,
     private val font: BitmapFont,
     private val bodyFont: BitmapFont,
-    private val input: InputController
+    private val input: InputController,
+    private val ui: UiLayout,
+    private val text: UiText
 ) {
     private val scratchUi = Vector2()
-    private val layout = GlyphLayout()
 
     private val backdropColor = Color(0.003f, 0.005f, 0.008f, 1f)
     private val floorAccentColor = Color(0.018f, 0.028f, 0.036f, 1f)
@@ -98,16 +98,13 @@ class WorldRenderer(
     fun drawTouchControls(controlsSwapped: Boolean) {
         val w = Gdx.graphics.width.toFloat()
         val h = Gdx.graphics.height.toFloat()
-        val leftSafe = Gdx.graphics.safeInsetLeft.toFloat().coerceAtLeast(GameConfig.Ui.SAFE_MARGIN)
-        val rightSafe = (w - Gdx.graphics.safeInsetRight).coerceAtMost(w - GameConfig.Ui.SAFE_MARGIN)
-        val bottomSafe = Gdx.graphics.safeInsetBottom.toFloat().coerceAtLeast(GameConfig.Ui.SAFE_MARGIN)
-
-        val controlRadius = (h * 0.29f).coerceIn(112f, 156f)
-        val leftX = leftSafe + controlRadius + 30f
-        val rightX = rightSafe - controlRadius - 30f
-        val baseY = bottomSafe + controlRadius + 24f
-        val baseX = if (controlsSwapped) rightX else leftX
-        val fireX = if (controlsSwapped) leftX else rightX
+        ui.touchControls(w, h, controlsSwapped)
+        input.setTouchRadius(ui.touchControls.radius)
+        val touch = ui.touchControls
+        val baseX = touch.move.x
+        val fireX = touch.fire.x
+        val baseY = h - touch.move.y
+        val controlRadius = touch.radius
         val knobRadius = (controlRadius * 0.38f).coerceIn(42f, 54f)
         val innerRadius = controlRadius - 15f
 
@@ -167,15 +164,16 @@ class WorldRenderer(
 
         batch.projectionMatrix = hudCamera.combined
         batch.begin()
-        font.data.setScale(0.78f)
-        drawCentered("MOVE", baseX, baseY - 7f, Color(0.84f, 0.97f, 1f, 0.96f))
-        font.data.setScale(0.74f)
-        drawCentered("FIRE", fireX, baseY - 7f, Color(1f, 0.9f, 0.93f, 0.98f))
-        font.data.setScale(0.34f)
-        drawCentered("DRIVE", baseX, baseY - controlRadius + 18f, Color(0.46f, 0.72f, 0.81f, 0.92f))
-        drawCentered(if (input.firing) "ARMED" else "READY", fireX, baseY - controlRadius + 18f,
-            if (input.firing) Color(1f, 0.48f, 0.56f, 0.98f) else Color(0.62f, 0.74f, 0.8f, 0.92f))
-        font.data.setScale(1f)
+        text.fit(bodyFont, "MOVE", knobRadius * 2.4f, 0.72f, 0.48f)
+        text.centered(bodyFont, "MOVE", baseX, baseY - 7f, UiTheme.WHITE)
+        text.fit(bodyFont, "FIRE", knobRadius * 2.4f, 0.72f, 0.48f)
+        text.centered(bodyFont, "FIRE", fireX, baseY - 7f, UiTheme.WHITE)
+        text.fit(bodyFont, "DRIVE", controlRadius * 1.4f, 0.44f, 0.3f)
+        text.centered(bodyFont, "DRIVE", baseX, baseY - controlRadius + 18f, UiTheme.DIM)
+        val status = if (input.firing) "ARMED" else "READY"
+        text.fit(bodyFont, status, controlRadius * 1.4f, 0.44f, 0.3f)
+        text.centered(bodyFont, status, fireX, baseY - controlRadius + 18f, if (input.firing) UiTheme.DANGER else UiTheme.DIM)
+        text.reset(bodyFont)
         batch.end()
     }
 
@@ -258,9 +256,4 @@ class WorldRenderer(
         Gdx.gl.glClear(GL20.GL_COLOR_BUFFER_BIT)
     }
 
-    private fun drawCentered(text: String, centerX: Float, y: Float, color: Color) {
-        layout.setText(font, text)
-        font.color = color
-        font.draw(batch, text, centerX - layout.width / 2f, y)
-    }
 }

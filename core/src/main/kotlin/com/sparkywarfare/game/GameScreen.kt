@@ -177,7 +177,7 @@ class GameScreen : Screen, InputAdapter() {
         layout = GlyphLayout()
         hudCamera = OrthographicCamera()
         hudCamera.setToOrtho(false, Gdx.graphics.width.toFloat(), Gdx.graphics.height.toFloat())
-        worldRenderer = WorldRenderer(camera, hudCamera, shapeRenderer, batch, glow, bloom, particles, font, bodyFont, input)
+        worldRenderer = WorldRenderer(camera, hudCamera, shapeRenderer, batch, glow, bloom, particles, font, bodyFont, input, ui, uiText)
         menuRenderer = MenuRenderer(shapeRenderer, batch, font, bodyFont, uiText)
         settingsRenderer = SettingsRenderer(shapeRenderer, batch, font, bodyFont, uiText)
         gameOverRenderer = GameOverRenderer(shapeRenderer, batch, font, bodyFont, uiText)
@@ -1117,35 +1117,22 @@ class GameScreen : Screen, InputAdapter() {
                     return true
                 }
 
-                val h = Gdx.graphics.height.toFloat()
                 val w = Gdx.graphics.width.toFloat()
-                val leftSafe = Gdx.graphics.safeInsetLeft.toFloat().coerceAtLeast(GameConfig.Ui.SAFE_MARGIN)
-                val rightSafe = (w - Gdx.graphics.safeInsetRight).coerceAtMost(w - GameConfig.Ui.SAFE_MARGIN)
-                val bottomSafe = Gdx.graphics.safeInsetBottom.toFloat().coerceAtLeast(GameConfig.Ui.SAFE_MARGIN)
-                val controlRadius = (h * 0.29f).coerceIn(112f, 156f)
-                val leftX = leftSafe + controlRadius + 30f
-                val rightX = rightSafe - controlRadius - 30f
-                val baseY = bottomSafe + controlRadius + 24f
-                val moveX = if (controlsSwapped) rightX else leftX
-                val fireX = if (controlsSwapped) leftX else rightX
-                val dx = screenX - moveX
-                val dy = (h - screenY) - baseY
-                val controlHitRadius = controlRadius + 26f
-
-                if (dx * dx + dy * dy <= controlHitRadius * controlHitRadius) {
-                    val joystickCenterScreenY = h - baseY
+                val h = Gdx.graphics.height.toFloat()
+                ui.touchControls(w, h, controlsSwapped)
+                input.setTouchRadius(ui.touchControls.radius)
+                val touch = ui.touchControls
+                if (touch.moveHit.contains(screenX.toFloat(), screenY.toFloat())) {
                     input.joystick.tryActivate(
-                        moveX,
-                        joystickCenterScreenY,
+                        touch.move.x,
+                        touch.move.y,
                         screenX.toFloat(),
                         screenY.toFloat(),
                         pointer
                     )
                     return true
                 }
-
-                val fireDx = screenX - fireX
-                if (fireDx * fireDx + dy * dy <= controlHitRadius * controlHitRadius) {
+                if (touch.fireHit.contains(screenX.toFloat(), screenY.toFloat())) {
                     input.pressFire(pointer)
                     return true
                 }
@@ -1176,6 +1163,8 @@ class GameScreen : Screen, InputAdapter() {
         hudCamera.setToOrtho(false, width.toFloat(), height.toFloat())
         bloom.resize(width, height)
         ui.update(width.toFloat(), height.toFloat())
+        ui.touchControls(width.toFloat(), height.toFloat(), controlsSwapped)
+        input.setTouchRadius(ui.touchControls.radius)
         if (state == GameState.MENU || state == GameState.SETTINGS) {
             centerCameraForIdle()
         } else {
