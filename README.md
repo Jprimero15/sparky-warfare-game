@@ -42,6 +42,7 @@ The UI uses a **Soft Neon Arcade** direction: smooth rounded controls, pill-like
 - Magenta system highlights.
 - Red/pink combat-danger states.
 - Rounded surfaces and soft highlights instead of angular segmented panels.
+- Real multi-stop cyan/violet gradients on primary touch buttons and wave announcements, with semantic colors blended into the shared palette.
 - Subtle arena grid.
 - Limited glow so important information remains readable.
 - Large touch targets designed around landscape thumb zones.
@@ -241,7 +242,7 @@ The workflow verifies the resulting APK and its LibGDX native ABI packaging befo
 
 ## Development priorities
 
-The current foundation is intentionally stable before adding larger gameplay features. Recent hardening also covers HUD spacing, pause visibility, joystick label centering, explicit control-side labeling, and the first-run tutorial gate.
+The current foundation is intentionally stable before adding larger gameplay features. The Soft Neon pass also replaces the remaining wave-announcement strip treatment with a rounded gradient card. Recent hardening also covers HUD spacing, pause visibility, joystick label centering, explicit control-side labeling, and the first-run tutorial gate.
 
 1. More arena layouts.
 2. More enemy behavior and attack patterns.
