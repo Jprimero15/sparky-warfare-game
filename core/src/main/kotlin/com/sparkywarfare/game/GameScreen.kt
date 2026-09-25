@@ -89,6 +89,7 @@ class GameScreen : Screen, InputAdapter() {
     private lateinit var pauseRenderer: PauseRenderer
     private val ui = UiLayout()
     private lateinit var bodyFont: BitmapFont
+    private lateinit var captionFont: BitmapFont
     private val safeArea get() = ui.safeArea
     private val singleButton get() = ui.singleButton
     private val multiButton get() = ui.multiButton
@@ -121,25 +122,57 @@ class GameScreen : Screen, InputAdapter() {
         batch = SpriteBatch()
         particles = ParticleDebris(batch)
         bloom = BloomRenderer()
-        val fontGenerator = FreeTypeFontGenerator(Gdx.files.internal("fonts/Kenney-Future.ttf"))
-        val fontParameter = FreeTypeFontGenerator.FreeTypeFontParameter().apply {
-            size = 48
+        val titleGenerator = FreeTypeFontGenerator(Gdx.files.internal("fonts/Orbitron-Medium.ttf"))
+        val titleParameter = FreeTypeFontGenerator.FreeTypeFontParameter().apply {
+            size = 64
             color = Color.WHITE
             borderWidth = 1.2f
             borderColor = Color(0f, 0f, 0f, 0.85f)
             shadowOffsetX = 1
             shadowOffsetY = 1
             shadowColor = Color(0f, 0f, 0f, 0.75f)
-            characters = FreeTypeFontGenerator.DEFAULT_CHARS + "0123456789:-"
+            characters = FreeTypeFontGenerator.DEFAULT_CHARS + "0123456789:-/+%"
             kerning = true
             genMipMaps = false
             minFilter = com.badlogic.gdx.graphics.Texture.TextureFilter.Linear
             magFilter = com.badlogic.gdx.graphics.Texture.TextureFilter.Linear
         }
-        font = fontGenerator.generateFont(fontParameter)
-        fontGenerator.dispose()
-        bodyFont = BitmapFont()
-        bodyFont.data.setScale(1.0f)
+        font = titleGenerator.generateFont(titleParameter)
+        titleGenerator.dispose()
+
+        val bodyGenerator = FreeTypeFontGenerator(Gdx.files.internal("fonts/Kenney-Future.ttf"))
+        val bodyParameter = FreeTypeFontGenerator.FreeTypeFontParameter().apply {
+            size = 38
+            color = Color.WHITE
+            borderWidth = 0.8f
+            borderColor = Color(0f, 0f, 0f, 0.8f)
+            shadowOffsetX = 1
+            shadowOffsetY = 1
+            shadowColor = Color(0f, 0f, 0f, 0.72f)
+            characters = FreeTypeFontGenerator.DEFAULT_CHARS + "0123456789:-/+%"
+            kerning = true
+            genMipMaps = false
+            minFilter = com.badlogic.gdx.graphics.Texture.TextureFilter.Linear
+            magFilter = com.badlogic.gdx.graphics.Texture.TextureFilter.Linear
+        }
+        bodyFont = bodyGenerator.generateFont(bodyParameter)
+
+        val captionParameter = FreeTypeFontGenerator.FreeTypeFontParameter().apply {
+            size = 26
+            color = Color.WHITE
+            borderWidth = 0.6f
+            borderColor = Color(0f, 0f, 0f, 0.75f)
+            shadowOffsetX = 1
+            shadowOffsetY = 1
+            shadowColor = Color(0f, 0f, 0f, 0.65f)
+            characters = FreeTypeFontGenerator.DEFAULT_CHARS + "0123456789:-/+%"
+            kerning = true
+            genMipMaps = false
+            minFilter = com.badlogic.gdx.graphics.Texture.TextureFilter.Linear
+            magFilter = com.badlogic.gdx.graphics.Texture.TextureFilter.Linear
+        }
+        captionFont = bodyGenerator.generateFont(captionParameter)
+        bodyGenerator.dispose()
         uiText = UiText(batch)
         layout = GlyphLayout()
         hudCamera = OrthographicCamera()
@@ -775,9 +808,9 @@ class GameScreen : Screen, InputAdapter() {
         )
         val top = panel.y + panel.height - 116f
         for (i in lines.indices) {
-            fitFont(lines[i], textW, 0.5f, 0.32f)
-            font.color = if (i % 2 == 0) Color(0.78f, 0.9f, 0.94f, 1f) else Color(0.5f, 0.72f, 0.8f, 1f)
-            font.draw(batch, lines[i], textX, top - i * 34f)
+            uiText.fit(captionFont, lines[i], textW, 0.92f, 0.48f)
+            captionFont.color = if (i % 2 == 0) Color(0.78f, 0.9f, 0.94f, 1f) else Color(0.5f, 0.72f, 0.8f, 1f)
+            captionFont.draw(batch, lines[i], textX, top - i * 34f)
         }
 
         fitFont("ACKNOWLEDGE", tutorialButton.width - 30f, 0.66f, 0.46f)
@@ -1204,6 +1237,7 @@ class GameScreen : Screen, InputAdapter() {
         batch.dispose()
         font.dispose()
         bodyFont.dispose()
+        captionFont.dispose()
         pools.clear()
         particles.dispose()
         bloom.dispose()
