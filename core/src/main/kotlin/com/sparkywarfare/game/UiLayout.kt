@@ -77,7 +77,7 @@ class UiLayout {
         toggleHapticsButton.set(centerX - bw / 2f, toggleSfxButton.y - gap - bh, bw, bh)
         volumeSlider.set(centerX - bw / 2f, toggleHapticsButton.y - gap - 24f, bw, 24f)
         swapControlsButton.set(centerX - bw / 2f, volumeSlider.y - gap - bh, bw, bh)
-        menuButton.set(centerX - bw / 2f, (safeArea.bottom + 18f).coerceAtLeast(safeArea.bottom), bw, bh)
+        menuButton.set(centerX - bw / 2f, safeArea.bottom + 8f, bw, bh)
     }
 
     fun pause(width: Float, height: Float) {
