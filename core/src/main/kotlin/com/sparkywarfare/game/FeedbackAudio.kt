@@ -11,6 +11,7 @@ object FeedbackAudio {
     private var explosion: Sound? = null
     private var available = true
     private var muted = false
+    private var masterVolume = 1f
 
     fun init() {
         if (!available || laser != null) return
@@ -27,16 +28,23 @@ object FeedbackAudio {
     fun setMuted(value: Boolean) { muted = value }
     fun isMuted(): Boolean = muted
 
+    fun setMasterVolume(value: Float) {
+        masterVolume = value.coerceIn(0f, 1f)
+    }
+
+    fun masterVolume(): Float = masterVolume
+
     fun play(cue: Cue) {
-        if (!available || muted) return
+        if (!available || muted || masterVolume <= 0f) return
         init()
+        val volume = masterVolume
         try {
             when (cue) {
-                Cue.UI -> hit?.play(0.28f, 1.65f, 0f)
-                Cue.LASER -> laser?.play(0.34f, 1.05f, 0f)
-                Cue.HIT -> hit?.play(0.5f, 0.9f, 0f)
-                Cue.EXPLOSION -> explosion?.play(0.78f, 0.82f, 0f)
-                Cue.POWER_UP -> laser?.play(0.4f, 1.45f, 0f)
+                Cue.UI -> hit?.play(volume * 0.28f, 1.65f, 0f)
+                Cue.LASER -> laser?.play(volume * 0.34f, 1.05f, 0f)
+                Cue.HIT -> hit?.play(volume * 0.5f, 0.9f, 0f)
+                Cue.EXPLOSION -> explosion?.play(volume * 0.78f, 0.82f, 0f)
+                Cue.POWER_UP -> laser?.play(volume * 0.4f, 1.45f, 0f)
             }
         } catch (_: Throwable) {
             available = false
