@@ -51,8 +51,6 @@ class WorldRenderer(
     private val healthBack = Color(0f, 0f, 0f, 0.65f)
     private val healthElite = Color(1f, 0.72f, 0.16f, 0.95f)
     private val healthNormal = Color(0.35f, 0.9f, 1f, 0.9f)
-    private val gridLine = Color(0.08f, 0.34f, 0.42f, 0.13f)
-    private val gridStrong = Color(0.15f, 0.72f, 0.86f, 0.2f)
 
     fun renderCombat(
         player: Tank,
@@ -104,61 +102,57 @@ class WorldRenderer(
         val h = Gdx.graphics.height.toFloat()
         ui.touchControls(w, h, controlsSwapped)
         input.setTouchRadius(ui.touchControls.radius)
+
         val touch = ui.touchControls
         val baseX = touch.move.x
         val fireX = touch.fire.x
         val baseY = h - touch.move.y
         val controlRadius = touch.radius
-        val knobRadius = (controlRadius * 0.38f).coerceIn(42f, 54f)
-        val innerRadius = controlRadius - 15f
+        val knobRadius = (controlRadius * 0.34f).coerceIn(48f, 60f)
 
         Gdx.gl.glEnable(GL20.GL_BLEND)
         Gdx.gl.glBlendFunc(GL20.GL_SRC_ALPHA, GL20.GL_ONE_MINUS_SRC_ALPHA)
         shapeRenderer.projectionMatrix = hudCamera.combined
 
         shapeRenderer.begin(ShapeRenderer.ShapeType.Filled)
-        shapeRenderer.color = UiTheme.TOUCH_BASE
-        shapeRenderer.circle(baseX, baseY, controlRadius, 48)
-        shapeRenderer.color = UiTheme.TOUCH_INNER
-        shapeRenderer.circle(baseX, baseY, innerRadius, 48)
+        UiShapes.glassCircle(shapeRenderer, baseX, baseY, controlRadius, UiTheme.CYAN)
+        UiShapes.glassCircle(shapeRenderer, fireX, baseY, controlRadius, UiTheme.MAGENTA)
 
         val knob = if (input.joystick.active) {
             input.joystick.knobForRender(h, scratchUi)
         } else {
             scratchUi.set(baseX, baseY)
         }
-        shapeRenderer.color = if (input.joystick.active) touchKnobActive else touchKnobIdle
-        shapeRenderer.circle(knob.x, knob.y, knobRadius, 40)
-        shapeRenderer.color = Color(0.75f, 0.97f, 1f, if (input.joystick.active) 0.28f else 0.16f)
-        shapeRenderer.circle(knob.x, knob.y, knobRadius * 0.52f, 32)
+        val knobAccent = if (input.joystick.active) UiTheme.CYAN else UiTheme.CYAN_SOFT
+        UiShapes.glassCircle(shapeRenderer, knob.x, knob.y, knobRadius, knobAccent)
 
-        shapeRenderer.color = UiTheme.FIRE_BASE
-        shapeRenderer.circle(fireX, baseY, controlRadius, 48)
-        shapeRenderer.color = UiTheme.FIRE_BASE
-        shapeRenderer.circle(fireX, baseY, innerRadius, 48)
-        shapeRenderer.color = if (input.firing) fireActive else fireIdle
-        shapeRenderer.circle(fireX, baseY, controlRadius * 0.58f, 44)
-        shapeRenderer.color = Color(1f, 0.65f, 0.72f, if (input.firing) 0.32f else 0.16f)
-        shapeRenderer.circle(fireX, baseY, controlRadius * 0.31f, 32)
+        shapeRenderer.color = if (input.joystick.active) {
+            UiTheme.TOUCH_KNOB_ACTIVE
+        } else {
+            UiTheme.TOUCH_KNOB_IDLE
+        }
+        shapeRenderer.circle(knob.x, knob.y, knobRadius * 0.68f, 40)
+
+        shapeRenderer.color = if (input.firing) UiTheme.FIRE_ACTIVE else UiTheme.FIRE_IDLE
+        shapeRenderer.circle(fireX, baseY, controlRadius * 0.52f, 44)
+        shapeRenderer.color = Color(1f, 1f, 1f, if (input.firing) 0.30f else 0.12f)
+        shapeRenderer.circle(fireX, baseY, controlRadius * 0.19f, 32)
         shapeRenderer.end()
 
         shapeRenderer.begin(ShapeRenderer.ShapeType.Line)
-        shapeRenderer.color = moveOutline
-        shapeRenderer.circle(baseX, baseY, controlRadius, 48)
-        shapeRenderer.circle(baseX, baseY, controlRadius - 7f, 48)
-        shapeRenderer.color = fireOutline
-        shapeRenderer.circle(fireX, baseY, controlRadius, 48)
-        shapeRenderer.circle(fireX, baseY, controlRadius - 7f, 48)
-
+        shapeRenderer.color = UiTheme.MOVE_OUTLINE
+        shapeRenderer.circle(baseX, baseY, controlRadius, 56)
+        shapeRenderer.color = UiTheme.FIRE_OUTLINE
+        shapeRenderer.circle(fireX, baseY, controlRadius, 56)
         shapeRenderer.end()
         Gdx.gl.glDisable(GL20.GL_BLEND)
 
         batch.projectionMatrix = hudCamera.combined
         batch.begin()
-        text.fit(bodyFont, "MOVE", knobRadius * 2.4f, 0.72f, 0.48f)
-        text.centered(bodyFont, "MOVE", baseX, baseY + text.height(bodyFont, "MOVE") / 2f, UiTheme.WHITE)
-        text.fit(bodyFont, "FIRE", knobRadius * 2.4f, 0.72f, 0.48f)
-        text.centered(bodyFont, "FIRE", fireX, baseY + text.height(bodyFont, "FIRE") / 2f, UiTheme.WHITE)
+        text.fitWithin(bodyFont, "MOVE", knobRadius * 2.5f, 28f, 0.66f, 0.44f)
+        text.centered(bodyFont, "MOVE", baseX, baseY + text.height(bodyFont, "MOVE") / 2f, UiTheme.TEXT_PRIMARY)
+        text.fitWithin(bodyFont, "FIRE", knobRadius * 2.5f, 28f, 0.66f, 0.44f)
+        text.centered(bodyFont, "FIRE", fireX, baseY + text.height(bodyFont, "FIRE") / 2f, UiTheme.TEXT_PRIMARY)
         text.reset(bodyFont)
         batch.end()
     }
@@ -167,21 +161,14 @@ class WorldRenderer(
         shapeRenderer.begin(ShapeRenderer.ShapeType.Filled)
         shapeRenderer.color = backdropColor
         shapeRenderer.rect(0f, 0f, GameConfig.WORLD_WIDTH, GameConfig.WORLD_HEIGHT)
+
+        // Very soft atmospheric pools replace the old tactical grid.
+        shapeRenderer.color = Color(0.02f, 0.42f, 0.50f, 0.045f)
+        shapeRenderer.circle(GameConfig.WORLD_WIDTH * 0.12f, GameConfig.WORLD_HEIGHT * 0.78f, 210f, 48)
+        shapeRenderer.color = Color(0.44f, 0.10f, 0.52f, 0.035f)
+        shapeRenderer.circle(GameConfig.WORLD_WIDTH * 0.86f, GameConfig.WORLD_HEIGHT * 0.30f, 250f, 48)
         shapeRenderer.color = floorAccentColor
         shapeRenderer.rect(GameConfig.TILE, GameConfig.TILE, GameConfig.WORLD_WIDTH - GameConfig.TILE * 2f, 3f)
-        shapeRenderer.end()
-
-        // Subtle tactical grid: enough structure to sell the cyber arena without
-        // competing with tanks, projectiles, or UI.
-        shapeRenderer.begin(ShapeRenderer.ShapeType.Line)
-        for (x in 64 until GameConfig.WORLD_WIDTH.toInt() step 64) {
-            shapeRenderer.color = if (x % 256 == 0) gridStrong else gridLine
-            shapeRenderer.line(x.toFloat(), 32f, x.toFloat(), GameConfig.WORLD_HEIGHT - 32f)
-        }
-        for (y in 64 until GameConfig.WORLD_HEIGHT.toInt() step 64) {
-            shapeRenderer.color = if (y % 256 == 0) gridStrong else gridLine
-            shapeRenderer.line(32f, y.toFloat(), GameConfig.WORLD_WIDTH - 32f, y.toFloat())
-        }
         shapeRenderer.end()
     }
 
