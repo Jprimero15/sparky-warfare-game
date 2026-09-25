@@ -9,9 +9,6 @@ class WaveManager {
     fun isEliteWave(wave: Int): Boolean =
         wave > 0 && wave % GameConfig.Waves.ELITE_INTERVAL == 0
 
-    fun spawnDelay(wave: Int): Float =
-        (1.2f - wave * 0.02f).coerceAtLeast(0.38f)
-
     fun isUpgradeWave(wave: Int): Boolean =
         wave > 0 && wave % GameConfig.Waves.UPGRADE_INTERVAL == 0
 
