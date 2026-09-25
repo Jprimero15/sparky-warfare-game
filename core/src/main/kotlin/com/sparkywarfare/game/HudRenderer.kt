@@ -1,6 +1,5 @@
 package com.sparkywarfare.game
 
-import com.badlogic.gdx.Gdx
 import com.badlogic.gdx.graphics.Color
 import com.badlogic.gdx.graphics.OrthographicCamera
 import com.badlogic.gdx.graphics.g2d.BitmapFont
@@ -57,4 +56,3 @@ class HudRenderer(
     }
 }
 
-data class SafeArea(val left: Float, val right: Float, val bottom: Float, val top: Float)
