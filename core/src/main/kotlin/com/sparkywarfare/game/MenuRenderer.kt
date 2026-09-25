@@ -38,20 +38,8 @@ class MenuRenderer(
         shape.begin(ShapeRenderer.ShapeType.Filled)
         shape.color = UiTheme.BLACK; shape.color.a = 0.74f
         shape.rect(0f, 0f, width, height)
-        shape.color = UiTheme.PANEL
-        shape.rect(panelX, panelY, panelW, panelH)
-        shape.color = UiTheme.INNER
-        shape.rect(panelX + 6f, panelY + 6f, panelW - 12f, panelH - 12f)
-        shape.color = UiTheme.CYAN
-        shape.rect(panelX, panelY + panelH - 4f, panelW, 4f)
-        shape.color = UiTheme.MAGENTA
-        shape.rect(panelX + panelW - 4f, panelY + panelH - 38f, 4f, 34f)
-        shape.color = UiTheme.CYAN_SOFT
-        shape.rect(split, panelY + 34f, 2f, panelH - 68f)
-        shape.color = UiTheme.CYAN_SOFT
-        shape.rect(panelX + 28f, panelY + panelH * 0.42f, split - panelX - 56f, 2f)
-        shape.color = UiTheme.MAGENTA_SOFT
-        shape.rect(split + 28f, panelY + 34f, panelX + panelW - split - 56f, 2f)
+        UiShapes.roundedRect(shape,panelX,panelY,panelW,panelH,30f,UiTheme.PANEL)
+        UiShapes.roundedRect(shape,panelX+7f,panelY+7f,panelW-14f,panelH-14f,24f,UiTheme.INNER)
 
         drawButton(single, UiTheme.CYAN)
         drawButton(multi, UiTheme.PANEL_DARK)
