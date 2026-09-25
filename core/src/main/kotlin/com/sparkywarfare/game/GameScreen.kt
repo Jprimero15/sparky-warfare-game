@@ -854,6 +854,7 @@ class GameScreen : Screen, InputAdapter() {
                 if (i % 2 == 0) UiTheme.CYAN else UiTheme.MAGENTA
             )
         }
+        UiShapes.softButton(shapeRenderer, tutorialButton, UiTheme.CYAN)
         shapeRenderer.end()
 
         batch.projectionMatrix = hudCamera.combined
