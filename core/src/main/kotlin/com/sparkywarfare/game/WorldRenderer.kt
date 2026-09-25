@@ -26,6 +26,8 @@ class WorldRenderer(
     private val text: UiText
 ) {
     private val scratchUi = Vector2()
+    private val idleTankColor = Color(0.2f, 0.9f, 1f, 1f)
+    private val idleTank = Tank(scratchUi, angle = 45f, isPlayer = true, color = idleTankColor, radius = 14f)
 
     private val backdropColor = Color(0.003f, 0.005f, 0.008f, 1f)
     private val floorAccentColor = Color(0.018f, 0.028f, 0.036f, 1f)
@@ -90,7 +92,8 @@ class WorldRenderer(
         scratchUi.set(GameConfig.WORLD_WIDTH / 2f, GameConfig.WORLD_HEIGHT / 2f)
         bloom.begin()
         glow.beginAdditive()
-        tanks.drawTank(Tank(scratchUi, angle = 45f, isPlayer = true, color = Color(0.2f, 0.9f, 1f, 1f), radius = 14f))
+        idleTank.position.set(scratchUi)
+        tanks.drawTank(idleTank)
         glow.end()
         bloom.endAndComposite()
         Gdx.gl.glDisable(GL20.GL_BLEND)
