@@ -29,26 +29,20 @@ class GameOverRenderer(
         shape.end()
         batch.begin()
         text.fit(titleFont,"SYSTEM FAILURE",panelW-80f,1.25f,0.82f); text.centered(titleFont,"SYSTEM FAILURE",cx,y+panelH-56f,UiTheme.DANGER)
-        text.fit(bodyFont,"COMBAT SESSION TERMINATED",panelW-100f,0.82f,0.56f); text.centered(bodyFont,"COMBAT SESSION TERMINATED",cx,y+panelH-91f,UiTheme.DIM)
         text.fit(bodyFont,"SCORE   $score",panelW*0.34f,0.86f,0.58f); text.centered(bodyFont,"SCORE   $score",x+panelW*0.30f,y+panelH-142f,UiTheme.WHITE)
         text.fit(bodyFont,"BEST   $best",panelW*0.30f,0.86f,0.58f); text.centered(bodyFont,"BEST   $best",x+panelW*0.70f,y+panelH-142f,UiTheme.WHITE)
         text.fit(bodyFont,"WAVE $wave   //   KILLS $kills   //   COMBO x$combo",panelW-90f,0.7f,0.48f)
         text.centered(bodyFont,"WAVE $wave   //   KILLS $kills   //   COMBO x$combo",cx,y+panelH-177f,UiTheme.DIM)
-        command(retry,"REDEPLOY","START ANOTHER RUN",UiTheme.WHITE,UiTheme.CYAN)
-        command(menu,"MAIN MENU","RETURN TO CONSOLE",UiTheme.WHITE,UiTheme.DIM)
+        command(retry,"RETRY",UiTheme.WHITE)
+        command(menu,"MENU",UiTheme.WHITE)
         text.reset(titleFont,bodyFont)
         batch.end()
     }
 
-    private fun command(r:Rectangle,t:String,s:String,tc:Color,sc:Color){
-        val cx=r.x+r.width/2f
-        text.fitWithin(titleFont,t,r.width-44f,r.height*0.40f,0.74f,0.54f)
-        val titleHeight=text.height(titleFont,t)
-        text.fitWithin(bodyFont,s,r.width-44f,r.height*0.28f,0.62f,0.42f)
-        val subtitleHeight=text.height(bodyFont,s)
-        val centerY=r.y+r.height/2f
-        val gap=(r.height*0.10f).coerceIn(4f,8f)
-        text.centered(titleFont,t,cx,centerY+gap/2f+titleHeight/2f,tc)
-        text.centered(bodyFont,s,cx,centerY-gap/2f-subtitleHeight/2f,sc)
+    private fun command(r: Rectangle, title: String, color: com.badlogic.gdx.graphics.Color) {
+        val cx = r.x + r.width / 2f
+        text.fitWithin(titleFont, title, r.width - 44f, r.height * 0.50f, 0.84f, 0.58f)
+        val titleHeight = text.height(titleFont, title)
+        text.centered(titleFont, title, cx, r.y + r.height / 2f + titleHeight / 2f, color)
     }
 }

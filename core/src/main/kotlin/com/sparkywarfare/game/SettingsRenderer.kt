@@ -32,23 +32,17 @@ class SettingsRenderer(
         shape.end()
         batch.begin()
         text.fit(titleFont,"SYSTEM CONFIG",panelW-90f,1.2f,0.8f);text.centered(titleFont,"SYSTEM CONFIG",cx,y+panelH-56f,UiTheme.CYAN)
-        text.fit(bodyFont,"DEVICE CONTROL MATRIX",panelW-110f,0.82f,0.56f);text.centered(bodyFont,"DEVICE CONTROL MATRIX",cx,y+panelH-91f,UiTheme.MAGENTA)
-        command(sfx,"SFX: "+if(muted)"MUTED" else "ONLINE","TOGGLE SOUND EFFECTS",if(muted)UiTheme.DANGER else UiTheme.WHITE,UiTheme.DIM)
-        command(haptics,"HAPTICS: "+if(hapticsMuted)"MUTED" else "ONLINE","TOGGLE DEVICE FEEDBACK",if(hapticsMuted)UiTheme.DANGER else UiTheme.WHITE,UiTheme.DIM)
-        text.fit(bodyFont,"MASTER VOLUME  "+(volumeValue*100f).toInt()+"%",volume.width-20f,0.72f,0.5f);text.centered(bodyFont,"MASTER VOLUME  "+(volumeValue*100f).toInt()+"%",volume.x+volume.width/2f,volume.y+volume.height+22f,UiTheme.DIM)
-        command(swap,"CONTROL SIDES","SWAP MOVE / FIRE",UiTheme.WHITE,UiTheme.CYAN)
-        command(menu,"BACK","RETURN TO CONSOLE",UiTheme.WHITE,UiTheme.DIM)
+                command(sfx,"SFX: "+if(muted)"OFF" else "ON",if(muted)UiTheme.DANGER else UiTheme.WHITE)
+        command(haptics,"HAPTICS: "+if(hapticsMuted)"OFF" else "ON",if(hapticsMuted)UiTheme.DANGER else UiTheme.WHITE)
+        text.fit(bodyFont,"VOLUME "+(volumeValue*100f).toInt()+"%",volume.width-20f,0.72f,0.5f);text.centered(bodyFont,"MASTER VOLUME  "+(volumeValue*100f).toInt()+"%",volume.x+volume.width/2f,volume.y+volume.height+22f,UiTheme.DIM)
+        command(swap,"CONTROLS",UiTheme.WHITE)
+        command(menu,"BACK",UiTheme.WHITE)
         text.reset(titleFont,bodyFont);batch.end()
     }
-    private fun command(r:Rectangle,t:String,s:String,tc:Color,sc:Color){
+    private fun command(r:Rectangle,t:String,tc:Color){
         val cx=r.x+r.width/2f
-        text.fitWithin(titleFont,t,r.width-46f,r.height*0.40f,0.66f,0.48f)
+        text.fitWithin(titleFont,t,r.width-46f,r.height*0.50f,0.72f,0.50f)
         val titleHeight=text.height(titleFont,t)
-        text.fitWithin(bodyFont,s,r.width-46f,r.height*0.28f,0.6f,0.42f)
-        val subtitleHeight=text.height(bodyFont,s)
-        val centerY=r.y+r.height/2f
-        val gap=(r.height*0.10f).coerceIn(4f,8f)
-        text.centered(titleFont,t,cx,centerY+gap/2f+titleHeight/2f,tc)
-        text.centered(bodyFont,s,cx,centerY-gap/2f-subtitleHeight/2f,sc)
+        text.centered(titleFont,t,cx,r.y+r.height/2f+titleHeight/2f,tc)
     }
 }

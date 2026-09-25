@@ -38,17 +38,12 @@ class UpgradeRenderer(
         batch.begin()
         text.fit(titleFont,"UPGRADE PROTOCOL",width*0.72f,1.18f,0.76f)
         text.centered(titleFont,"UPGRADE PROTOCOL",cx,height*0.86f,UiTheme.CYAN)
-        val subtitle="WAVE $wave COMPLETE // SELECT ONE SYSTEM MOD"
-        text.fit(bodyFont,subtitle,width*0.78f,0.82f,0.56f)
-        text.centered(bodyFont,subtitle,cx,height*0.79f,UiTheme.DIM)
         for(i in 0 until minOf(3,choices.size)){
             val r=buttons[i];val choice=choices[i]
             text.fit(titleFont,choice.title,r.width-28f,0.72f,0.48f)
             text.centered(titleFont,choice.title,r.x+r.width/2f,r.y+r.height-56f,Color.WHITE)
             text.fit(bodyFont,choice.description,r.width-28f,0.78f,0.52f)
-            text.centered(bodyFont,choice.description,r.x+r.width/2f,r.y+r.height/2f+5f,UiTheme.DIM)
-            text.fit(bodyFont,"TAP TO INSTALL",r.width-30f,0.62f,0.44f)
-            text.centered(bodyFont,"TAP TO INSTALL",r.x+r.width/2f,r.y+27f,if(i==1)UiTheme.MAGENTA else UiTheme.CYAN)
+            text.centered(bodyFont,choice.description,r.x+r.width/2f,r.y+r.height/2f,UiTheme.DIM)
         }
         text.reset(titleFont,bodyFont);batch.end()
     }

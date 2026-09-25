@@ -61,36 +61,26 @@ class MenuRenderer(
         batch.begin()
         text.fit(titleFont, "SPARKY WARFARE", split - panelX - 72f, 1.55f, 0.9f)
         text.centered(titleFont, "SPARKY WARFARE", panelX + (split - panelX) / 2f, panelY + panelH - 72f, UiTheme.CYAN)
-        text.fit(bodyFont, "CYBER COMBAT", split - panelX - 72f, 1.0f, 0.72f)
-        text.centered(bodyFont, "CYBER COMBAT", panelX + (split - panelX) / 2f, panelY + panelH - 122f, UiTheme.MAGENTA)
-        text.fit(bodyFont, "TACTICAL NETWORK // LOCAL", split - panelX - 72f, 0.72f, 0.52f)
-        text.centered(bodyFont, "TACTICAL NETWORK // LOCAL", panelX + (split - panelX) / 2f, panelY + panelH - 151f, UiTheme.DIM)
-        text.fit(bodyFont, "SYSTEM READY", split - panelX - 72f, 0.72f, 0.52f)
-        text.centered(bodyFont, "SYSTEM READY", panelX + (split - panelX) / 2f, panelY + panelH * 0.47f, UiTheme.CYAN)
+        text.fit(bodyFont, "READY", split - panelX - 72f, 0.72f, 0.52f)
+        text.centered(bodyFont, "READY", panelX + (split - panelX) / 2f, panelY + panelH * 0.47f, UiTheme.CYAN)
         text.fit(bodyFont, "BEST SCORE  $highScore", split - panelX - 72f, 0.68f, 0.48f)
         text.centered(bodyFont, "BEST SCORE  $highScore", panelX + (split - panelX) / 2f, panelY + 92f, UiTheme.WHITE)
         text.fit(bodyFont, "BEST WAVE  $bestWave", split - panelX - 72f, 0.62f, 0.44f)
         text.centered(bodyFont, "BEST WAVE  $bestWave", panelX + (split - panelX) / 2f, panelY + 66f, UiTheme.DIM)
         text.fit(bodyFont, "TOTAL KILLS  $totalKills", split - panelX - 72f, 0.62f, 0.44f)
         text.centered(bodyFont, "TOTAL KILLS  $totalKills", panelX + (split - panelX) / 2f, panelY + 40f, UiTheme.DIM)
-        drawCommand(single, "DEPLOY", "START COMBAT", UiTheme.WHITE, UiTheme.CYAN)
-        drawCommand(multi, "NETWORK", "MULTIPLAYER UNAVAILABLE", UiTheme.DIM, UiTheme.DIM_DARK)
-        drawCommand(settings, "SYSTEM", "AUDIO // CONTROLS", UiTheme.WHITE, UiTheme.MAGENTA)
-        text.fit(bodyFont, "BUILD 01  //  ANDROID", panelX + panelW - split - 70f, 0.56f, 0.4f)
+        drawCommand(single, "PLAY", UiTheme.WHITE)
+        drawCommand(multi, "MULTIPLAYER", UiTheme.DIM)
+        drawCommand(settings, "SETTINGS", UiTheme.WHITE)
         text.centered(bodyFont, "BUILD 01  //  ANDROID", split + (panelX + panelW - split) / 2f, panelY + 30f, UiTheme.DIM)
         text.reset(titleFont, bodyFont)
         batch.end()
     }
 
-    private fun drawCommand(rect: Rectangle, title: String, subtitle: String, titleColor: Color, subtitleColor: Color) {
+    private fun drawCommand(rect: Rectangle, title: String, color: Color) {
         val cx = rect.x + rect.width / 2f
-        text.fitWithin(titleFont, title, rect.width - 46f, rect.height * 0.40f, 0.82f, 0.56f)
+        text.fitWithin(titleFont, title, rect.width - 46f, rect.height * 0.50f, 0.9f, 0.58f)
         val titleHeight = text.height(titleFont, title)
-        text.fitWithin(bodyFont, subtitle, rect.width - 46f, rect.height * 0.30f, 0.62f, 0.42f)
-        val subtitleHeight = text.height(bodyFont, subtitle)
-        val centerY = rect.y + rect.height / 2f
-        val gap = (rect.height * 0.10f).coerceIn(4f, 8f)
-        text.centered(titleFont, title, cx, centerY + gap / 2f + titleHeight / 2f, titleColor)
-        text.centered(bodyFont, subtitle, cx, centerY - gap / 2f - subtitleHeight / 2f, subtitleColor)
+        text.centered(titleFont, title, cx, rect.y + rect.height / 2f + titleHeight / 2f, color)
     }
 }

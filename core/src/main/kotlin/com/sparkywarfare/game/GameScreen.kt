@@ -744,14 +744,6 @@ class GameScreen : Screen, InputAdapter() {
         val title = if (waveBannerElite) "ELITE WAVE" else "WAVE " + wave
         fitFont(title, bannerW - 38f, 1.0f, 0.62f)
         drawCentered(title, cx, y + 36f, Color(0.74f, 0.97f, 1f, alpha))
-        fitFont(
-            if (waveBannerElite) "HEAVY CONTACT DETECTED" else "HOSTILES INBOUND",
-            bannerW - 42f, 0.42f, 0.28f
-        )
-        drawCentered(
-            if (waveBannerElite) "HEAVY CONTACT DETECTED" else "HOSTILES INBOUND",
-            cx, y + 15f, Color(0.55f, 0.7f, 0.78f, alpha)
-        )
         batch.end()
     }
 

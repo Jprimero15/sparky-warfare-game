@@ -34,23 +34,17 @@ class PauseRenderer(
         batch.begin()
         text.fit(titleFont,"PAUSED",panelW-80f,1.25f,0.82f)
         text.centered(titleFont,"PAUSED",cx,y+panelH-58f,UiTheme.CYAN)
-        text.fit(bodyFont,"COMBAT SUSPENDED // SYSTEM HOLD",panelW-100f,0.82f,0.56f)
         text.centered(bodyFont,"COMBAT SUSPENDED // SYSTEM HOLD",cx,y+panelH-94f,UiTheme.MAGENTA)
-        command(resume,"RESUME","RETURN TO BATTLE",UiTheme.WHITE,UiTheme.CYAN)
-        command(menu,"MAIN MENU","RETURN TO CONSOLE",UiTheme.WHITE,UiTheme.DIM_DARK)
+        command(resume,"RESUME",UiTheme.WHITE)
+        command(menu,"MENU",UiTheme.WHITE)
         text.reset(titleFont,bodyFont)
         batch.end()
     }
 
-    private fun command(r: Rectangle,title:String,subtitle:String,titleColor:com.badlogic.gdx.graphics.Color,subtitleColor:com.badlogic.gdx.graphics.Color){
-        val cx=r.x+r.width/2f
-        text.fitWithin(titleFont,title,r.width-44f,r.height*0.40f,0.78f,0.55f)
-        val titleHeight=text.height(titleFont,title)
-        text.fitWithin(bodyFont,subtitle,r.width-44f,r.height*0.28f,0.64f,0.44f)
-        val subtitleHeight=text.height(bodyFont,subtitle)
-        val centerY=r.y+r.height/2f
-        val gap=(r.height*0.10f).coerceIn(4f,8f)
-        text.centered(titleFont,title,cx,centerY+gap/2f+titleHeight/2f,titleColor)
-        text.centered(bodyFont,subtitle,cx,centerY-gap/2f-subtitleHeight/2f,subtitleColor)
+    private fun command(r: Rectangle, title: String, color: com.badlogic.gdx.graphics.Color) {
+        val cx = r.x + r.width / 2f
+        text.fitWithin(titleFont, title, r.width - 44f, r.height * 0.50f, 0.84f, 0.58f)
+        val titleHeight = text.height(titleFont, title)
+        text.centered(titleFont, title, cx, r.y + r.height / 2f + titleHeight / 2f, color)
     }
 }
