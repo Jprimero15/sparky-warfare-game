@@ -82,19 +82,20 @@ class GameScreen : Screen, InputAdapter() {
     private lateinit var particles: ParticleDebris
     private lateinit var hud: HudRenderer
     private lateinit var bloom: BloomRenderer
+    private val ui = UiLayout()
     private lateinit var bodyFont: BitmapFont
-    private var safeArea = SafeArea(0f, Gdx.graphics.width.toFloat(), 0f, Gdx.graphics.height.toFloat())
-    private val singleButton = Rectangle()
-    private val multiButton = Rectangle()
-    private val settingsButton = Rectangle()
-    private val pauseButton = Rectangle()
-    private val resumeButton = Rectangle()
-    private val menuButton = Rectangle()
-    private val toggleSfxButton = Rectangle()
-    private val toggleHapticsButton = Rectangle()
-    private val volumeSlider = Rectangle()
-    private val swapControlsButton = Rectangle()
-    private val tutorialButton = Rectangle()
+    private val safeArea get() = ui.safeArea
+    private val singleButton get() = ui.singleButton
+    private val multiButton get() = ui.multiButton
+    private val settingsButton get() = ui.settingsButton
+    private val pauseButton get() = ui.pauseButton
+    private val resumeButton get() = ui.resumeButton
+    private val menuButton get() = ui.menuButton
+    private val toggleSfxButton get() = ui.toggleSfxButton
+    private val toggleHapticsButton get() = ui.toggleHapticsButton
+    private val volumeSlider get() = ui.volumeSlider
+    private val swapControlsButton get() = ui.swapControlsButton
+    private val tutorialButton get() = ui.tutorialButton
     private var controlsSwapped = false
     private var tutorialVisible = false
     private var waveBannerTimer = 0f
@@ -147,7 +148,7 @@ class GameScreen : Screen, InputAdapter() {
         FeedbackAudio.setMasterVolume(prefs.getFloat("sfxVolume", 0.8f))
         tutorialVisible = !prefs.getBoolean("tutorialSeen", false)
         FeedbackAudio.init()
-        safeArea = hud.safeArea(Gdx.graphics.width.toFloat(), Gdx.graphics.height.toFloat())
+        ui.update(Gdx.graphics.width.toFloat(), Gdx.graphics.height.toFloat())
         bloom.resize(Gdx.graphics.width, Gdx.graphics.height)
         // Start with the fade overlay opaque, then fade into the menu instead of staying black.
         transition = 1f
@@ -685,12 +686,12 @@ class GameScreen : Screen, InputAdapter() {
     private fun drawHud() {
         val w = Gdx.graphics.width.toFloat()
         val h = Gdx.graphics.height.toFloat()
-        safeArea = hud.safeArea(w, h)
+        ui.update(w, h)
         val panelW = (w * 0.43f).coerceIn(280f, 430f)
         val panelH = 92f
         val left = safeArea.left
         val top = safeArea.top
-        pauseButton.set(safeArea.right - 58f, safeArea.top - 48f, 48f, 38f)
+        ui.hud()
 
         Gdx.gl.glEnable(GL20.GL_BLEND)
         Gdx.gl.glBlendFunc(GL20.GL_SRC_ALPHA, GL20.GL_ONE_MINUS_SRC_ALPHA)
@@ -846,9 +847,7 @@ class GameScreen : Screen, InputAdapter() {
         val buttonW = (w * 0.64f).coerceIn(300f, 520f)
         val buttonH = (h * 0.11f).coerceIn(56f, 78f)
         val centerX = (safeArea.left + safeArea.right) / 2f
-        singleButton.set(centerX - buttonW / 2f, h * 0.35f, buttonW, buttonH)
-        multiButton.set(centerX - buttonW / 2f, h * 0.22f, buttonW, buttonH)
-        settingsButton.set(centerX - buttonW / 2f, h * 0.09f, buttonW, buttonH)
+        ui.menu(w, h)
 
         Gdx.gl.glEnable(GL20.GL_BLEND)
         Gdx.gl.glBlendFunc(GL20.GL_SRC_ALPHA, GL20.GL_ONE_MINUS_SRC_ALPHA)
@@ -897,8 +896,7 @@ class GameScreen : Screen, InputAdapter() {
         val panelH = (h * 0.5f).coerceIn(260f, 370f)
         val left = (w - panelW) / 2f
         val bottom = (h - panelH) / 2f
-        singleButton.set(left + 18f, bottom + 18f, panelW / 2f - 27f, 54f)
-        menuButton.set(left + panelW / 2f + 9f, bottom + 18f, panelW / 2f - 27f, 54f)
+        ui.gameOver(w, h)
 
         Gdx.gl.glEnable(GL20.GL_BLEND)
         Gdx.gl.glBlendFunc(GL20.GL_SRC_ALPHA, GL20.GL_ONE_MINUS_SRC_ALPHA)
@@ -981,7 +979,7 @@ class GameScreen : Screen, InputAdapter() {
         shapeRenderer.rect(0f, h * 0.72f, w, h * 0.28f)
         for (i in 0 until 3) {
             val x = left + i * (cardW + gap)
-            upgradeButtons[i].set(x, bottom, cardW, cardH)
+            ui.upgradeButtons[i].set(x, bottom, cardW, cardH)
             shapeRenderer.color = Color(0.035f, 0.055f, 0.07f, 0.96f)
             shapeRenderer.rect(x, bottom, cardW, cardH)
             shapeRenderer.color = Color(0.15f, 0.72f, 1f, 0.7f)
@@ -997,7 +995,7 @@ class GameScreen : Screen, InputAdapter() {
         font.data.setScale(0.65f)
         drawCentered("WAVE " + wave + " COMPLETE", centerX, h * 0.79f, Color(0.46f, 0.62f, 0.68f, 1f))
         for (i in 0 until minOf(3, upgradeChoices.size)) {
-            val rect = upgradeButtons[i]
+            val rect = ui.upgradeButtons[i]
             val choice = upgradeChoices[i]
             fitFont(choice.title, rect.width - 24f, 1.08f, 0.68f)
             drawCentered(choice.title, rect.x + rect.width / 2f, rect.y + rect.height - 52f, Color.WHITE)
@@ -1014,8 +1012,7 @@ class GameScreen : Screen, InputAdapter() {
         val w = Gdx.graphics.width.toFloat()
         val h = Gdx.graphics.height.toFloat()
         val cx = (safeArea.left + safeArea.right) / 2f
-        resumeButton.set(cx - 150f, h * 0.36f, 300f, 60f)
-        menuButton.set(cx - 150f, h * 0.23f, 300f, 60f)
+        ui.pause(w, h)
         Gdx.gl.glEnable(GL20.GL_BLEND)
         Gdx.gl.glBlendFunc(GL20.GL_SRC_ALPHA, GL20.GL_ONE_MINUS_SRC_ALPHA)
         shapeRenderer.projectionMatrix = hudCamera.combined
@@ -1043,11 +1040,7 @@ class GameScreen : Screen, InputAdapter() {
         val cx = (safeArea.left + safeArea.right) / 2f
         val bw = (w * 0.6f).coerceIn(300f, 520f)
         val bh = 58f
-        toggleSfxButton.set(cx - bw / 2f, h * 0.48f, bw, bh)
-        toggleHapticsButton.set(cx - bw / 2f, h * 0.36f, bw, bh)
-        volumeSlider.set(cx - bw / 2f, h * 0.26f, bw, 28f)
-        swapControlsButton.set(cx - bw / 2f, h * 0.16f, bw, bh)
-        menuButton.set(cx - bw / 2f, h * 0.06f, bw, bh)
+        ui.settings(w, h)
         Gdx.gl.glEnable(GL20.GL_BLEND)
         Gdx.gl.glBlendFunc(GL20.GL_SRC_ALPHA, GL20.GL_ONE_MINUS_SRC_ALPHA)
         shapeRenderer.projectionMatrix = hudCamera.combined
@@ -1122,7 +1115,7 @@ class GameScreen : Screen, InputAdapter() {
         }
         if (state == GameState.UPGRADE) {
             for (i in 0 until minOf(3, upgradeChoices.size)) {
-                if (toUiRect(screenX, screenY, upgradeButtons[i])) {
+                if (toUiRect(screenX, screenY, ui.upgradeButtons[i])) {
                     applyUpgrade(upgradeChoices[i])
                     FeedbackAudio.play(FeedbackAudio.Cue.POWER_UP)
                     haptic(Input.VibrationType.MEDIUM)
@@ -1188,7 +1181,7 @@ class GameScreen : Screen, InputAdapter() {
         viewport.update(width, height, true)
         hudCamera.setToOrtho(false, width.toFloat(), height.toFloat())
         bloom.resize(width, height)
-        safeArea = hud.safeArea(width.toFloat(), height.toFloat())
+        ui.update(width.toFloat(), height.toFloat())
         centerCamera(true)
     }
 
