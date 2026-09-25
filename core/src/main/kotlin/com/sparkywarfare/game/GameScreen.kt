@@ -688,22 +688,15 @@ class GameScreen : Screen, InputAdapter() {
         shapeRenderer.begin(ShapeRenderer.ShapeType.Filled)
 
         // Combat statistics.
-        shapeRenderer.color = Color(0.004f, 0.014f, 0.026f, 0.94f)
-        shapeRenderer.rect(left, top - 108f, statsW, 108f)
-        shapeRenderer.color = Color(0.18f, 0.9f, 1f, 0.12f)
-        shapeRenderer.rect(left + 12f, top - 58f, statsW - 24f, 2f)
-        shapeRenderer.rect(left + 12f, top - 88f, statsW - 24f, 2f)
-
-        // Single player health card. No separate core-health indicator.
-        shapeRenderer.color = Color(0.004f, 0.014f, 0.026f, 0.94f)
-        shapeRenderer.rect(healthX, top - 108f, healthW, 108f)
+        UiShapes.roundedRect(shapeRenderer, left, top - 108f, statsW, 108f, 22f, Color(0.025f, 0.025f, 0.065f, 0.94f))
+                // Single player health card. No separate core-health indicator.
+        UiShapes.roundedRect(shapeRenderer, healthX, top - 108f, healthW, 108f, 22f, Color(0.025f, 0.025f, 0.065f, 0.94f))
         shapeRenderer.color = Color(0f, 0f, 0f, 0.72f)
         shapeRenderer.rect(healthBarX, top - 78f, healthBarW, 12f)
         shapeRenderer.color = healthColor
         shapeRenderer.rect(healthBarX, top - 78f, healthBarW * healthRatio, 12f)
 
-        shapeRenderer.color = Color(0.015f, 0.035f, 0.055f, 0.96f)
-        shapeRenderer.rect(pauseButton.x, pauseButton.y, pauseButton.width, pauseButton.height)
+        UiShapes.roundedRect(shapeRenderer, pauseButton.x, pauseButton.y, pauseButton.width, pauseButton.height, 22f, Color(0.045f, 0.04f, 0.10f, 0.96f))
         shapeRenderer.end()
         Gdx.gl.glDisable(GL20.GL_BLEND)
 
@@ -920,17 +913,7 @@ class GameScreen : Screen, InputAdapter() {
         val y = rect.y
         val w = rect.width
         val h = rect.height
-        shapeRenderer.color = color
-        shapeRenderer.rect(x, y, w, h)
-        // Angular corner cuts make every command button read as one cyber UI family.
-        shapeRenderer.color = Color(0.006f, 0.014f, 0.024f, 0.9f)
-        shapeRenderer.triangle(x, y + h, x + 16f, y + h, x, y + h - 16f)
-        shapeRenderer.triangle(x + w, y, x + w - 16f, y, x + w, y + 16f)
-        shapeRenderer.color = Color(0.18f, 0.9f, 1f, 0.68f)
-        shapeRenderer.rect(x + 3f, y + h - 4f, w - 6f, 4f)
-        shapeRenderer.rect(x + 3f, y + 3f, 42f, 2f)
-        shapeRenderer.color = Color(0.78f, 0.24f, 1f, 0.42f)
-        shapeRenderer.rect(x + w - 44f, y + 3f, 41f, 2f)
+        UiShapes.softButton(shapeRenderer, rect, color, 24f)
     }
 
     private fun drawGameOverOverlay() {
