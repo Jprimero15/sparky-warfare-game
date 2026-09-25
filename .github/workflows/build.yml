@@ -9,6 +9,9 @@ on:
 permissions:
   contents: read
 
+env:
+  GRADLE_OPTS: "-Dorg.gradle.daemon=false -Dorg.gradle.jvmargs=-Xmx2048m"
+
 jobs:
   build:
     name: Build Android APK
@@ -23,27 +26,35 @@ jobs:
         with:
           distribution: temurin
           java-version: "17"
-          cache: gradle
 
       - name: Set up Gradle 8.7
         uses: gradle/actions/setup-gradle@v6
         with:
           gradle-version: "8.7"
+          cache-provider: basic
 
       - name: Install Android SDK
         shell: bash
         run: |
           set -euxo pipefail
 
-          SDKMANAGER="$ANDROID_HOME/cmdline-tools/latest/bin/sdkmanager"
-          if [ ! -x "$SDKMANAGER" ]; then
-            SDKMANAGER="$ANDROID_HOME/cmdline-tools/bin/sdkmanager"
-          fi
-          if [ ! -x "$SDKMANAGER" ]; then
+          SDKMANAGER=""
+          for candidate in \
+            "$ANDROID_HOME/cmdline-tools/latest/bin/sdkmanager" \
+            "$ANDROID_HOME/cmdline-tools/bin/sdkmanager"; do
+            if [ -x "$candidate" ]; then
+              SDKMANAGER="$candidate"
+              break
+            fi
+          done
+
+          if [ -z "$SDKMANAGER" ]; then
             SDKMANAGER="$(find "$ANDROID_HOME/cmdline-tools" -type f -name sdkmanager -print -quit)"
           fi
 
           test -n "$SDKMANAGER"
+          test -x "$SDKMANAGER"
+
           "$SDKMANAGER" --version
           yes | "$SDKMANAGER" --licenses >/dev/null || true
           "$SDKMANAGER" \
@@ -56,18 +67,25 @@ jobs:
         run: |
           set -euxo pipefail
           test -f settings.gradle.kts
+          test -f build.gradle.kts
+          test -f core/build.gradle.kts
           test -f android/build.gradle.kts
           test ! -e desktop
-          grep -q 'include("core", "android")' settings.gradle.kts
-          ! grep -RniE 'lwjgl|DesktopLauncher|include\\([^)]*desktop|project\\(\":desktop\"\\)' \
-            build.gradle.kts settings.gradle.kts core android
+
+          grep -Fq 'include("core", "android")' settings.gradle.kts
+
+          if grep -RniE 'lwjgl|DesktopLauncher|include\([^)]*desktop|project\(":desktop"\)' \
+            build.gradle.kts settings.gradle.kts core android; then
+            echo "Desktop-only references detected."
+            exit 1
+          fi
 
       - name: Build Android debug APK
         shell: bash
         run: |
           set -euxo pipefail
           gradle --version
-          gradle :android:clean :android:assembleDebug --no-daemon --stacktrace
+          gradle :android:clean :android:assembleDebug --stacktrace
 
       - name: Verify APK
         shell: bash
@@ -75,9 +93,12 @@ jobs:
           set -euxo pipefail
           APK="$(find android/build/outputs/apk/debug -maxdepth 1 -type f -name '*.apk' -print -quit)"
           test -n "$APK"
+          test -s "$APK"
           ls -lh "$APK"
+
           for ABI in armeabi-v7a arm64-v8a x86 x86_64; do
             unzip -Z1 "$APK" | grep -Fx "lib/$ABI/libgdx.so"
+            unzip -Z1 "$APK" | grep -Fx "lib/$ABI/libgdx-freetype.so"
           done
 
       - name: Upload APK
