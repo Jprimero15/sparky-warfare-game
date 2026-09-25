@@ -11,13 +11,15 @@ import com.badlogic.gdx.math.Rectangle
 class UpgradeRenderer(
     private val shape: ShapeRenderer,
     private val batch: SpriteBatch,
-    private val font: BitmapFont
+    private val titleFont: BitmapFont,
+    private val bodyFont: BitmapFont
 ) {
     private val panel = Color(0.006f, 0.018f, 0.032f, 0.98f)
     private val card = Color(0.015f, 0.04f, 0.065f, 0.98f)
     private val cyan = Color(0.18f, 0.9f, 1f, 1f)
     private val magenta = Color(0.78f, 0.24f, 1f, 1f)
     private val dim = Color(0.42f, 0.62f, 0.69f, 1f)
+    private val layout = com.badlogic.gdx.graphics.g2d.GlyphLayout()
 
     fun draw(
         width: Float,
@@ -63,22 +65,40 @@ class UpgradeRenderer(
         Gdx.gl.glDisable(GL20.GL_BLEND)
 
         batch.begin()
-        fit("UPGRADE PROTOCOL", width * 0.72f, 1.18f, 0.76f)
+        fitTitle("UPGRADE PROTOCOL", width * 0.72f, 1.18f, 0.76f)
         drawCentered("UPGRADE PROTOCOL", cx, height * 0.86f, cyan)
-        fit("WAVE $wave COMPLETE // SELECT ONE SYSTEM MOD", width * 0.78f, 0.46f, 0.32f)
-        drawCentered("WAVE $wave COMPLETE // SELECT ONE SYSTEM MOD", cx, height * 0.79f, dim)
+        fitBody("WAVE $wave COMPLETE // SELECT ONE SYSTEM MOD", width * 0.78f, 0.82f, 0.56f)
+        bodyFont.color = dim
+        bodyFont.draw(batch, "WAVE $wave COMPLETE // SELECT ONE SYSTEM MOD", cx - layout.width / 2f, height * 0.79f)
 
         for (i in 0 until minOf(3, choices.size)) {
             val r = buttons[i]
             val choice = choices[i]
-            fit(choice.title, r.width - 28f, 0.72f, 0.48f)
+            fitTitle(choice.title, r.width - 28f, 0.72f, 0.48f)
             drawCentered(choice.title, r.x + r.width / 2f, r.y + r.height - 56f, Color.WHITE)
-            fit(choice.description, r.width - 28f, 0.44f, 0.3f)
-            drawCentered(choice.description, r.x + r.width / 2f, r.y + r.height / 2f + 5f, Color(0.58f, 0.8f, 0.88f, 1f))
-            fit("TAP TO INSTALL", r.width - 30f, 0.38f, 0.28f)
-            drawCentered("TAP TO INSTALL", r.x + r.width / 2f, r.y + 27f, if (i == 1) magenta else cyan)
+            fitBody(choice.description, r.width - 28f, 0.78f, 0.52f)
+            bodyFont.color = Color(0.58f, 0.8f, 0.88f, 1f)
+            bodyFont.draw(batch, choice.description, r.x + r.width / 2f - layout.width / 2f, r.y + r.height / 2f + 5f)
+            fitBody("TAP TO INSTALL", r.width - 30f, 0.62f, 0.44f)
+            bodyFont.color = if (i == 1) magenta else cyan
+            bodyFont.draw(batch, "TAP TO INSTALL", r.x + r.width / 2f - layout.width / 2f, r.y + 27f)
         }
-        font.data.setScale(1f)
+        titleFont.data.setScale(1f)
+        bodyFont.data.setScale(1f)
         batch.end()
+    }
+    private fun fitTitle(text: String, max: Float, preferred: Float, minimum: Float) {
+        titleFont.data.setScale(1f)
+        layout.setText(titleFont, text)
+        val ws = if (layout.width > 0f) max / layout.width else preferred
+        titleFont.data.setScale(minOf(preferred, ws.coerceAtLeast(minimum), ws))
+    }
+
+    private fun fitBody(text: String, max: Float, preferred: Float, minimum: Float) {
+        bodyFont.data.setScale(1f)
+        layout.setText(bodyFont, text)
+        val ws = if (layout.width > 0f) max / layout.width else preferred
+        bodyFont.data.setScale(minOf(preferred, ws.coerceAtLeast(minimum), ws))
+        layout.setText(bodyFont, text)
     }
 }
