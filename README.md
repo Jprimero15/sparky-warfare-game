@@ -2,7 +2,7 @@
 
 Sparky Warfare is an Android-only, landscape-first top-down tank combat game built with LibGDX 1.12.1 + Kotlin.
 
-The game combines a dark cyber arena, cyan/magenta tactical UI, glowing energy tanks, laser combat, destructible cover, wave-based enemies, upgrades, power-ups, particle debris, framebuffer bloom, and responsive Android multitouch controls.
+The game combines a dark cyber arena, a soft-neon arcade UI, glowing energy tanks, laser combat, destructible cover, wave-based enemies, upgrades, power-ups, particle debris, framebuffer bloom, and responsive Android multitouch controls.
 
 ## Current status
 
@@ -34,14 +34,14 @@ Current gameplay systems include:
 
 ## UI redesign
 
-The UI has been rebuilt as a cyber-neon tactical console with a landscape-first layout instead of treating a phone screen like a portrait menu.
+The UI uses a **Soft Neon Arcade** direction: smooth rounded controls, pill-like cards, soft cyan/violet glow, large touch targets, and minimal text. It keeps the futuristic identity without the angular tactical-console look.
 
 ### Visual language
 - Near-black tactical panels.
 - Electric cyan structural accents.
 - Magenta system highlights.
 - Red/pink combat-danger states.
-- Thin angular borders and segmented HUD rules.
+- Rounded surfaces and soft highlights instead of angular segmented panels.
 - Subtle arena grid.
 - Limited glow so important information remains readable.
 - Large touch targets designed around landscape thumb zones.
@@ -77,7 +77,7 @@ The main menu is now explicitly landscape-oriented:
 ### Combat HUD
 - Combat/session status at upper left.
 - Wave and score information in separated rows.
-- Player core integrity at upper right with a dedicated health bar.
+- Player health at upper right with the single player health bar.
 - Pause control uses a larger touch target and icon.
 - Score and Best are separated into distinct measured rows.
 - Large MOVE and FIRE controls anchored to safe landscape thumb zones.
@@ -153,7 +153,7 @@ Important responsibilities are separated into focused systems:
 
 ## Rendering
 
-The visual system uses a near-black battlefield with neon energy accents.
+The visual system uses a near-black battlefield with soft neon energy accents and rounded UI surfaces.
 
 TankRenderer owns the procedural tank geometry. Each tank uses a resolution-independent polygon silhouette with a separate turret aim, reactor, armor fins, and tier-specific weapon signature. Scout, assault, heavy, ranged, elite, and player tanks therefore remain visually distinguishable without sprite files.
 
