@@ -35,10 +35,10 @@ class WorldRenderer(
     private val wallShadow = Color(0f, 0f, 0f, 0.14f)
     private val hudTextColor = Color(0.85f, 0.95f, 1f, 0.85f)
     private val fireTextColor = Color(1f, 0.86f, 0.9f, 0.95f)
-    private val steelLine = Color(0.28f, 0.42f, 0.5f, 0.38f)
-    private val brickLine = Color(0.75f, 0.32f, 0.18f, 0.28f)
-    private val concreteLine = Color(0.55f, 0.6f, 0.64f, 0.24f)
-    private val metalLine = Color(0.22f, 0.62f, 0.7f, 0.28f)
+    private val steelLine = Color(0.35f, 0.85f, 0.95f, 0.30f)
+    private val brickLine = Color(0.72f, 0.34f, 1f, 0.24f)
+    private val concreteLine = Color(0.45f, 0.70f, 0.95f, 0.22f)
+    private val metalLine = Color(0.22f, 0.86f, 0.98f, 0.28f)
     private val touchBase = Color(0.015f, 0.02f, 0.025f, 0.72f)
     private val touchAccent = Color(0.18f, 0.72f, 1f, 0.12f)
     private val touchKnobIdle = Color(0.25f, 0.85f, 1f, 0.42f)
@@ -201,9 +201,6 @@ class WorldRenderer(
                 WallType.METAL -> metalLine
             }
             shapeRenderer.rect(x + 1f, y + 1f, w - 2f, h - 2f)
-            if (wall.type == WallType.BRICK || wall.type == WallType.RED_BRICK) {
-                shapeRenderer.line(x, y + h / 2f, x + w, y + h / 2f)
-            }
         }
         shapeRenderer.end()
     }
