@@ -1,11 +1,26 @@
 package com.sparkywarfare.game
 
+import com.badlogic.gdx.Gdx
 import com.badlogic.gdx.graphics.Color
+import com.badlogic.gdx.graphics.GL20
 import com.badlogic.gdx.graphics.glutils.ShapeRenderer
 import com.badlogic.gdx.math.Rectangle
 
 /** Reusable glassmorphic primitives for the Soft Neon Arcade UI. */
 object UiShapes {
+    /** Shared UI pass state so translucent glass actually blends over the game world. */
+    fun begin(shape: ShapeRenderer, type: ShapeRenderer.ShapeType = ShapeRenderer.ShapeType.Filled) {
+        Gdx.gl.glEnable(GL20.GL_BLEND)
+        Gdx.gl.glBlendFunc(GL20.GL_SRC_ALPHA, GL20.GL_ONE_MINUS_SRC_ALPHA)
+        shape.begin(type)
+    }
+
+    fun end(shape: ShapeRenderer) {
+        shape.end()
+        Gdx.gl.glBlendFunc(GL20.GL_SRC_ALPHA, GL20.GL_ONE_MINUS_SRC_ALPHA)
+        Gdx.gl.glDisable(GL20.GL_BLEND)
+    }
+
     private val gradientColor = Color()
     private val topColor = Color()
     private val bottomColor = Color()
@@ -155,8 +170,12 @@ object UiShapes {
     ) {
         glowColor.set(accent.r, accent.g, accent.b, 0.045f)
         roundedRect(shape, x - 4f, y - 4f, width + 8f, height + 8f, radius + 4f, glowColor)
-        roundedRect(shape, x, y, width, height, radius, UiTheme.CARD)
-        accentColor.set(accent.r, accent.g, accent.b, 0.24f)
+        topColor.set(UiTheme.CARD).lerp(accent, 0.06f)
+        topColor.a = 0.78f
+        bottomColor.set(UiTheme.PANEL_DARK).lerp(UiTheme.MAGENTA, 0.04f)
+        bottomColor.a = 0.76f
+        gradientRoundedRect(shape, x, y, width, height, radius, topColor, bottomColor, 7)
+        accentColor.set(accent.r, accent.g, accent.b, 0.30f)
         roundedRect(shape, x + 1.5f, y + height - 3.5f, width - 3f, 2f, 1f, accentColor)
         roundedRect(shape, x + 4f, y + 4f, width - 8f, 1.5f, 0.75f, UiTheme.GLASS_HIGHLIGHT)
     }
@@ -170,16 +189,25 @@ object UiShapes {
     ) {
         if (rect.width <= 0f || rect.height <= 0f) return
 
-        glowColor.set(color.r, color.g, color.b, 0.06f)
+        val dark = color.r < 0.12f && color.g < 0.16f && color.b < 0.22f
+        glowColor.set(color.r, color.g, color.b, if (dark) 0.045f else 0.10f)
         roundedRect(shape, rect.x - 7f, rect.y - 7f, rect.width + 14f, rect.height + 14f, radius + 7f, glowColor)
-        glowColor.set(UiTheme.MAGENTA.r, UiTheme.MAGENTA.g, UiTheme.MAGENTA.b, 0.045f)
+        glowColor.set(UiTheme.MAGENTA.r, UiTheme.MAGENTA.g, UiTheme.MAGENTA.b, if (dark) 0.035f else 0.065f)
         roundedRect(shape, rect.x - 3f, rect.y - 3f, rect.width + 6f, rect.height + 6f, radius + 3f, glowColor)
 
-        topColor.set(UiTheme.INNER).lerp(color, 0.13f)
-        topColor.a = 0.88f
-        bottomColor.set(UiTheme.PANEL_DARK).lerp(color, 0.08f)
-        bottomColor.a = 0.92f
-        gradientRoundedRect(shape, rect.x, rect.y, rect.width, rect.height, radius, topColor, bottomColor, 8)
+        if (dark) {
+            topColor.set(UiTheme.INNER).lerp(UiTheme.CYAN, 0.035f)
+            topColor.a = 0.84f
+            bottomColor.set(UiTheme.PANEL_DARK).lerp(UiTheme.MAGENTA, 0.045f)
+            bottomColor.a = 0.90f
+        } else {
+            val alternate = if (color.r > color.b) UiTheme.CYAN else UiTheme.MAGENTA
+            topColor.set(color).lerp(UiTheme.WHITE, 0.14f)
+            topColor.a = 0.94f
+            bottomColor.set(color).lerp(alternate, 0.34f)
+            bottomColor.a = 0.90f
+        }
+        gradientRoundedRect(shape, rect.x, rect.y, rect.width, rect.height, radius, topColor, bottomColor, 10)
 
         // Thin luminous edge accents, intentionally softer than a hard sci-fi console.
         accentColor.set(UiTheme.CYAN.r, UiTheme.CYAN.g, UiTheme.CYAN.b, 0.26f)
