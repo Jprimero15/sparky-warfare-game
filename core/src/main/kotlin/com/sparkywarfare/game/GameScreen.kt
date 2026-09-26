@@ -368,8 +368,7 @@ class GameScreen : Screen, InputAdapter() {
         transitionColor.set(0f, 0f, 0f, transition.coerceIn(0f, 1f))
         shapeRenderer.color = transitionColor
         shapeRenderer.rect(0f, 0f, w, h)
-        shapeRenderer.end()
-        Gdx.gl.glDisable(GL20.GL_BLEND)
+        UiShapes.end(shapeRenderer)
     }
 
     private fun startSinglePlayer() {
@@ -779,59 +778,58 @@ class GameScreen : Screen, InputAdapter() {
         val w = Gdx.graphics.width.toFloat()
         val h = Gdx.graphics.height.toFloat()
         val cx = (safeArea.left + safeArea.right) / 2f
-        val alpha = ((waveBannerTimer / 0.55f).coerceAtMost(1f) *
-            ((2.2f - waveBannerTimer) / 0.85f).coerceIn(0f, 1f)).coerceIn(0f, 1f)
+        val alpha = ((waveBannerTimer / 0.45f).coerceAtMost(1f) *
+            ((2.2f - waveBannerTimer) / 0.90f).coerceIn(0f, 1f)).coerceIn(0f, 1f)
 
-        val bannerW = (w * 0.44f).coerceIn(330f, 590f)
-        val bannerH = 96f
+        val bannerW = (w * 0.40f).coerceIn(320f, 560f)
+        val bannerH = 88f
         val x = cx - bannerW / 2f
-        val y = h * 0.64f
+        val y = h * 0.67f
         val accent = if (waveBannerElite) UiTheme.MAGENTA else UiTheme.CYAN
 
         shapeRenderer.projectionMatrix = hudCamera.combined
         UiShapes.begin(shapeRenderer)
-        UiShapes.glassCard(
-            shapeRenderer,
-            x - 22f,
-            y + 14f,
-            bannerW * 0.72f,
-            bannerH * 0.82f,
-            22f,
-            UiTheme.MAGENTA
-        )
-        UiShapes.glassCard(
-            shapeRenderer,
-            x + bannerW * 0.30f,
-            y - 10f,
-            bannerW * 0.60f,
-            bannerH * 0.78f,
-            22f,
-            UiTheme.CYAN
-        )
-        UiShapes.glassPanel(shapeRenderer, x, y, bannerW, bannerH, 28f)
+        UiShapes.glassPanel(shapeRenderer, x, y, bannerW, bannerH, 26f)
 
-        UiShapes.gradientRoundedRect(
+        // One restrained neon capsule provides the punch without obscuring the text.
+        val pill = Rectangle(x + 18f, y + 16f, 112f, 30f)
+        UiShapes.softButton(shapeRenderer, pill, accent, 15f)
+        UiShapes.roundedRect(
             shapeRenderer,
-            x + 18f, y + bannerH - 8f, bannerW - 36f, 4f, 2f,
-            UiTheme.CYAN,
-            UiTheme.MAGENTA,
-            8
+            x + 18f,
+            y + bannerH - 4f,
+            bannerW - 36f,
+            2f,
+            1f,
+            Color(accent.r, accent.g, accent.b, 0.22f)
         )
-        UiShapes.glassCard(shapeRenderer, x + 20f, y + 17f, 106f, 30f, 15f, accent)
         UiShapes.end(shapeRenderer)
 
         batch.projectionMatrix = hudCamera.combined
         batch.begin()
 
         val title = if (waveBannerElite) "ELITE WAVE" else "WAVE  " + wave.toString().padStart(2, '0')
-        fitFont(title, bannerW - 58f, 0.98f, 0.62f)
-        drawCentered(title, cx + 18f, y + 61f, Color(accent.r, accent.g, accent.b, alpha))
+        fitFont(title, bannerW - 158f, 0.90f, 0.58f)
+        uiText.centeredVertically(font, title, x + bannerW * 0.63f, y + 58f, Color(accent.r, accent.g, accent.b, alpha))
 
         val sub = if (waveBannerElite) "HEIGHTENED THREAT" else "NEXT ASSAULT"
-        fitBodyFont(sub, bannerW - 140f, 0.52f, 0.38f)
-        bodyFont.color = Color(UiTheme.TEXT_SECONDARY.r, UiTheme.TEXT_SECONDARY.g, UiTheme.TEXT_SECONDARY.b, alpha)
-        layout.setText(bodyFont, sub)
-        bodyFont.draw(batch, sub, cx - layout.width / 2f + 18f, y + 29f)
+        fitBodyFont(sub, bannerW - 165f, 0.48f, 0.34f)
+        uiText.centeredVertically(
+            bodyFont,
+            sub,
+            x + bannerW * 0.63f,
+            y + 31f,
+            Color(UiTheme.TEXT_SECONDARY.r, UiTheme.TEXT_SECONDARY.g, UiTheme.TEXT_SECONDARY.b, alpha)
+        )
+
+        uiText.fitWithin(bodyFont, if (waveBannerElite) "ELITE" else "WAVE", pill.width - 16f, 20f, 0.42f, 0.34f)
+        uiText.centeredVertically(
+            bodyFont,
+            if (waveBannerElite) "ELITE" else "WAVE",
+            pill.x + pill.width / 2f,
+            pill.y + pill.height / 2f,
+            UiTheme.TEXT_PRIMARY
+        )
 
         uiText.reset(font, bodyFont)
         batch.end()
