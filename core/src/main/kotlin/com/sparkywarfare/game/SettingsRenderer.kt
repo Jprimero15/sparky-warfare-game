@@ -67,18 +67,18 @@ class SettingsRenderer(
 
         batch.begin()
         text.fitWithin(titleFont, "SETTINGS", panelW - 90f, 54f, 1.15f, 0.72f)
-        text.centered(titleFont, "SETTINGS", cx, y + panelH - 58f, UiTheme.TEXT_PRIMARY)
+        text.centeredVertically(titleFont, "SETTINGS", cx, y + panelH - 58f, UiTheme.TEXT_PRIMARY)
 
         val subtitleY = y + panelH - 94f
         text.fitWithin(bodyFont, "MAKE IT YOURS", panelW - 100f, 24f, 0.62f, 0.46f)
-        text.centered(bodyFont, "MAKE IT YOURS", cx, subtitleY, UiTheme.CYAN)
+        text.centeredVertically(bodyFont, "MAKE IT YOURS", cx, subtitleY, UiTheme.CYAN)
 
         command(sfx, "SFX  " + if (muted) "OFF" else "ON", if (muted) UiTheme.DANGER else UiTheme.TEXT_PRIMARY)
         command(haptics, "HAPTICS  " + if (hapticsMuted) "OFF" else "ON", if (hapticsMuted) UiTheme.DANGER else UiTheme.TEXT_PRIMARY)
 
         val volumeLabel = "VOLUME  " + (volumeValue * 100f).toInt() + "%"
         text.fitWithin(bodyFont, volumeLabel, volume.width - 24f, 28f, 0.64f, 0.46f)
-        text.centered(bodyFont, volumeLabel, volume.x + volume.width / 2f, volume.y + volume.height + 28f, UiTheme.TEXT_SECONDARY)
+        text.centeredVertically(bodyFont, volumeLabel, volume.x + volume.width / 2f, volume.y + volume.height + 28f, UiTheme.TEXT_SECONDARY)
 
         command(swap, "SWAP  MOVE / FIRE", UiTheme.TEXT_PRIMARY)
         command(menu, "BACK", UiTheme.TEXT_PRIMARY)
@@ -97,7 +97,6 @@ class SettingsRenderer(
             UiTheme.Metrics.BUTTON_TEXT_SCALE,
             UiTheme.Metrics.BUTTON_TEXT_MIN_SCALE
         )
-        val h = text.height(titleFont, value)
         text.centeredVertically(titleFont, value, cx, rect.y + rect.height / 2f, color)
     }
 }
