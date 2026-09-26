@@ -31,15 +31,15 @@ class WorldRenderer(
 
     private val backdropColor = UiTheme.WORLD_BACKDROP
     private val floorAccentColor = UiTheme.WORLD_FLOOR
-    private val wallHighlight = Color(1f, 1f, 1f, 0.045f)
-    private val wallShadow = Color(0f, 0f, 0f, 0.14f)
+    private val wallHighlight = UiTheme.GLASS_HIGHLIGHT
+    private val wallShadow = UiTheme.GLASS_SHADOW
     private val steelLine = Color(0.35f, 0.85f, 0.95f, 0.30f)
     private val brickLine = Color(0.72f, 0.34f, 1f, 0.24f)
     private val concreteLine = Color(0.45f, 0.70f, 0.95f, 0.22f)
     private val metalLine = Color(0.22f, 0.86f, 0.98f, 0.28f)
-    private val healthBack = Color(0f, 0f, 0f, 0.65f)
-    private val healthElite = Color(1f, 0.72f, 0.16f, 0.95f)
-    private val healthNormal = Color(0.35f, 0.9f, 1f, 0.9f)
+    private val healthBack = UiTheme.PANEL_DARK
+    private val healthElite = UiTheme.MAGENTA
+    private val healthNormal = UiTheme.CYAN
 
     fun renderCombat(
         player: Tank,
@@ -50,7 +50,7 @@ class WorldRenderer(
         powerUps: List<PowerUp>,
         domainBursts: List<Burst>
     ) {
-        clear(0.001f, 0.002f, 0.003f)
+        clear(backdropColor.r, backdropColor.g, backdropColor.b)
         camera.update()
         shapeRenderer.projectionMatrix = camera.combined
         drawArenaBackdrop()
@@ -71,7 +71,7 @@ class WorldRenderer(
     }
 
     fun renderIdle(walls: List<Wall>) {
-        clear(0.02f, 0.02f, 0.06f)
+        clear(backdropColor.r, backdropColor.g, backdropColor.b)
         camera.update()
         shapeRenderer.projectionMatrix = camera.combined
         drawArenaBackdrop()
@@ -121,7 +121,7 @@ class WorldRenderer(
 
         shapeRenderer.color = if (input.firing) UiTheme.FIRE_ACTIVE else UiTheme.FIRE_IDLE
         shapeRenderer.circle(fireX, baseY, controlRadius * 0.52f, 44)
-        shapeRenderer.color = Color(1f, 1f, 1f, if (input.firing) 0.30f else 0.12f)
+        shapeRenderer.color = Color(UiTheme.WHITE.r, UiTheme.WHITE.g, UiTheme.WHITE.b, if (input.firing) 0.30f else 0.12f)
         shapeRenderer.circle(fireX, baseY, controlRadius * 0.19f, 32)
         UiShapes.end(shapeRenderer)
 
