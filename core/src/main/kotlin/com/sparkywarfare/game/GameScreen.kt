@@ -363,10 +363,8 @@ class GameScreen : Screen, InputAdapter() {
         if (transition <= 0.01f) return
         val w = Gdx.graphics.width.toFloat()
         val h = Gdx.graphics.height.toFloat()
-        Gdx.gl.glEnable(GL20.GL_BLEND)
-        Gdx.gl.glBlendFunc(GL20.GL_SRC_ALPHA, GL20.GL_ONE_MINUS_SRC_ALPHA)
         shapeRenderer.projectionMatrix = hudCamera.combined
-        shapeRenderer.begin(ShapeRenderer.ShapeType.Filled)
+        UiShapes.begin(shapeRenderer)
         transitionColor.set(0f, 0f, 0f, transition.coerceIn(0f, 1f))
         shapeRenderer.color = transitionColor
         shapeRenderer.rect(0f, 0f, w, h)
@@ -720,8 +718,7 @@ class GameScreen : Screen, InputAdapter() {
                 7
             )
         }
-        shapeRenderer.end()
-        Gdx.gl.glDisable(GL20.GL_BLEND)
+        UiShapes.end(shapeRenderer)
 
         batch.projectionMatrix = hudCamera.combined
         batch.begin()
@@ -826,7 +823,7 @@ class GameScreen : Screen, InputAdapter() {
         batch.projectionMatrix = hudCamera.combined
         batch.begin()
 
-        val title = if (waveBannerElite) "ELITE WAVE" else "WAVE  0" + wave.coerceIn(0, 9)
+        val title = if (waveBannerElite) "ELITE WAVE" else "WAVE  " + wave.toString().padStart(2, '0')
         fitFont(title, bannerW - 58f, 0.98f, 0.62f)
         drawCentered(title, cx + 18f, y + 61f, Color(accent.r, accent.g, accent.b, alpha))
 
