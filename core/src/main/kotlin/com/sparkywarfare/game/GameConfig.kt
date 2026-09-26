@@ -38,7 +38,7 @@ object GameConfig {
         const val LASER_LENGTH = 18f
         const val LASER_LIFE = 1.4f
         const val MAX_COMBO = 8
-        const val COMBO_TIMEOUT = 3f
+        const val COMBO_TIMEOUT = 3.5f
         const val TANK_SEPARATION = 30f
     }
 
@@ -48,6 +48,9 @@ object GameConfig {
         const val SHIELD_DURATION = 5f
         const val SPREAD_DURATION = 7f
         const val OVERDRIVE_DURATION = 6f
+        const val UPGRADE_FIRE_FLOOR = 0.11f
+        const val OVERCLOCK_FACTOR = 0.82f
+        const val COOLING_FACTOR = 0.94f
     }
 
     object Ui {
