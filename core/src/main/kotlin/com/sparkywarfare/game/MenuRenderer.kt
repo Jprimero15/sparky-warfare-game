@@ -36,7 +36,7 @@ class MenuRenderer(
         val splitX = panelX + panelW * 0.50f
         val leftW = splitX - panelX
 
-        shape.begin(ShapeRenderer.ShapeType.Filled)
+        UiShapes.begin(shape)
         UiShapes.overlay(shape, width, height)
 
         // Layered glass cards create the soft depth seen in the reference style.
@@ -70,7 +70,7 @@ class MenuRenderer(
         drawButton(single, UiTheme.CYAN)
         drawButton(multi, UiTheme.MAGENTA)
         drawButton(settings, UiTheme.PANEL_DARK)
-        shape.end()
+        UiShapes.end(shape)
 
         batch.begin()
 
