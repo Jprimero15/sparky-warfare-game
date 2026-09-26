@@ -385,7 +385,7 @@ class GameScreen : Screen, InputAdapter() {
                 enemy.angle = targetAngle
 
                 scratchMove.set(scratchDirection)
-                val strafeSign = if (index and 1 == 0) 1f else -1f
+                val strafeSign = if ((index and 1) == 0) 1f else -1f
                 when (enemy.enemyTier) {
                     EnemyTier.SCOUT -> scratchMove.add(-scratchDirection.y * 0.50f * strafeSign, scratchDirection.x * 0.50f * strafeSign)
                     EnemyTier.ASSAULT -> scratchMove.add(-scratchDirection.y * 0.28f * strafeSign, scratchDirection.x * 0.28f * strafeSign)
