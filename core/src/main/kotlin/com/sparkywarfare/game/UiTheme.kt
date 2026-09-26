@@ -4,15 +4,15 @@ import com.badlogic.gdx.graphics.Color
 
 /** Shared glassmorphic Soft Neon Arcade palette: luminous accents over translucent dark glass. */
 object UiTheme {
-    val PANEL = Color(0.035f, 0.055f, 0.10f, 0.72f)
-    val PANEL_DARK = Color(0.018f, 0.03f, 0.065f, 0.78f)
-    val INNER = Color(0.07f, 0.095f, 0.16f, 0.54f)
-    val CARD = Color(0.045f, 0.07f, 0.125f, 0.66f)
+    val PANEL = Color(0.028f, 0.045f, 0.095f, 0.74f)
+    val PANEL_DARK = Color(0.010f, 0.020f, 0.055f, 0.82f)
+    val INNER = Color(0.075f, 0.10f, 0.18f, 0.62f)
+    val CARD = Color(0.050f, 0.075f, 0.145f, 0.72f)
 
     val CYAN = Color(0.22f, 0.96f, 1f, 1f)
-    val CYAN_SOFT = Color(0.22f, 0.96f, 1f, 0.14f)
+    val CYAN_SOFT = Color(0.22f, 0.96f, 1f, 0.18f)
     val MAGENTA = Color(0.84f, 0.34f, 1f, 1f)
-    val MAGENTA_SOFT = Color(0.84f, 0.34f, 1f, 0.13f)
+    val MAGENTA_SOFT = Color(0.84f, 0.34f, 1f, 0.17f)
 
     val DIM = Color(0.68f, 0.74f, 0.86f, 1f)
     val DIM_DARK = Color(0.45f, 0.52f, 0.65f, 1f)
@@ -22,7 +22,7 @@ object UiTheme {
     val BLACK = Color(0f, 0f, 0f, 1f)
     val SHADOW = Color(0f, 0f, 0f, 0.70f)
 
-    val OVERLAY = Color(0.005f, 0.008f, 0.022f, 0.58f)
+    val OVERLAY = Color(0.004f, 0.008f, 0.026f, 0.50f)
     val PANEL_EDGE = Color(0.30f, 0.94f, 1f, 0.22f)
     val GLASS_HIGHLIGHT = Color(1f, 1f, 1f, 0.085f)
     val GLASS_SHADOW = Color(0f, 0f, 0f, 0.22f)
