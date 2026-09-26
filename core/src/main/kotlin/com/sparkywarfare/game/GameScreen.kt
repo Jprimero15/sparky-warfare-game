@@ -679,10 +679,8 @@ class GameScreen : Screen, InputAdapter() {
         val healthRatio = (player.health.toFloat() / player.maxHealth.coerceAtLeast(1)).coerceIn(0f, 1f)
         val healthColor = if (healthRatio <= 0.34f) UiTheme.DANGER else UiTheme.CYAN
 
-        Gdx.gl.glEnable(GL20.GL_BLEND)
-        Gdx.gl.glBlendFunc(GL20.GL_SRC_ALPHA, GL20.GL_ONE_MINUS_SRC_ALPHA)
         shapeRenderer.projectionMatrix = hudCamera.combined
-        shapeRenderer.begin(ShapeRenderer.ShapeType.Filled)
+        UiShapes.begin(shapeRenderer)
 
         UiShapes.glassPanel(shapeRenderer, left, top - cardH, statsW, cardH, 22f)
         UiShapes.glassPanel(shapeRenderer, healthX, top - cardH, healthW, cardH, 22f)
@@ -749,14 +747,11 @@ class GameScreen : Screen, InputAdapter() {
         if (waveBannerTimer > 0f) drawWaveBanner()
         if (tutorialVisible) drawTutorialOverlay()
         if (hitFlash > 0f) {
-            Gdx.gl.glEnable(GL20.GL_BLEND)
-            Gdx.gl.glBlendFunc(GL20.GL_SRC_ALPHA, GL20.GL_ONE_MINUS_SRC_ALPHA)
             shapeRenderer.projectionMatrix = hudCamera.combined
-            shapeRenderer.begin(ShapeRenderer.ShapeType.Filled)
+            UiShapes.begin(shapeRenderer)
             shapeRenderer.color = Color(UiTheme.DANGER.r, UiTheme.DANGER.g, UiTheme.DANGER.b, hitFlash * 0.16f)
             shapeRenderer.rect(0f, 0f, w, h)
-            shapeRenderer.end()
-            Gdx.gl.glDisable(GL20.GL_BLEND)
+            UiShapes.end(shapeRenderer)
         }
     }
 
