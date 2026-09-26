@@ -811,7 +811,7 @@ class GameScreen : Screen, InputAdapter() {
         val contentTop = panel.y + panel.height - 84f
         val contentBottom = tutorialButton.y + tutorialButton.height + 14f
         val rowH = ((contentTop - contentBottom - rowGap * 4f) / tutorialLines.size)
-            .coerceAtLeast(26f)
+            .coerceAtLeast(20f)
         val rowX = panel.x + 24f
         val rowW = panel.width - 48f
 
@@ -859,7 +859,14 @@ class GameScreen : Screen, InputAdapter() {
         for (i in tutorialLines.indices) {
             val line = tutorialLines[i]
             val rowY = contentTop - rowH - i * (rowH + rowGap)
-            fitCaptionFont(line, rowW - 24f, 0.50f, 0.32f)
+            uiText.fitWithin(
+                captionFont,
+                line,
+                rowW - 24f,
+                (rowH - 8f).coerceAtLeast(12f),
+                0.50f,
+                0.22f
+            )
             uiText.centeredVertically(
                 captionFont,
                 line,
