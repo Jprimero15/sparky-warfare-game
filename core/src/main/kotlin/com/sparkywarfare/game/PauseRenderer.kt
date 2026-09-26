@@ -54,6 +54,6 @@ class PauseRenderer(
         val cx = rect.x + rect.width / 2f
         text.fitWithin(titleFont, title, rect.width - 52f, rect.height * 0.44f, 0.82f, 0.56f)
         val h = text.height(titleFont, title)
-        text.centered(titleFont, title, cx, rect.y + rect.height / 2f + h / 2f, color)
+        text.centeredVertically(titleFont, title, cx, rect.y + rect.height / 2f, color)
     }
 }
