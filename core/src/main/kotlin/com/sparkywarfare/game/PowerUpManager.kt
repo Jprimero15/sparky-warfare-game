@@ -15,7 +15,12 @@ class PowerUpManager {
     }
     fun isSafe(position: Vector2, player: Tank, walls: List<Wall>, powerUps: List<PowerUp>): Boolean {
         if (position.dst2(player.position) < 110f * 110f) return false
-        if (walls.any { it.alive && CollisionSystem.circleIntersectsRectangle(position, 13f, it.bounds) }) return false
-        return powerUps.none { it.alive && position.dst2(it.position) < 52f * 52f }
+        for (wall in walls) {
+            if (wall.alive && CollisionSystem.circleIntersectsRectangle(position, 13f, wall.bounds)) return false
+        }
+        for (powerUp in powerUps) {
+            if (powerUp.alive && position.dst2(powerUp.position) < 52f * 52f) return false
+        }
+        return true
     }
 }

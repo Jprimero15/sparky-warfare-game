@@ -24,7 +24,8 @@ object CollisionSystem {
         distance: Float,
         player: Tank,
         enemies: List<Tank>,
-        walls: List<Wall>
+        walls: List<Wall>,
+        wallGrid: WallSpatialGrid? = null
     ) {
         if (!tank.alive || distance <= 0f) return
 
@@ -35,14 +36,16 @@ object CollisionSystem {
         // cannot tunnel through another tank during fast or diagonal motion.
         tank.position.x += direction.x * distance
         if (hitsSolidTank(tank, player, enemies) ||
-            walls.any { it.alive && circleIntersectsRectangle(tank.position, tank.radius, it.bounds) }
+            if (wallGrid != null) wallGrid.intersectsCircle(tank.position, tank.radius)
+            else anyWallIntersectsCircle(walls, tank.position, tank.radius)
         ) {
             tank.position.x = oldX
         }
 
         tank.position.y += direction.y * distance
         if (hitsSolidTank(tank, player, enemies) ||
-            walls.any { it.alive && circleIntersectsRectangle(tank.position, tank.radius, it.bounds) }
+            if (wallGrid != null) wallGrid.intersectsCircle(tank.position, tank.radius)
+            else anyWallIntersectsCircle(walls, tank.position, tank.radius)
         ) {
             tank.position.y = oldY
         }
@@ -70,7 +73,24 @@ object CollisionSystem {
     }
 
     fun hasLineOfSight(from: Vector2, to: Vector2, walls: List<Wall>): Boolean =
-        walls.none { it.alive && segmentIntersectsRectangle(from, to, it.bounds) }
+        !anyWallIntersectsSegment(walls, from, to)
+
+    fun hasLineOfSight(from: Vector2, to: Vector2, wallGrid: WallSpatialGrid): Boolean =
+        !wallGrid.intersectsSegment(from, to)
+
+    private fun anyWallIntersectsCircle(walls: List<Wall>, center: Vector2, radius: Float): Boolean {
+        for (wall in walls) {
+            if (wall.alive && circleIntersectsRectangle(center, radius, wall.bounds)) return true
+        }
+        return false
+    }
+
+    private fun anyWallIntersectsSegment(walls: List<Wall>, a: Vector2, b: Vector2): Boolean {
+        for (wall in walls) {
+            if (wall.alive && segmentIntersectsRectangle(a, b, wall.bounds)) return true
+        }
+        return false
+    }
 
     fun separateCircles(a: Tank, b: Tank) {
         val dx = b.position.x - a.position.x

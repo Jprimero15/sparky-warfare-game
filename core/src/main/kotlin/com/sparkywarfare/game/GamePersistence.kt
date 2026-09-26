@@ -33,7 +33,12 @@ class GamePersistence(
 
     fun setMuteSfx(value: Boolean) = prefs.putBoolean("muteSfx", value).flush()
     fun setMuteHaptics(value: Boolean) = prefs.putBoolean("muteHaptics", value).flush()
-    fun setSfxVolume(value: Float) = prefs.putFloat("sfxVolume", value.coerceIn(0f, 1f)).flush()
+    fun setSfxVolume(value: Float, flush: Boolean = true) {
+        prefs.putFloat("sfxVolume", value.coerceIn(0f, 1f))
+        if (flush) prefs.flush()
+    }
+
+    fun flush() = prefs.flush()
     fun setControlsSwapped(value: Boolean) = prefs.putBoolean("controlsSwapped", value).flush()
     fun setTutorialSeen(value: Boolean) = prefs.putBoolean("tutorialSeen", value).flush()
 

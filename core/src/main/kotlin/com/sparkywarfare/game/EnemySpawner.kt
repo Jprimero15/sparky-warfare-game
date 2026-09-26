@@ -54,8 +54,24 @@ class EnemySpawner {
             if (attempt == 0) candidate.set(preferredX, preferredY)
             else candidate.set(MathUtils.random(60f, GameConfig.WORLD_WIDTH - 60f), MathUtils.random(60f, GameConfig.WORLD_HEIGHT - 60f))
             if (candidate.dst2(player.position) < GameConfig.Enemy.MIN_SPAWN_DISTANCE * GameConfig.Enemy.MIN_SPAWN_DISTANCE) return@repeat
-            if (walls.any { it.alive && CollisionSystem.circleIntersectsRectangle(candidate, enemy.radius, it.bounds) }) return@repeat
-            if (enemies.any { it.alive && candidate.dst2(it.position) < (enemy.radius + it.radius + 10f) * (enemy.radius + it.radius + 10f) }) return@repeat
+            var blockedByWall = false
+            for (wall in walls) {
+                if (wall.alive && CollisionSystem.circleIntersectsRectangle(candidate, enemy.radius, wall.bounds)) {
+                    blockedByWall = true
+                    break
+                }
+            }
+            if (blockedByWall) return@repeat
+            var overlapsEnemy = false
+            for (other in enemies) {
+                if (!other.alive) continue
+                val minDistance = enemy.radius + other.radius + 10f
+                if (candidate.dst2(other.position) < minDistance * minDistance) {
+                    overlapsEnemy = true
+                    break
+                }
+            }
+            if (overlapsEnemy) return@repeat
             return true
         }
         return false
