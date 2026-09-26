@@ -215,7 +215,7 @@ class GameScreen : Screen, InputAdapter() {
         player = Tank(
             position = Vector2(WORLD_WIDTH / 2f, 120f),
             isPlayer = true,
-            color = Color(0.2f, 0.9f, 1f, 1f),
+            color = Color(UiTheme.CYAN),
             speed = GameConfig.Player.SPEED,
             health = GameConfig.Player.START_HP,
             fireRate = GameConfig.Player.FIRE_RATE,
@@ -754,7 +754,7 @@ class GameScreen : Screen, InputAdapter() {
             Gdx.gl.glBlendFunc(GL20.GL_SRC_ALPHA, GL20.GL_ONE_MINUS_SRC_ALPHA)
             shapeRenderer.projectionMatrix = hudCamera.combined
             shapeRenderer.begin(ShapeRenderer.ShapeType.Filled)
-            shapeRenderer.color = Color(1f, 0.04f, 0.18f, hitFlash * 0.16f)
+            shapeRenderer.color = Color(UiTheme.DANGER.r, UiTheme.DANGER.g, UiTheme.DANGER.b, hitFlash * 0.16f)
             shapeRenderer.rect(0f, 0f, w, h)
             shapeRenderer.end()
             Gdx.gl.glDisable(GL20.GL_BLEND)
