@@ -23,11 +23,11 @@ object UiTheme {
     val SHADOW = Color(0f, 0f, 0f, 0.70f)
 
     val OVERLAY = Color(0.004f, 0.008f, 0.026f, 0.50f)
-    val PANEL_EDGE = Color(0.30f, 0.94f, 1f, 0.22f)
-    val GLASS_HIGHLIGHT = Color(1f, 1f, 1f, 0.085f)
+    val PANEL_EDGE = Color(0.30f, 0.94f, 1f, 0.34f)
+    val GLASS_HIGHLIGHT = Color(1f, 1f, 1f, 0.12f)
     val GLASS_SHADOW = Color(0f, 0f, 0f, 0.22f)
-    val CYAN_GLOW = Color(0.22f, 0.96f, 1f, 0.07f)
-    val MAGENTA_GLOW = Color(0.84f, 0.34f, 1f, 0.06f)
+    val CYAN_GLOW = Color(0.22f, 0.96f, 1f, 0.11f)
+    val MAGENTA_GLOW = Color(0.84f, 0.34f, 1f, 0.08f)
 
     val ACCENT = CYAN
     val ACCENT_ALT = MAGENTA
