@@ -54,7 +54,7 @@ class UiText(private val batch: SpriteBatch) {
     fun centeredVertically(font: BitmapFont, text: String, x: Float, centerY: Float, color: Color) {
         layout.setText(font, text)
         font.color = color
-        val baseline = centerY - layout.height / 2f
+        val baseline = centerY + layout.height / 2f
         font.draw(batch, text, x - layout.width / 2f, baseline)
     }
 
