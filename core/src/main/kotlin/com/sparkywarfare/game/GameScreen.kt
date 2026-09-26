@@ -883,19 +883,24 @@ class GameScreen : Screen, InputAdapter() {
         uiText.fitWithin(bodyFont, "MOVE • FIRE • SURVIVE", panel.width - 80f, 28f, 0.62f, 0.44f)
         uiText.centered(bodyFont, "MOVE • FIRE • SURVIVE", cx, panel.y + panel.height - 88f, UiTheme.CYAN)
 
-        val rowTextTop = firstY - 16f
         for (i in tutorialLines.indices) {
             val line = tutorialLines[i]
-            uiText.fit(captionFont, line, rowW - 26f, 0.66f, 0.42f)
-            captionFont.color = if (i % 2 == 0) UiTheme.TEXT_PRIMARY else UiTheme.TEXT_SECONDARY
-            captionFont.draw(batch, line, rowX + 14f, rowTextTop - i * (rowH + 8f))
+            val rowY = firstY - i * (rowH + 8f) - rowH
+            uiText.fitWithin(captionFont, line, rowW - 26f, rowH * 0.58f, 0.62f, 0.42f)
+            uiText.centeredVertically(
+                captionFont,
+                line,
+                rowX + rowW / 2f,
+                rowY + rowH / 2f,
+                if (i % 2 == 0) UiTheme.TEXT_PRIMARY else UiTheme.TEXT_SECONDARY
+            )
         }
 
-        uiText.fitWithin(font, "GOT IT", tutorialButton.width - 42f, 34f, 0.70f, 0.50f)
-        uiText.centered(
+        uiText.fitWithin(font, "GOT IT", tutorialButton.width - 42f, tutorialButton.height * 0.55f, 0.70f, 0.50f)
+        uiText.centeredVertically(
             font,
             "GOT IT",
-            cx,
+            tutorialButton.x + tutorialButton.width / 2f,
             tutorialButton.y + tutorialButton.height / 2f,
             UiTheme.TEXT_PRIMARY
         )
