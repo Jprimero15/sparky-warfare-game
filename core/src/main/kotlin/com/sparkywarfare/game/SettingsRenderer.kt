@@ -98,6 +98,6 @@ class SettingsRenderer(
             UiTheme.Metrics.BUTTON_TEXT_MIN_SCALE
         )
         val h = text.height(titleFont, value)
-        text.centered(titleFont, value, cx, rect.y + rect.height / 2f + h / 2f, color)
+        text.centeredVertically(titleFont, value, cx, rect.y + rect.height / 2f, color)
     }
 }
