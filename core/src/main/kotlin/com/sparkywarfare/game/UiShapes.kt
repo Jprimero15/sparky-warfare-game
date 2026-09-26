@@ -219,7 +219,7 @@ object UiShapes {
         gradientRoundedRect(shape, rect.x, rect.y, rect.width, rect.height, radius, topColor, bottomColor, 10)
 
         // Thin edge accents; no thick sci-fi frame.
-        accentColor.set(UiTheme.CYAN.r, UiTheme.CYAN.g, UiTheme.CYAN.b, dark && color == UiTheme.PANEL_DARK ? 0.16f : 0.30f)
+        accentColor.set(UiTheme.CYAN.r, UiTheme.CYAN.g, UiTheme.CYAN.b, if (dark) 0.16f else 0.30f)
         roundedRect(shape, rect.x + 2f, rect.y + rect.height - 2.5f, rect.width * 0.52f, 1.5f, 0.75f, accentColor)
         accentColor.set(UiTheme.MAGENTA.r, UiTheme.MAGENTA.g, UiTheme.MAGENTA.b, 0.18f)
         roundedRect(shape, rect.x + rect.width * 0.66f, rect.y + 2f, rect.width * 0.30f, 1.5f, 0.75f, accentColor)
