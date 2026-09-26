@@ -11,6 +11,7 @@ import com.badlogic.gdx.graphics.g2d.BitmapFont
 import com.badlogic.gdx.graphics.g2d.GlyphLayout
 import com.badlogic.gdx.graphics.g2d.SpriteBatch
 import com.badlogic.gdx.graphics.glutils.ShapeRenderer
+import com.badlogic.gdx.math.Intersector
 import com.badlogic.gdx.math.MathUtils
 import com.badlogic.gdx.math.Rectangle
 import com.badlogic.gdx.math.Vector2
@@ -1157,7 +1158,16 @@ class GameScreen : Screen, InputAdapter() {
                     )
                     return true
                 }
-                if (touch    override fun touchDragged(screenX: Int, screenY: Int, pointer: Int): Boolean {
+                if (touch.fireHit.contains(screenX.toFloat(), screenY.toFloat())) {
+                    input.pressFire(pointer)
+                    return true
+                }
+                return true
+            }
+        }
+    }
+
+    override fun touchDragged(screenX: Int, screenY: Int, pointer: Int): Boolean {
         if (pointer == sliderPointer) {
             setVolumeFromScreenX(screenX)
             return true
