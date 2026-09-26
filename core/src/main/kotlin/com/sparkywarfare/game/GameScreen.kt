@@ -152,9 +152,9 @@ class GameScreen : Screen, InputAdapter() {
         font = titleGenerator.generateFont(titleParameter)
         titleGenerator.dispose()
 
-        val bodyGenerator = FreeTypeFontGenerator(Gdx.files.internal("fonts/Kenney-Future.ttf"))
+        val bodyGenerator = FreeTypeFontGenerator(Gdx.files.internal("fonts/Orbitron-Medium.ttf"))
         val bodyParameter = FreeTypeFontGenerator.FreeTypeFontParameter().apply {
-            size = 38
+            size = 34
             color = Color.WHITE
             borderWidth = 0.8f
             borderColor = Color(0f, 0f, 0f, 0.8f)
@@ -170,7 +170,7 @@ class GameScreen : Screen, InputAdapter() {
         bodyFont = bodyGenerator.generateFont(bodyParameter)
 
         val captionParameter = FreeTypeFontGenerator.FreeTypeFontParameter().apply {
-            size = 26
+            size = 24
             color = Color.WHITE
             borderWidth = 0.6f
             borderColor = Color(0f, 0f, 0f, 0.75f)
@@ -766,7 +766,7 @@ class GameScreen : Screen, InputAdapter() {
 
     private fun drawPauseIcon(rect: Rectangle) {
         shapeRenderer.projectionMatrix = hudCamera.combined
-        shapeRenderer.begin(ShapeRenderer.ShapeType.Filled)
+        UiShapes.begin(shapeRenderer)
         shapeRenderer.color = UiTheme.TEXT_PRIMARY
         val barW = (rect.width * 0.11f).coerceAtLeast(6f)
         val barH = (rect.height * 0.44f).coerceAtLeast(25f)
@@ -775,40 +775,67 @@ class GameScreen : Screen, InputAdapter() {
         val startY = rect.y + (rect.height - barH) / 2f
         shapeRenderer.rect(startX, startY, barW, barH)
         shapeRenderer.rect(startX + barW + gap, startY, barW, barH)
-        shapeRenderer.end()
+        UiShapes.end(shapeRenderer)
     }
 
     private fun drawWaveBanner() {
         val w = Gdx.graphics.width.toFloat()
         val h = Gdx.graphics.height.toFloat()
         val cx = (safeArea.left + safeArea.right) / 2f
-        val alpha = ((waveBannerTimer / 0.40f).coerceAtMost(1f) *
-            ((2.2f - waveBannerTimer) / 0.75f).coerceIn(0f, 1f)).coerceIn(0f, 1f)
+        val alpha = ((waveBannerTimer / 0.55f).coerceAtMost(1f) *
+            ((2.2f - waveBannerTimer) / 0.85f).coerceIn(0f, 1f)).coerceIn(0f, 1f)
 
-        val bannerW = (w * 0.42f).coerceIn(300f, 540f)
-        val bannerH = 78f
+        val bannerW = (w * 0.44f).coerceIn(330f, 590f)
+        val bannerH = 96f
         val x = cx - bannerW / 2f
-        val y = h * 0.67f
-        val accent = if (waveBannerElite) UiTheme.GOLD else UiTheme.CYAN
+        val y = h * 0.64f
+        val accent = if (waveBannerElite) UiTheme.MAGENTA else UiTheme.CYAN
 
         shapeRenderer.projectionMatrix = hudCamera.combined
-        shapeRenderer.begin(ShapeRenderer.ShapeType.Filled)
-        UiShapes.glassPanel(shapeRenderer, x, y, bannerW, bannerH, 26f)
-        shapeRenderer.color = Color(accent.r, accent.g, accent.b, 0.16f * alpha)
-        shapeRenderer.rect(x + 18f, y + bannerH - 4f, bannerW - 36f, 2f)
-        shapeRenderer.end()
+        UiShapes.begin(shapeRenderer)
+        UiShapes.glassCard(
+            shapeRenderer,
+            x - 22f,
+            y + 14f,
+            bannerW * 0.72f,
+            bannerH * 0.82f,
+            22f,
+            UiTheme.MAGENTA
+        )
+        UiShapes.glassCard(
+            shapeRenderer,
+            x + bannerW * 0.30f,
+            y - 10f,
+            bannerW * 0.60f,
+            bannerH * 0.78f,
+            22f,
+            UiTheme.CYAN
+        )
+        UiShapes.glassPanel(shapeRenderer, x, y, bannerW, bannerH, 28f)
+
+        UiShapes.gradientRoundedRect(
+            shapeRenderer,
+            x + 18f, y + bannerH - 8f, bannerW - 36f, 4f, 2f,
+            UiTheme.CYAN,
+            UiTheme.MAGENTA,
+            8
+        )
+        UiShapes.glassCard(shapeRenderer, x + 20f, y + 17f, 106f, 30f, 15f, accent)
+        UiShapes.end(shapeRenderer)
 
         batch.projectionMatrix = hudCamera.combined
         batch.begin()
-        val title = if (waveBannerElite) "ELITE WAVE" else "WAVE  " + wave
-        fitFont(title, bannerW - 44f, 0.96f, 0.60f)
-        drawCentered(title, cx, y + 48f, Color(accent.r, accent.g, accent.b, alpha))
 
-        val sub = if (waveBannerElite) "POWER SPIKE" else "READY?"
-        fitBodyFont(sub, bannerW - 50f, 0.54f, 0.40f)
+        val title = if (waveBannerElite) "ELITE WAVE" else "WAVE  0" + wave.coerceIn(0, 9)
+        fitFont(title, bannerW - 58f, 0.98f, 0.62f)
+        drawCentered(title, cx + 18f, y + 61f, Color(accent.r, accent.g, accent.b, alpha))
+
+        val sub = if (waveBannerElite) "HEIGHTENED THREAT" else "NEXT ASSAULT"
+        fitBodyFont(sub, bannerW - 140f, 0.52f, 0.38f)
         bodyFont.color = Color(UiTheme.TEXT_SECONDARY.r, UiTheme.TEXT_SECONDARY.g, UiTheme.TEXT_SECONDARY.b, alpha)
         layout.setText(bodyFont, sub)
-        bodyFont.draw(batch, sub, cx - layout.width / 2f, y + 23f)
+        bodyFont.draw(batch, sub, cx - layout.width / 2f + 18f, y + 29f)
+
         uiText.reset(font, bodyFont)
         batch.end()
     }
@@ -835,7 +862,7 @@ class GameScreen : Screen, InputAdapter() {
         )
 
         shapeRenderer.projectionMatrix = hudCamera.combined
-        shapeRenderer.begin(ShapeRenderer.ShapeType.Filled)
+        UiShapes.begin(shapeRenderer)
         UiShapes.overlay(shapeRenderer, w, h)
         UiShapes.glassPanel(shapeRenderer, panel.x, panel.y, panel.width, panel.height)
 
@@ -855,7 +882,7 @@ class GameScreen : Screen, InputAdapter() {
             )
         }
         UiShapes.softButton(shapeRenderer, tutorialButton, UiTheme.CYAN)
-        shapeRenderer.end()
+        UiShapes.end(shapeRenderer)
 
         batch.projectionMatrix = hudCamera.combined
         batch.begin()
