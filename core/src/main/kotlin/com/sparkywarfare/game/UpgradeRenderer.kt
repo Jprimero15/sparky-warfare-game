@@ -73,13 +73,13 @@ class UpgradeRenderer(
             val choice = choices[i]
 
             text.fitWithin(titleFont, choice.title, r.width - 34f, 44f, 0.74f, 0.50f)
-            text.centered(titleFont, choice.title, r.x + r.width / 2f, r.y + r.height - 54f, UiTheme.TEXT_PRIMARY)
+            text.centeredVertically(titleFont, choice.title, r.x + r.width / 2f, r.y + r.height - 48f, UiTheme.TEXT_PRIMARY)
 
             text.fitWithin(bodyFont, choice.description, r.width - 36f, 54f, 0.62f, 0.44f)
-            text.centered(bodyFont, choice.description, r.x + r.width / 2f, r.y + r.height * 0.54f, UiTheme.TEXT_SECONDARY)
+            text.centeredVertically(bodyFont, choice.description, r.x + r.width / 2f, r.y + r.height * 0.54f, UiTheme.TEXT_SECONDARY)
 
             text.fitWithin(bodyFont, "INSTALL", r.width - 48f, 28f, 0.56f, 0.42f)
-            text.centered(bodyFont, "INSTALL", r.x + r.width / 2f, r.y + 28f, if (i == 1) UiTheme.MAGENTA else UiTheme.CYAN)
+            text.centeredVertically(bodyFont, "INSTALL", r.x + r.width / 2f, r.y + 25f, if (i == 1) UiTheme.MAGENTA else UiTheme.CYAN)
         }
 
         text.reset(titleFont, bodyFont)
