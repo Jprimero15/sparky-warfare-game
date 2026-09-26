@@ -39,10 +39,10 @@ class PauseRenderer(
 
         batch.begin()
         text.fitWithin(titleFont, "PAUSED", panelW - 90f, 62f, 1.2f, 0.74f)
-        text.centered(titleFont, "PAUSED", cx, y + panelH - 64f, UiTheme.TEXT_PRIMARY)
+        text.centeredVertically(titleFont, "PAUSED", cx, y + panelH - 64f, UiTheme.TEXT_PRIMARY)
 
         text.fitWithin(bodyFont, "TAKE A BREATH", panelW - 100f, 28f, 0.65f, 0.46f)
-        text.centered(bodyFont, "TAKE A BREATH", cx, y + panelH - 100f, UiTheme.CYAN)
+        text.centeredVertically(bodyFont, "TAKE A BREATH", cx, y + panelH - 100f, UiTheme.CYAN)
 
         command(resume, "RESUME", UiTheme.TEXT_PRIMARY)
         command(menu, "MAIN MENU", UiTheme.TEXT_PRIMARY)
@@ -53,7 +53,6 @@ class PauseRenderer(
     private fun command(rect: Rectangle, title: String, color: Color) {
         val cx = rect.x + rect.width / 2f
         text.fitWithin(titleFont, title, rect.width - 52f, rect.height * 0.44f, 0.82f, 0.56f)
-        val h = text.height(titleFont, title)
         text.centeredVertically(titleFont, title, cx, rect.y + rect.height / 2f, color)
     }
 }
