@@ -50,6 +50,14 @@ class UiText(private val batch: SpriteBatch) {
         font.draw(batch, text, x - layout.width / 2f, y)
     }
 
+    /** Centers a label on both axes using the font's measured glyph bounds. */
+    fun centeredVertically(font: BitmapFont, text: String, x: Float, centerY: Float, color: Color) {
+        layout.setText(font, text)
+        font.color = color
+        val baseline = centerY - layout.height / 2f - layout.y
+        font.draw(batch, text, x - layout.width / 2f, baseline)
+    }
+
     fun right(font: BitmapFont, text: String, x: Float, y: Float, color: Color) {
         layout.setText(font, text)
         font.color = color
