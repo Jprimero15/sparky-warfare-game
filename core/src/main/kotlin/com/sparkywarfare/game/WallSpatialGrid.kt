@@ -42,20 +42,56 @@ class WallSpatialGrid(
     }
 
     fun intersectsSegment(a: Vector2, b: Vector2): Boolean {
-        val minX = floor(min(a.x, b.x) / cellSize).toInt() - 1
-        val maxX = floor(max(a.x, b.x) / cellSize).toInt() + 1
-        val minY = floor(min(a.y, b.y) / cellSize).toInt() - 1
-        val maxY = floor(max(a.y, b.y) / cellSize).toInt() + 1
+        var cellX = floor(a.x / cellSize).toInt()
+        var cellY = floor(a.y / cellSize).toInt()
+        val targetX = floor(b.x / cellSize).toInt()
+        val targetY = floor(b.y / cellSize).toInt()
 
-        for (y in minY..maxY) {
-            for (x in minX..maxX) {
-                val list = cells[key(x, y)] ?: continue
+        val dx = b.x - a.x
+        val dy = b.y - a.y
+        val stepX = when {
+            dx > 0f -> 1
+            dx < 0f -> -1
+            else -> 0
+        }
+        val stepY = when {
+            dy > 0f -> 1
+            dy < 0f -> -1
+            else -> 0
+        }
+
+        val tDeltaX = if (stepX == 0) Float.POSITIVE_INFINITY else cellSize / kotlin.math.abs(dx)
+        val tDeltaY = if (stepY == 0) Float.POSITIVE_INFINITY else cellSize / kotlin.math.abs(dy)
+        var tMaxX = if (stepX == 0) {
+            Float.POSITIVE_INFINITY
+        } else {
+            val boundary = if (stepX > 0) (cellX + 1) * cellSize else cellX * cellSize
+            (boundary - a.x) / dx
+        }
+        var tMaxY = if (stepY == 0) {
+            Float.POSITIVE_INFINITY
+        } else {
+            val boundary = if (stepY > 0) (cellY + 1) * cellSize else cellY * cellSize
+            (boundary - a.y) / dy
+        }
+
+        while (true) {
+            val list = cells[key(cellX, cellY)]
+            if (list != null) {
                 for (wall in list) {
                     if (wall.alive && CollisionSystem.segmentIntersectsRectangle(a, b, wall.bounds)) return true
                 }
             }
+            if (cellX == targetX && cellY == targetY) return false
+
+            if (tMaxX < tMaxY) {
+                cellX += stepX
+                tMaxX += tDeltaX
+            } else {
+                cellY += stepY
+                tMaxY += tDeltaY
+            }
         }
-        return false
     }
 
     private fun key(x: Int, y: Int): Long =
