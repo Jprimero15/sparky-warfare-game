@@ -35,14 +35,14 @@ class GameOverRenderer(
         val x = cx - panelW / 2f
         val y = cy - panelH / 2f
 
-        shape.begin(ShapeRenderer.ShapeType.Filled)
+        UiShapes.begin(shape)
         UiShapes.overlay(shape, width, height)
         UiShapes.glassPanel(shape, x, y, panelW, panelH)
         UiShapes.glassCard(shape, x + 26f, y + panelH - 170f, panelW * 0.43f, 76f, 20f, UiTheme.CYAN)
         UiShapes.glassCard(shape, x + panelW * 0.50f, y + panelH - 170f, panelW * 0.43f, 76f, 20f, UiTheme.MAGENTA)
         drawButton(retry, UiTheme.CYAN)
         drawButton(menu, UiTheme.PANEL_DARK)
-        shape.end()
+        UiShapes.end(shape)
 
         batch.begin()
         text.fitWithin(titleFont, "RUN OVER", panelW - 80f, 58f, 1.18f, 0.76f)
