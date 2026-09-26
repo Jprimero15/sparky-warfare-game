@@ -8,7 +8,6 @@ data class SafeArea(val left: Float, val right: Float, val bottom: Float, val to
 
 class UiLayout {
     val singleButton = Rectangle()
-    val multiButton = Rectangle()
     val settingsButton = Rectangle()
     val pauseButton = Rectangle()
     val resumeButton = Rectangle()
@@ -47,22 +46,20 @@ class UiLayout {
             val buttonLeft = splitX + 44f
             val buttonRight = panelX + panelW - 44f
             val buttonW = (buttonRight - buttonLeft).coerceIn(190f, 500f)
-            val buttonH = (panelH * 0.16f).coerceIn(56f, 82f)
-            val gap = (panelH * 0.035f).coerceIn(12f, 18f)
-            val totalH = buttonH * 3f + gap * 2f
+            val buttonH = (panelH * 0.18f).coerceIn(60f, 86f)
+            val gap = (panelH * 0.045f).coerceIn(14f, 22f)
+            val totalH = buttonH * 2f + gap
             val startY = panelY + (panelH - totalH) / 2f
 
-            singleButton.set(buttonLeft, startY + (buttonH + gap) * 2f, buttonW, buttonH)
-            multiButton.set(buttonLeft, startY + buttonH + gap, buttonW, buttonH)
+            singleButton.set(buttonLeft, startY + buttonH + gap, buttonW, buttonH)
             settingsButton.set(buttonLeft, startY, buttonW, buttonH)
         } else {
             val bw = minOf(sw * 0.80f, 560f).coerceAtLeast(240f)
-            val bh = (sh * 0.13f).coerceIn(54f, 76f)
-            val gap = 14f
-            val total = bh * 3f + gap * 2f
+            val bh = (sh * 0.16f).coerceIn(58f, 80f)
+            val gap = 16f
+            val total = bh * 2f + gap
             val by = cy - total / 2f
-            singleButton.set(cx - bw / 2f, by + (bh + gap) * 2f, bw, bh)
-            multiButton.set(cx - bw / 2f, by + bh + gap, bw, bh)
+            singleButton.set(cx - bw / 2f, by + bh + gap, bw, bh)
             settingsButton.set(cx - bw / 2f, by, bw, bh)
         }
     }
