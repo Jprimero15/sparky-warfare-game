@@ -9,10 +9,8 @@ import com.badlogic.gdx.graphics.GL20
 import com.badlogic.gdx.graphics.OrthographicCamera
 import com.badlogic.gdx.graphics.g2d.BitmapFont
 import com.badlogic.gdx.graphics.g2d.GlyphLayout
-import com.badlogic.gdx.graphics.g2d.freetype.FreeTypeFontGenerator
 import com.badlogic.gdx.graphics.g2d.SpriteBatch
 import com.badlogic.gdx.graphics.glutils.ShapeRenderer
-import com.badlogic.gdx.math.Intersector
 import com.badlogic.gdx.math.MathUtils
 import com.badlogic.gdx.math.Rectangle
 import com.badlogic.gdx.math.Vector2
@@ -28,12 +26,12 @@ const val VIEW_HEIGHT = GameConfig.VIEW_HEIGHT
 enum class GameState { MENU, PLAYING, GAME_OVER, UPGRADE, PAUSED, SETTINGS }
 
 enum class UpgradeType(val title: String, val description: String, val maxStacks: Int) {
-    OVERCLOCK("OVERCLOCK", "25% FASTER FIRE", 3),
+    OVERCLOCK("OVERCLOCK", "18% FASTER FIRE", 3),
     THRUSTERS("THRUSTERS", "15% MORE SPEED", 3),
     REPAIR("REPAIR CORE", "+1 HP", 3),
     SCORE_CORE("SCORE CORE", "+1 SCORE MULTIPLIER", 2),
     ARMOR("ARMOR PLATING", "+1 MAX HP", 2),
-    COOLING("COOLING ARRAY", "10% FASTER FIRE", 3),
+    COOLING("COOLING ARRAY", "6% FASTER FIRE", 3),
     ENERGY_CELL("ENERGY CELL", "START WITH SHIELD", 2),
     OVERDRIVE_CORE("OVERDRIVE CORE", "FASTER MOVE + FIRE", 2)
 }
@@ -46,6 +44,7 @@ class GameScreen : Screen, InputAdapter() {
     private lateinit var tankRenderer: TankRenderer
     private lateinit var batch: SpriteBatch
     private lateinit var font: BitmapFont
+    private lateinit var fonts: UiFontSet
     private lateinit var layout: GlyphLayout
     private lateinit var hudCamera: OrthographicCamera
 
@@ -70,8 +69,6 @@ class GameScreen : Screen, InputAdapter() {
     private var comboTimer = 0f
     private var comboBest = 0
     private var scoreMultiplier = 1
-    private val upgradeChoices = mutableListOf<UpgradeType>()
-    private val upgradeLevels = mutableMapOf<UpgradeType, Int>()
     private val persistence = GamePersistence()
     private var screenShake = 0f
     private var hitFlash = 0f
@@ -92,11 +89,19 @@ class GameScreen : Screen, InputAdapter() {
     private lateinit var upgradeRenderer: UpgradeRenderer
     private lateinit var pauseRenderer: PauseRenderer
     private val ui = UiLayout()
+    private val arenaBuilder = ArenaBuilder()
+    private val wallGrid = WallSpatialGrid()
+    private val upgradeManager = UpgradeManager()
     private lateinit var bodyFont: BitmapFont
     private lateinit var captionFont: BitmapFont
+    private var initialized = false
+    private var sliderPointer = -1
+    private var pressedUiButton: Rectangle? = null
+    private var uiPulseTime = 0f
+    private var arenaVariant = 0
+    private val drawButtonColor = Color()
     private val safeArea get() = ui.safeArea
     private val singleButton get() = ui.singleButton
-    private val multiButton get() = ui.multiButton
     private val settingsButton get() = ui.settingsButton
     private val pauseButton get() = ui.pauseButton
     private val resumeButton get() = ui.resumeButton
@@ -121,6 +126,7 @@ class GameScreen : Screen, InputAdapter() {
     )
     private val transition get() = router.transition
     private val scratchDirection = Vector2()
+    private val scratchMove = Vector2()
     private val scratchSpawn = Vector2()
     private val scratchUi = Vector2()
     private val laserRemove = mutableListOf<Laser>()
@@ -134,57 +140,10 @@ class GameScreen : Screen, InputAdapter() {
         batch = SpriteBatch()
         particles = ParticleDebris(batch)
         bloom = BloomRenderer()
-        val titleGenerator = FreeTypeFontGenerator(Gdx.files.internal("fonts/Orbitron-Medium.ttf"))
-        val titleParameter = FreeTypeFontGenerator.FreeTypeFontParameter().apply {
-            size = 64
-            color = Color.WHITE
-            borderWidth = 0.25f
-            borderColor = Color(0f, 0f, 0f, 0.32f)
-            shadowOffsetX = 1
-            shadowOffsetY = 1
-            shadowColor = Color(0f, 0f, 0f, 0.28f)
-            characters = FreeTypeFontGenerator.DEFAULT_CHARS + "0123456789:-/+%"
-            kerning = true
-            genMipMaps = false
-            minFilter = com.badlogic.gdx.graphics.Texture.TextureFilter.Linear
-            magFilter = com.badlogic.gdx.graphics.Texture.TextureFilter.Linear
-        }
-        font = titleGenerator.generateFont(titleParameter)
-        titleGenerator.dispose()
-
-        val bodyGenerator = FreeTypeFontGenerator(Gdx.files.internal("fonts/Orbitron-Medium.ttf"))
-        val bodyParameter = FreeTypeFontGenerator.FreeTypeFontParameter().apply {
-            size = 34
-            color = Color.WHITE
-            borderWidth = 0.20f
-            borderColor = Color(0f, 0f, 0f, 0.28f)
-            shadowOffsetX = 1
-            shadowOffsetY = 1
-            shadowColor = Color(0f, 0f, 0f, 0.24f)
-            characters = FreeTypeFontGenerator.DEFAULT_CHARS + "0123456789:-/+%"
-            kerning = true
-            genMipMaps = false
-            minFilter = com.badlogic.gdx.graphics.Texture.TextureFilter.Linear
-            magFilter = com.badlogic.gdx.graphics.Texture.TextureFilter.Linear
-        }
-        bodyFont = bodyGenerator.generateFont(bodyParameter)
-
-        val captionParameter = FreeTypeFontGenerator.FreeTypeFontParameter().apply {
-            size = 24
-            color = Color.WHITE
-            borderWidth = 0.15f
-            borderColor = Color(0f, 0f, 0f, 0.25f)
-            shadowOffsetX = 1
-            shadowOffsetY = 1
-            shadowColor = Color(0f, 0f, 0f, 0.20f)
-            characters = FreeTypeFontGenerator.DEFAULT_CHARS + "0123456789:-/+%"
-            kerning = true
-            genMipMaps = false
-            minFilter = com.badlogic.gdx.graphics.Texture.TextureFilter.Linear
-            magFilter = com.badlogic.gdx.graphics.Texture.TextureFilter.Linear
-        }
-        captionFont = bodyGenerator.generateFont(captionParameter)
-        bodyGenerator.dispose()
+        fonts = UiFontSet.load()
+        font = fonts.title
+        bodyFont = fonts.body
+        captionFont = fonts.caption
         uiText = UiText(batch)
         layout = GlyphLayout()
         hudCamera = OrthographicCamera()
@@ -224,6 +183,7 @@ class GameScreen : Screen, InputAdapter() {
         session.beginSinglePlayer(player)
         centerCameraForIdle()
         router.goTo(GameState.MENU)
+        initialized = true
     }
 
     private fun resetGame() {
@@ -246,8 +206,8 @@ class GameScreen : Screen, InputAdapter() {
         comboTimer = 0f
         comboBest = 0
         scoreMultiplier = 1
-        upgradeChoices.clear()
-        upgradeLevels.clear()
+        upgradeManager.clear()
+        arenaVariant = MathUtils.random(0, 2)
         input.clearTransientInput()
         waveBannerTimer = 0f
 
@@ -275,58 +235,13 @@ class GameScreen : Screen, InputAdapter() {
     }
 
     private fun buildArena() {
-        walls.clear()
-        val cols = (WORLD_WIDTH / TILE).toInt()
-        val rows = (WORLD_HEIGHT / TILE).toInt()
-
-        for (c in 0 until cols) {
-            walls.add(wallAt(c, 0, WallType.STEEL))
-            walls.add(wallAt(c, rows - 1, WallType.STEEL))
-        }
-        for (r in 0 until rows) {
-            walls.add(wallAt(0, r, WallType.STEEL))
-            walls.add(wallAt(cols - 1, r, WallType.STEEL))
-        }
-
-        // Mixed cover: brick clusters, reinforced brick, concrete blocks and metal barriers.
-        addWallBlock(5, 5, 4, 1, WallType.BRICK)
-        addWallBlock(5, 6, 1, 3, WallType.RED_BRICK)
-        addWallBlock(8, 8, 3, 1, WallType.CONCRETE)
-
-        addWallBlock(cols - 9, 5, 4, 1, WallType.RED_BRICK)
-        addWallBlock(cols - 6, 6, 1, 3, WallType.BRICK)
-        addWallBlock(cols - 11, 8, 3, 1, WallType.METAL)
-
-        addWallBlock(17, 10, 2, 3, WallType.CONCRETE)
-        addWallBlock(19, 12, 3, 1, WallType.BRICK)
-        addWallBlock(cols - 22, 10, 2, 3, WallType.CONCRETE)
-        addWallBlock(cols - 21, 12, 3, 1, WallType.RED_BRICK)
-
-        addWallBlock(28, 15, 4, 1, WallType.METAL)
-        addWallBlock(30, 16, 1, 2, WallType.BRICK)
-        addWallBlock(cols - 32, 15, 4, 1, WallType.METAL)
-        addWallBlock(cols - 31, 16, 1, 2, WallType.BRICK)
-
-        // Keep the player's starting lane open.
-        walls.removeAll { it.bounds.overlaps(Rectangle(WORLD_WIDTH / 2f - 90f, 80f, 180f, 120f)) }
+        arenaBuilder.build(walls, arenaVariant)
+        wallGrid.rebuild(walls)
     }
-
-    private fun addWallBlock(col: Int, row: Int, width: Int, height: Int, type: WallType) {
-        for (x in col until col + width) {
-            for (y in row until row + height) {
-                if (x in 1 until (WORLD_WIDTH / TILE).toInt() - 1 &&
-                    y in 1 until (WORLD_HEIGHT / TILE).toInt() - 1
-                ) {
-                    walls.add(wallAt(x, y, type))
-                }
-            }
-        }
-    }
-
-    private fun wallAt(col: Int, row: Int, type: WallType) =
-        Wall(Rectangle(col * TILE, row * TILE, TILE, TILE), type)
 
     override fun render(delta: Float) {
+        if (!initialized) return
+        uiPulseTime += delta
         router.update(delta)
         when (state) {
             GameState.MENU -> {
@@ -427,7 +342,9 @@ class GameScreen : Screen, InputAdapter() {
         checkLaserCollisions()
         checkPowerUpPickups()
         enemies.removeAll { !it.alive }
+        val wallCountBeforeCleanup = walls.size
         walls.removeAll { !it.alive }
+        if (walls.size != wallCountBeforeCleanup) wallGrid.rebuild(walls)
 
         if (!player.alive) {
             persistProgress()
@@ -438,7 +355,7 @@ class GameScreen : Screen, InputAdapter() {
         else if (enemies.isEmpty()) {
             spawnPowerUp()
             if (waveManager.isUpgradeWave(wave)) {
-                prepareUpgradeChoices()
+                upgradeManager.prepareChoices()
                 router.goTo(GameState.UPGRADE)
                 input.clearTransientInput()
                 FeedbackAudio.play(FeedbackAudio.Cue.POWER_UP)
@@ -451,7 +368,7 @@ class GameScreen : Screen, InputAdapter() {
 
     private fun updateEnemyAi(delta: Float) {
         if (!session.aiEnabled) return
-        for (enemy in enemies) {
+        for ((index, enemy) in enemies.withIndex()) {
             if (!enemy.alive) continue
             scratchDirection.set(player.position).sub(enemy.position)
             if (scratchDirection.len2() > 1f) {
@@ -459,12 +376,37 @@ class GameScreen : Screen, InputAdapter() {
                 scratchDirection.nor()
                 val targetAngle = scratchDirection.angleDeg()
                 val turn = GameConfig.Enemy.AI_MAX_AIM_TURN_SPEED * delta
-                enemy.aiAimAngle = MathUtils.lerpAngleDeg(enemy.aiAimAngle, targetAngle, (turn / 180f).coerceIn(0f, 1f))
+                enemy.aiAimAngle = MathUtils.lerpAngleDeg(
+                    enemy.aiAimAngle,
+                    targetAngle,
+                    (turn / 180f).coerceIn(0f, 1f)
+                )
                 enemy.turretAngle = enemy.aiAimAngle
-                // The hull follows its movement vector; the turret tracks independently.
                 enemy.angle = targetAngle
-                val factor = if (distance > 95f) 0.65f else 0.28f
-                CollisionSystem.tryMoveTank(enemy, scratchDirection, enemy.speed * factor * delta, player, enemies, walls)
+
+                scratchMove.set(scratchDirection)
+                val strafeSign = if (index and 1 == 0) 1f else -1f
+                when (enemy.enemyTier) {
+                    EnemyTier.SCOUT -> scratchMove.add(-scratchDirection.y * 0.50f * strafeSign, scratchDirection.x * 0.50f * strafeSign)
+                    EnemyTier.ASSAULT -> scratchMove.add(-scratchDirection.y * 0.28f * strafeSign, scratchDirection.x * 0.28f * strafeSign)
+                    EnemyTier.RANGED -> {
+                        if (distance < 220f) scratchMove.scl(-0.70f)
+                        scratchMove.add(-scratchDirection.y * 0.38f * strafeSign, scratchDirection.x * 0.38f * strafeSign)
+                    }
+                    EnemyTier.HEAVY -> scratchMove.add(-scratchDirection.y * 0.12f * strafeSign, scratchDirection.x * 0.12f * strafeSign)
+                    EnemyTier.ELITE -> scratchMove.add(-scratchDirection.y * 0.18f * strafeSign, scratchDirection.x * 0.18f * strafeSign)
+                    null -> Unit
+                }
+                scratchMove.nor()
+
+                val factor = when (enemy.enemyTier) {
+                    EnemyTier.RANGED -> if (distance > 280f) 0.58f else 0.22f
+                    EnemyTier.HEAVY -> if (distance > 110f) 0.46f else 0.22f
+                    else -> if (distance > 95f) 0.65f else 0.28f
+                }
+                CollisionSystem.tryMoveTank(
+                    enemy, scratchMove, enemy.speed * factor * delta, player, enemies, walls, wallGrid
+                )
             }
             enemy.aiReactionTimer = (enemy.aiReactionTimer - delta).coerceAtLeast(0f)
             enemy.aiFireTimer -= delta
@@ -472,7 +414,7 @@ class GameScreen : Screen, InputAdapter() {
             val aimError = Math.abs(angleDelta)
             if (enemy.aiFireTimer <= 0f && enemy.aiReactionTimer <= 0f &&
                 enemy.canFire() && aimError <= GameConfig.Enemy.AI_FIRE_ANGLE_TOLERANCE &&
-                CollisionSystem.hasLineOfSight(enemy.position, player.position, walls)) {
+                CollisionSystem.hasLineOfSight(enemy.position, player.position, wallGrid)) {
                 fireLaser(enemy)
                 enemy.aiFireTimer = MathUtils.random(GameConfig.Enemy.AI_MIN_FIRE_DELAY, GameConfig.Enemy.AI_MAX_FIRE_DELAY)
                 enemy.aiReactionTimer = MathUtils.random(GameConfig.Enemy.AI_MIN_REACTION_DELAY, GameConfig.Enemy.AI_MAX_REACTION_DELAY)
@@ -720,26 +662,26 @@ class GameScreen : Screen, InputAdapter() {
         batch.projectionMatrix = hudCamera.combined
         batch.begin()
 
-        fitBodyFont("SCORE  " + score, statsW * 0.46f, 0.84f, 0.54f)
-        drawBodyShadowed("SCORE  " + score, left + 18f, top - 35f, UiTheme.TEXT_PRIMARY)
-        fitBodyFont("BEST  " + highScore, statsW * 0.42f, 0.78f, 0.50f)
-        drawBodyRight("BEST  " + highScore, left + statsW - 18f, top - 35f, UiTheme.MAGENTA)
+        fitCaptionFont("SCORE  " + score, statsW * 0.46f, 0.84f, 0.54f)
+        drawCaptionShadowed("SCORE  " + score, left + 18f, top - 35f, UiTheme.TEXT_PRIMARY)
+        fitCaptionFont("BEST  " + highScore, statsW * 0.42f, 0.78f, 0.50f)
+        drawCaptionRight("BEST  " + highScore, left + statsW - 18f, top - 35f, UiTheme.MAGENTA)
 
-        fitBodyFont("WAVE  " + wave, statsW * 0.42f, 0.76f, 0.50f)
-        drawBodyShadowed("WAVE  " + wave, left + 18f, top - 66f, UiTheme.TEXT_SECONDARY)
-        fitBodyFont("COMBO  x" + combo, statsW * 0.45f, 0.76f, 0.50f)
-        drawBodyRight(
+        fitCaptionFont("WAVE  " + wave, statsW * 0.42f, 0.76f, 0.50f)
+        drawCaptionShadowed("WAVE  " + wave, left + 18f, top - 66f, UiTheme.TEXT_SECONDARY)
+        fitCaptionFont("COMBO  x" + combo, statsW * 0.45f, 0.76f, 0.50f)
+        drawCaptionRight(
             "COMBO  x" + combo,
             left + statsW - 18f,
             top - 66f,
             if (combo >= 3) UiTheme.GOLD else UiTheme.TEXT_SECONDARY
         )
 
-        fitBodyFont("HEALTH", healthW * 0.42f, 0.68f, 0.46f)
-        drawBodyShadowed("HEALTH", healthBarX, top - 37f, UiTheme.TEXT_SECONDARY)
+        fitCaptionFont("HEALTH", healthW * 0.42f, 0.68f, 0.46f)
+        drawCaptionShadowed("HEALTH", healthBarX, top - 37f, UiTheme.TEXT_SECONDARY)
         val healthText = player.health.toString() + "/" + player.maxHealth
-        fitBodyFont(healthText, healthW * 0.34f, 0.68f, 0.46f)
-        drawBodyRight(healthText, healthX + healthW - 16f, top - 37f, healthColor)
+        fitCaptionFont(healthText, healthW * 0.34f, 0.68f, 0.46f)
+        drawCaptionRight(healthText, healthX + healthW - 16f, top - 37f, healthColor)
 
         batch.end()
         drawPauseIcon(pauseButton)
@@ -826,7 +768,7 @@ class GameScreen : Screen, InputAdapter() {
             UiTheme.TEXT_PRIMARY
         )
 
-        uiText.reset(font, bodyFont)
+        uiText.reset(font, bodyFont, captionFont)
         batch.end()
     }
 
@@ -935,6 +877,32 @@ class GameScreen : Screen, InputAdapter() {
         bodyFont.draw(batch, text, rightX - layout.width, y)
     }
 
+    private fun fitCaptionFont(text: String, maxWidth: Float, preferred: Float, minimum: Float): Float {
+        captionFont.data.setScale(1f)
+        layout.setText(captionFont, text)
+        if (layout.width <= 0f) {
+            captionFont.data.setScale(preferred)
+            return preferred
+        }
+        val widthScale = maxWidth / layout.width
+        captionFont.data.setScale(minOf(preferred, widthScale.coerceAtLeast(minimum), widthScale))
+        layout.setText(captionFont, text)
+        return captionFont.data.scaleX
+    }
+
+    private fun drawCaptionShadowed(text: String, x: Float, y: Float, color: Color) {
+        captionFont.color = Color(0f, 0f, 0f, 0.78f)
+        captionFont.draw(batch, text, x + 2f, y - 2f)
+        captionFont.color = color
+        captionFont.draw(batch, text, x, y)
+    }
+
+    private fun drawCaptionRight(text: String, rightX: Float, y: Float, color: Color) {
+        layout.setText(captionFont, text)
+        captionFont.color = color
+        captionFont.draw(batch, text, rightX - layout.width, y)
+    }
+
     private fun fitFont(text: String, maxWidth: Float, preferred: Float, minimum: Float): Float {
         font.data.setScale(1f)
         layout.setText(font, text)
@@ -982,17 +950,20 @@ class GameScreen : Screen, InputAdapter() {
         batch.projectionMatrix = hudCamera.combined
 
         menuRenderer.draw(
-            w, h, safeArea, singleButton, multiButton, settingsButton,
+            w, h, safeArea, singleButton, settingsButton,
             highScore, bestWave, totalKills, ::drawButton
         )
     }
 
     private fun drawButton(rect: Rectangle, color: Color) {
-        val x = rect.x
-        val y = rect.y
-        val w = rect.width
-        val h = rect.height
-        UiShapes.softButton(shapeRenderer, rect, color, UiTheme.Metrics.BUTTON_RADIUS)
+        drawButtonColor.set(color)
+        if (pressedUiButton === rect) {
+            drawButtonColor.a = (drawButtonColor.a * 0.68f).coerceAtLeast(0.18f)
+        } else {
+            val breathe = 0.92f + 0.08f * (0.5f + 0.5f * MathUtils.sin(uiPulseTime * 2.2f))
+            drawButtonColor.a = (drawButtonColor.a * breathe).coerceAtMost(1f)
+        }
+        UiShapes.softButton(shapeRenderer, rect, drawButtonColor, UiTheme.Metrics.BUTTON_RADIUS)
     }
 
     private fun drawGameOverOverlay() {
@@ -1008,43 +979,12 @@ class GameScreen : Screen, InputAdapter() {
         )
     }
 
-    private fun prepareUpgradeChoices() {
-        upgradeChoices.clear()
-        val pool = UpgradeType.values().filter {
-            (upgradeLevels[it] ?: 0) < it.maxStacks
-        }.toMutableList()
-        while (upgradeChoices.size < 3 && pool.isNotEmpty()) {
-            val index = MathUtils.random(pool.size - 1)
-            upgradeChoices.add(pool.removeAt(index))
-        }
-    }
-
-    private fun applyUpgrade(type: UpgradeType) {
-        upgradeLevels[type] = (upgradeLevels[type] ?: 0) + 1
-        when (type) {
-            UpgradeType.OVERCLOCK -> player.fireRate = (player.fireRate * 0.75f).coerceAtLeast(0.11f)
-            UpgradeType.THRUSTERS -> player.speed *= 1.15f
-            UpgradeType.REPAIR -> player.health = (player.health + 1).coerceAtMost(player.maxHealth)
-            UpgradeType.SCORE_CORE -> scoreMultiplier = (scoreMultiplier + 1).coerceAtMost(3)
-            UpgradeType.ARMOR -> {
-                player.maxHealth = (player.maxHealth + 1).coerceAtMost(GameConfig.Player.MAX_HP + 2)
-                player.health = (player.health + 1).coerceAtMost(player.maxHealth)
-            }
-            UpgradeType.COOLING -> player.fireRate = (player.fireRate * 0.9f).coerceAtLeast(0.09f)
-            UpgradeType.ENERGY_CELL -> player.grantShield(4.5f)
-            UpgradeType.OVERDRIVE_CORE -> {
-                player.grantOverdrive(5.5f)
-                player.grantRapidFire(5.5f)
-            }
-        }
-    }
-
     private fun drawUpgradeOverlay() {
         shapeRenderer.projectionMatrix = hudCamera.combined
         batch.projectionMatrix = hudCamera.combined
         upgradeRenderer.draw(
             Gdx.graphics.width.toFloat(), Gdx.graphics.height.toFloat(),
-            wave, upgradeChoices, ui.upgradeButtons
+            wave, upgradeManager.choices, ui.upgradeButtons
         )
     }
 
@@ -1081,14 +1021,16 @@ class GameScreen : Screen, InputAdapter() {
 
         when (state) {
             GameState.MENU -> {
-                if (toUiRect(screenX, screenY, singleButton)) {
-                    startSinglePlayer()
-                } else if (toUiRect(screenX, screenY, multiButton)) {
-                    // Multiplayer is intentionally unavailable; keep the button non-destructive.
-                    FeedbackAudio.play(FeedbackAudio.Cue.UI)
-                } else if (toUiRect(screenX, screenY, settingsButton)) {
-                    router.goTo(GameState.SETTINGS)
-                    FeedbackAudio.play(FeedbackAudio.Cue.UI)
+                when {
+                    toUiRect(screenX, screenY, singleButton) -> {
+                        pressedUiButton = singleButton
+                        startSinglePlayer()
+                    }
+                    toUiRect(screenX, screenY, settingsButton) -> {
+                        pressedUiButton = settingsButton
+                        router.goTo(GameState.SETTINGS)
+                        FeedbackAudio.play(FeedbackAudio.Cue.UI)
+                    }
                 }
                 return true
             }
@@ -1096,31 +1038,32 @@ class GameScreen : Screen, InputAdapter() {
             GameState.SETTINGS -> {
                 when {
                     toUiRect(screenX, screenY, toggleSfxButton) -> {
+                        pressedUiButton = toggleSfxButton
                         val mutedNow = !FeedbackAudio.isMuted()
                         FeedbackAudio.setMuted(mutedNow)
                         persistence.setMuteSfx(mutedNow)
                         FeedbackAudio.play(FeedbackAudio.Cue.UI)
                     }
                     toUiRect(screenX, screenY, toggleHapticsButton) -> {
+                        pressedUiButton = toggleHapticsButton
                         hapticsMuted = !hapticsMuted
                         persistence.setMuteHaptics(hapticsMuted)
                         FeedbackAudio.play(FeedbackAudio.Cue.UI)
                     }
                     toUiRect(screenX, screenY, volumeSlider) -> {
-                        val min = volumeSlider.x
-                        val max = volumeSlider.x + volumeSlider.width
-                        val value = ((screenX.toFloat() - min) / (max - min)).coerceIn(0f, 1f)
-                        FeedbackAudio.setMasterVolume(value)
-                        persistence.setSfxVolume(value)
+                        sliderPointer = pointer
+                        setVolumeFromScreenX(screenX)
                     }
                     toUiRect(screenX, screenY, swapControlsButton) -> {
+                        pressedUiButton = swapControlsButton
                         controlsSwapped = !controlsSwapped
                         persistence.setControlsSwapped(controlsSwapped)
                         FeedbackAudio.play(FeedbackAudio.Cue.UI)
                     }
                     toUiRect(screenX, screenY, menuButton) -> {
+                        pressedUiButton = menuButton
                         router.goTo(GameState.MENU)
-                                                        FeedbackAudio.play(FeedbackAudio.Cue.UI)
+                        FeedbackAudio.play(FeedbackAudio.Cue.UI)
                     }
                 }
                 return true
@@ -1129,14 +1072,16 @@ class GameScreen : Screen, InputAdapter() {
             GameState.PAUSED -> {
                 when {
                     toUiRect(screenX, screenY, resumeButton) -> {
+                        pressedUiButton = resumeButton
                         input.setPaused(false)
                         router.goTo(GameState.PLAYING)
                         FeedbackAudio.play(FeedbackAudio.Cue.UI)
                     }
                     toUiRect(screenX, screenY, menuButton) -> {
+                        pressedUiButton = menuButton
                         input.setPaused(false)
                         router.goTo(GameState.MENU)
-                                                        FeedbackAudio.play(FeedbackAudio.Cue.UI)
+                        FeedbackAudio.play(FeedbackAudio.Cue.UI)
                     }
                 }
                 return true
@@ -1144,11 +1089,15 @@ class GameScreen : Screen, InputAdapter() {
 
             GameState.GAME_OVER -> {
                 when {
-                    toUiRect(screenX, screenY, singleButton) -> startOrRestart()
+                    toUiRect(screenX, screenY, singleButton) -> {
+                        pressedUiButton = singleButton
+                        startOrRestart()
+                    }
                     toUiRect(screenX, screenY, menuButton) -> {
+                        pressedUiButton = menuButton
                         input.clearTransientInput()
                         router.goTo(GameState.MENU)
-                                                        FeedbackAudio.play(FeedbackAudio.Cue.UI)
+                        FeedbackAudio.play(FeedbackAudio.Cue.UI)
                     }
                 }
                 return true
@@ -1156,11 +1105,16 @@ class GameScreen : Screen, InputAdapter() {
 
             GameState.UPGRADE -> {
                 for (index in ui.upgradeButtons.indices) {
-                    if (toUiRect(screenX, screenY, ui.upgradeButtons[index]) && index < upgradeChoices.size) {
-                        applyUpgrade(upgradeChoices[index])
+                    if (toUiRect(screenX, screenY, ui.upgradeButtons[index]) && index < upgradeManager.choices.size) {
+                        pressedUiButton = ui.upgradeButtons[index]
+                        scoreMultiplier = upgradeManager.apply(
+                            upgradeManager.choices[index],
+                            player,
+                            scoreMultiplier
+                        )
                         router.goTo(GameState.PLAYING)
                         input.setPaused(false)
-                                                        FeedbackAudio.play(FeedbackAudio.Cue.POWER_UP)
+                        FeedbackAudio.play(FeedbackAudio.Cue.POWER_UP)
                         haptic(Input.VibrationType.MEDIUM)
                         break
                     }
@@ -1171,16 +1125,16 @@ class GameScreen : Screen, InputAdapter() {
             GameState.PLAYING -> {
                 if (tutorialVisible) {
                     if (toUiRect(screenX, screenY, tutorialButton)) {
+                        pressedUiButton = tutorialButton
                         tutorialVisible = false
                         persistence.setTutorialSeen(true)
                         FeedbackAudio.play(FeedbackAudio.Cue.UI)
                     }
-                    // Tutorial is a hard input gate: no movement, firing, pause, or gameplay
-                    // actions are accepted until the player explicitly taps GOT IT.
                     return true
                 }
 
                 if (toUiRect(screenX, screenY, pauseButton)) {
+                    pressedUiButton = pauseButton
                     input.clearTransientInput()
                     router.goTo(GameState.PAUSED)
                     input.setPaused(true)
@@ -1203,33 +1157,43 @@ class GameScreen : Screen, InputAdapter() {
                     )
                     return true
                 }
-                if (touch.fireHit.contains(screenX.toFloat(), screenY.toFloat())) {
-                    input.pressFire(pointer)
-                    return true
-                }
-                return true
-            }
+                if (touch    override fun touchDragged(screenX: Int, screenY: Int, pointer: Int): Boolean {
+        if (pointer == sliderPointer) {
+            setVolumeFromScreenX(screenX)
+            return true
         }
-    }
-
-    override fun touchDragged(screenX: Int, screenY: Int, pointer: Int): Boolean {
         input.drag(screenX, screenY, pointer)
         return true
     }
 
     override fun touchUp(screenX: Int, screenY: Int, pointer: Int, button: Int): Boolean {
+        if (pointer == sliderPointer) {
+            setVolumeFromScreenX(screenX)
+            persistence.flush()
+            sliderPointer = -1
+        }
         input.release(pointer)
+        pressedUiButton = null
         return true
     }
 
     override fun touchCancelled(screenX: Int, screenY: Int, pointer: Int, button: Int): Boolean =
         touchUp(screenX, screenY, pointer, button)
 
+    private fun setVolumeFromScreenX(screenX: Int) {
+        val min = volumeSlider.x
+        val max = (volumeSlider.x + volumeSlider.width).coerceAtLeast(min + 1f)
+        val value = ((screenX.toFloat() - min) / (max - min)).coerceIn(0f, 1f)
+        FeedbackAudio.setMasterVolume(value)
+        persistence.setSfxVolume(value, flush = false)
+    }
+
     private fun haptic(type: Input.VibrationType) {
         if (!hapticsMuted && Gdx.input.isPeripheralAvailable(Input.Peripheral.Vibrator)) Gdx.input.vibrate(type)
     }
 
     override fun resize(width: Int, height: Int) {
+        if (!initialized) return
         viewport.update(width, height, true)
         hudCamera.setToOrtho(false, width.toFloat(), height.toFloat())
         bloom.resize(width, height)
@@ -1257,6 +1221,7 @@ class GameScreen : Screen, InputAdapter() {
     }
 
     override fun pause() {
+        persistence.flush()
         input.clearTransientInput()
         if (state == GameState.PLAYING) {
             input.setPaused(true)
@@ -1272,11 +1237,14 @@ class GameScreen : Screen, InputAdapter() {
     }
 
     override fun hide() {
+        persistence.flush()
         input.clearTransientInput()
         if (Gdx.input.inputProcessor === this) Gdx.input.inputProcessor = null
     }
 
     override fun dispose() {
+        if (!initialized) return
+        persistence.flush()
         Gdx.input.inputProcessor = null
         input.clearTransientInput()
         enemies.clear()
@@ -1289,11 +1257,10 @@ class GameScreen : Screen, InputAdapter() {
         pools.clear()
         shapeRenderer.dispose()
         batch.dispose()
-        font.dispose()
-        bodyFont.dispose()
-        captionFont.dispose()
+        fonts.dispose()
         particles.dispose()
         bloom.dispose()
         FeedbackAudio.dispose()
+        initialized = false
     }
 }
