@@ -129,6 +129,6 @@ class MenuRenderer(
             UiTheme.Metrics.BUTTON_TEXT_MIN_SCALE
         )
         val titleHeight = text.height(titleFont, title)
-        text.centered(titleFont, title, cx, rect.y + rect.height / 2f + titleHeight / 2f, color)
+        text.centeredVertically(titleFont, title, cx, rect.y + rect.height / 2f, color)
     }
 }
