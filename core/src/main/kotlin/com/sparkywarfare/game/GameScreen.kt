@@ -612,21 +612,26 @@ class GameScreen : Screen, InputAdapter() {
         val left = safeArea.left
         val right = safeArea.right
         val top = safeArea.top
-        val pauseGap = 10f
-        val healthW = minOf(250f, (right - left) * 0.30f).coerceAtLeast(170f)
-        val healthX = right - pauseButton.width - pauseGap - healthW
-        val statsW = minOf(430f, (healthX - left - 10f).coerceAtLeast(220f))
-        val cardH = 112f
-        val healthBarX = healthX + 16f
-        val healthBarW = healthW - 32f
+        val cardsGap = 10f
+        val pauseGap = 12f
+        val cardAreaRight = pauseButton.x - pauseGap
+        val available = (cardAreaRight - left).coerceAtLeast(1f)
+        val healthW = minOf(232f, (available - cardsGap).coerceAtLeast(1f) * 0.36f)
+        val statsW = (available - healthW - cardsGap).coerceAtLeast(1f)
+        val cardH = minOf(108f, (safeArea.top - safeArea.bottom) * 0.18f).coerceAtLeast(84f)
+        val cardY = top - cardH
+        val healthX = cardAreaRight - healthW
+        val healthBarX = healthX + 14f
+        val healthBarW = (healthW - 28f).coerceAtLeast(1f)
+        val healthBarY = cardY + 22f
         val healthRatio = (player.health.toFloat() / player.maxHealth.coerceAtLeast(1)).coerceIn(0f, 1f)
         val healthColor = if (healthRatio <= 0.34f) UiTheme.DANGER else UiTheme.CYAN
 
         shapeRenderer.projectionMatrix = hudCamera.combined
         UiShapes.begin(shapeRenderer)
 
-        UiShapes.glassPanel(shapeRenderer, left, top - cardH, statsW, cardH, 22f)
-        UiShapes.glassPanel(shapeRenderer, healthX, top - cardH, healthW, cardH, 22f)
+        UiShapes.glassPanel(shapeRenderer, left, cardY, statsW, cardH, 22f)
+        UiShapes.glassPanel(shapeRenderer, healthX, cardY, healthW, cardH, 22f)
         UiShapes.glassPanel(
             shapeRenderer,
             pauseButton.x,
@@ -639,20 +644,20 @@ class GameScreen : Screen, InputAdapter() {
         UiShapes.roundedRect(
             shapeRenderer,
             healthBarX,
-            top - 82f,
+            healthBarY,
             healthBarW,
-            14f,
-            7f,
+            13f,
+            6.5f,
             UiTheme.PANEL_DARK
         )
         if (healthBarW * healthRatio > 1f) {
             UiShapes.gradientRoundedRect(
                 shapeRenderer,
                 healthBarX,
-                top - 82f,
+                healthBarY,
                 healthBarW * healthRatio,
-                14f,
-                7f,
+                13f,
+                6.5f,
                 healthColor,
                 UiTheme.MAGENTA,
                 7
@@ -663,31 +668,31 @@ class GameScreen : Screen, InputAdapter() {
         batch.projectionMatrix = hudCamera.combined
         batch.begin()
 
-        fitCaptionFont("SCORE  " + score, statsW * 0.46f, 0.84f, 0.54f)
-        drawCaptionShadowed("SCORE  " + score, left + 18f, top - 35f, UiTheme.TEXT_PRIMARY)
-        fitCaptionFont("BEST  " + highScore, statsW * 0.42f, 0.78f, 0.50f)
-        drawCaptionRight("BEST  " + highScore, left + statsW - 18f, top - 35f, UiTheme.MAGENTA)
+        fitCaptionFont("SCORE  " + score, statsW * 0.46f, 0.84f, 0.46f)
+        drawCaptionShadowed("SCORE  " + score, left + 16f, cardY + cardH - 27f, UiTheme.TEXT_PRIMARY)
+        fitCaptionFont("BEST  " + highScore, statsW * 0.42f, 0.76f, 0.44f)
+        drawCaptionRight("BEST  " + highScore, left + statsW - 16f, cardY + cardH - 27f, UiTheme.MAGENTA)
 
-        fitCaptionFont("WAVE  " + wave, statsW * 0.42f, 0.76f, 0.50f)
-        drawCaptionShadowed("WAVE  " + wave, left + 18f, top - 66f, UiTheme.TEXT_SECONDARY)
-        fitCaptionFont("COMBO  x" + combo, statsW * 0.45f, 0.76f, 0.50f)
+        fitCaptionFont("WAVE  " + wave, statsW * 0.42f, 0.72f, 0.42f)
+        drawCaptionShadowed("WAVE  " + wave, left + 16f, cardY + cardH - 55f, UiTheme.TEXT_SECONDARY)
+        fitCaptionFont("COMBO  x" + combo, statsW * 0.45f, 0.72f, 0.42f)
         drawCaptionRight(
             "COMBO  x" + combo,
-            left + statsW - 18f,
-            top - 66f,
+            left + statsW - 16f,
+            cardY + cardH - 55f,
             if (combo >= 3) UiTheme.GOLD else UiTheme.TEXT_SECONDARY
         )
 
-        fitCaptionFont("HEALTH", healthW * 0.42f, 0.68f, 0.46f)
-        drawCaptionShadowed("HEALTH", healthBarX, top - 37f, UiTheme.TEXT_SECONDARY)
+        fitCaptionFont("HEALTH", healthW * 0.42f, 0.62f, 0.40f)
+        drawCaptionShadowed("HEALTH", healthBarX, cardY + cardH - 27f, UiTheme.TEXT_SECONDARY)
         val healthText = player.health.toString() + "/" + player.maxHealth
-        fitCaptionFont(healthText, healthW * 0.34f, 0.68f, 0.46f)
-        drawCaptionRight(healthText, healthX + healthW - 16f, top - 37f, healthColor)
+        fitCaptionFont(healthText, healthW * 0.34f, 0.62f, 0.40f)
+        drawCaptionRight(healthText, healthX + healthW - 14f, cardY + cardH - 27f, healthColor)
 
         batch.end()
         drawPauseIcon(pauseButton)
 
-        if (waveBannerTimer > 0f) drawWaveBanner()
+        if (waveBannerTimer > 0f && !tutorialVisible) drawWaveBanner()
         if (tutorialVisible) drawTutorialOverlay()
         if (hitFlash > 0f) {
             shapeRenderer.projectionMatrix = hudCamera.combined
@@ -719,27 +724,33 @@ class GameScreen : Screen, InputAdapter() {
         val alpha = ((waveBannerTimer / 0.45f).coerceAtMost(1f) *
             ((2.2f - waveBannerTimer) / 0.90f).coerceIn(0f, 1f)).coerceIn(0f, 1f)
 
-        val bannerW = (w * 0.40f).coerceIn(320f, 560f)
-        val bannerH = 88f
+        val bannerW = minOf(w * 0.56f, 620f).coerceAtLeast(320f)
+        val bannerH = 104f
         val x = cx - bannerW / 2f
-        val y = h * 0.67f
+        val y = h * 0.60f
         val accent = if (waveBannerElite) UiTheme.MAGENTA else UiTheme.CYAN
+        val accentSoft = Color(accent.r, accent.g, accent.b, alpha * 0.28f)
 
         shapeRenderer.projectionMatrix = hudCamera.combined
         UiShapes.begin(shapeRenderer)
         UiShapes.glassPanel(shapeRenderer, x, y, bannerW, bannerH, 26f)
-
-        // One restrained neon capsule provides the punch without obscuring the text.
-        val pill = Rectangle(x + 18f, y + 16f, 112f, 30f)
-        UiShapes.softButton(shapeRenderer, pill, accent, 15f)
         UiShapes.roundedRect(
             shapeRenderer,
             x + 18f,
-            y + bannerH - 4f,
+            y + bannerH - 5f,
             bannerW - 36f,
             2f,
             1f,
-            Color(accent.r, accent.g, accent.b, 0.22f)
+            accentSoft
+        )
+        UiShapes.roundedRect(
+            shapeRenderer,
+            x + 18f,
+            y + 18f,
+            5f,
+            bannerH - 36f,
+            2.5f,
+            Color(accent.r, accent.g, accent.b, alpha * 0.30f)
         )
         UiShapes.end(shapeRenderer)
 
@@ -747,26 +758,23 @@ class GameScreen : Screen, InputAdapter() {
         batch.begin()
 
         val title = if (waveBannerElite) "ELITE WAVE" else "WAVE  " + wave.toString().padStart(2, '0')
-        fitFont(title, bannerW - 158f, 0.90f, 0.58f)
-        uiText.centeredVertically(font, title, x + bannerW * 0.63f, y + 58f, Color(accent.r, accent.g, accent.b, alpha))
+        fitFont(title, bannerW - 52f, 0.82f, 0.52f)
+        uiText.centeredVertically(
+            font,
+            title,
+            cx,
+            y + 69f,
+            Color(accent.r, accent.g, accent.b, alpha)
+        )
 
         val sub = if (waveBannerElite) "HEIGHTENED THREAT" else "NEXT ASSAULT"
-        fitBodyFont(sub, bannerW - 165f, 0.48f, 0.34f)
+        fitBodyFont(sub, bannerW - 56f, 0.44f, 0.32f)
         uiText.centeredVertically(
             bodyFont,
             sub,
-            x + bannerW * 0.63f,
-            y + 31f,
+            cx,
+            y + 38f,
             Color(UiTheme.TEXT_SECONDARY.r, UiTheme.TEXT_SECONDARY.g, UiTheme.TEXT_SECONDARY.b, alpha)
-        )
-
-        uiText.fitWithin(bodyFont, if (waveBannerElite) "ELITE" else "WAVE", pill.width - 16f, 20f, 0.42f, 0.34f)
-        uiText.centeredVertically(
-            bodyFont,
-            if (waveBannerElite) "ELITE" else "WAVE",
-            pill.x + pill.width / 2f,
-            pill.y + pill.height / 2f,
-            UiTheme.TEXT_PRIMARY
         )
 
         uiText.reset(font, bodyFont, captionFont)
@@ -776,10 +784,14 @@ class GameScreen : Screen, InputAdapter() {
     private fun drawTutorialOverlay() {
         val w = Gdx.graphics.width.toFloat()
         val h = Gdx.graphics.height.toFloat()
+        val safeW = (safeArea.right - safeArea.left).coerceAtLeast(1f)
+        val safeH = (safeArea.top - safeArea.bottom).coerceAtLeast(1f)
         val cx = (safeArea.left + safeArea.right) / 2f
-        val safeH = (safeArea.top - safeArea.bottom).coerceAtLeast(320f)
-        val panelW = (safeArea.right - safeArea.left).coerceIn(430f, 800f) * 0.88f
-        val panelH = safeH.coerceIn(400f, 640f) * 0.78f
+
+        val panelW = minOf(safeW * 0.90f, 900f)
+            .coerceAtMost((safeW - 24f).coerceAtLeast(280f))
+        val panelH = minOf(safeH * 0.90f, 620f)
+            .coerceAtMost((safeH - 24f).coerceAtLeast(300f))
         val panel = Rectangle(
             cx - panelW / 2f,
             (safeArea.bottom + safeArea.top) / 2f - panelH / 2f,
@@ -787,30 +799,36 @@ class GameScreen : Screen, InputAdapter() {
             panelH
         )
 
+        val buttonH = (panelH * 0.14f).coerceIn(50f, 68f)
         tutorialButton.set(
-            panel.x + 32f,
-            panel.y + 22f,
-            panel.width - 64f,
-            (panel.height * 0.15f).coerceIn(60f, 78f)
+            panel.x + 24f,
+            panel.y + 16f,
+            panel.width - 48f,
+            buttonH
         )
+
+        val rowGap = 6f
+        val contentTop = panel.y + panel.height - 84f
+        val contentBottom = tutorialButton.y + tutorialButton.height + 14f
+        val rowH = ((contentTop - contentBottom - rowGap * 4f) / tutorialLines.size)
+            .coerceAtLeast(20f)
+        val rowX = panel.x + 24f
+        val rowW = panel.width - 48f
 
         shapeRenderer.projectionMatrix = hudCamera.combined
         UiShapes.begin(shapeRenderer)
         UiShapes.overlay(shapeRenderer, w, h)
-        UiShapes.glassPanel(shapeRenderer, panel.x, panel.y, panel.width, panel.height)
+        UiShapes.glassPanel(shapeRenderer, panel.x, panel.y, panel.width, panel.height, 28f)
 
-        val rowX = panel.x + 28f
-        val rowW = panel.width - 56f
-        val rowH = (panel.height * 0.10f).coerceIn(42f, 54f)
-        val firstY = panel.y + panel.height - 178f
         for (i in tutorialLines.indices) {
+            val rowY = contentTop - rowH - i * (rowH + rowGap)
             UiShapes.glassCard(
                 shapeRenderer,
                 rowX,
-                firstY - i * (rowH + 8f) - rowH,
+                rowY,
                 rowW,
                 rowH,
-                16f,
+                15f,
                 if (i % 2 == 0) UiTheme.CYAN else UiTheme.MAGENTA
             )
         }
@@ -820,30 +838,49 @@ class GameScreen : Screen, InputAdapter() {
         batch.projectionMatrix = hudCamera.combined
         batch.begin()
 
-        uiText.fitWithin(font, "HOW TO PLAY", panel.width - 60f, 50f, 1.05f, 0.68f)
-        uiText.centered(font, "HOW TO PLAY", cx, panel.y + panel.height - 52f, UiTheme.TEXT_PRIMARY)
+        fitFont("HOW TO PLAY", panel.width - 52f, 0.88f, 0.58f)
+        uiText.centeredVertically(
+            font,
+            "HOW TO PLAY",
+            cx,
+            panel.y + panel.height - 32f,
+            UiTheme.TEXT_PRIMARY
+        )
 
-        uiText.fitWithin(bodyFont, "MOVE • FIRE • SURVIVE", panel.width - 80f, 28f, 0.62f, 0.44f)
-        uiText.centered(bodyFont, "MOVE • FIRE • SURVIVE", cx, panel.y + panel.height - 88f, UiTheme.CYAN)
+        fitBodyFont("MOVE • FIRE • SURVIVE", panel.width - 64f, 0.50f, 0.36f)
+        uiText.centeredVertically(
+            bodyFont,
+            "MOVE • FIRE • SURVIVE",
+            cx,
+            panel.y + panel.height - 61f,
+            UiTheme.CYAN
+        )
 
         for (i in tutorialLines.indices) {
             val line = tutorialLines[i]
-            val rowY = firstY - i * (rowH + 8f) - rowH
-            uiText.fitWithin(captionFont, line, rowW - 26f, rowH * 0.58f, 0.62f, 0.42f)
+            val rowY = contentTop - rowH - i * (rowH + rowGap)
+            uiText.fitWithin(
+                captionFont,
+                line,
+                rowW - 24f,
+                (rowH - 8f).coerceAtLeast(12f),
+                0.50f,
+                0.22f
+            )
             uiText.centeredVertically(
                 captionFont,
                 line,
-                rowX + rowW / 2f,
+                cx,
                 rowY + rowH / 2f,
                 if (i % 2 == 0) UiTheme.TEXT_PRIMARY else UiTheme.TEXT_SECONDARY
             )
         }
 
-        uiText.fitWithin(font, "GOT IT", tutorialButton.width - 42f, tutorialButton.height * 0.55f, 0.70f, 0.50f)
+        fitFont("GOT IT", tutorialButton.width - 36f, 0.64f, 0.46f)
         uiText.centeredVertically(
             font,
             "GOT IT",
-            tutorialButton.x + tutorialButton.width / 2f,
+            cx,
             tutorialButton.y + tutorialButton.height / 2f,
             UiTheme.TEXT_PRIMARY
         )
