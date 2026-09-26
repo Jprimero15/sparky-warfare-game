@@ -46,16 +46,16 @@ class GameOverRenderer(
 
         batch.begin()
         text.fitWithin(titleFont, "RUN OVER", panelW - 80f, 58f, 1.18f, 0.76f)
-        text.centered(titleFont, "RUN OVER", cx, y + panelH - 58f, UiTheme.MAGENTA)
+        text.centeredVertically(titleFont, "RUN OVER", cx, y + panelH - 58f, UiTheme.MAGENTA)
 
         text.fitWithin(bodyFont, "SCORE  $score", panelW * 0.36f, 30f, 0.72f, 0.48f)
-        text.centered(bodyFont, "SCORE  $score", x + panelW * 0.25f, y + panelH - 135f, UiTheme.TEXT_PRIMARY)
+        text.centeredVertically(bodyFont, "SCORE  $score", x + panelW * 0.25f, y + panelH - 135f, UiTheme.TEXT_PRIMARY)
         text.fitWithin(bodyFont, "BEST  $best", panelW * 0.36f, 30f, 0.72f, 0.48f)
-        text.centered(bodyFont, "BEST  $best", x + panelW * 0.75f, y + panelH - 135f, UiTheme.TEXT_PRIMARY)
+        text.centeredVertically(bodyFont, "BEST  $best", x + panelW * 0.75f, y + panelH - 135f, UiTheme.TEXT_PRIMARY)
 
         val detail = "WAVE  $wave    •    KILLS  $kills    •    COMBO  x$combo"
         text.fitWithin(bodyFont, detail, panelW - 72f, 28f, 0.64f, 0.42f)
-        text.centered(bodyFont, detail, cx, y + panelH - 195f, UiTheme.TEXT_SECONDARY)
+        text.centeredVertically(bodyFont, detail, cx, y + panelH - 195f, UiTheme.TEXT_SECONDARY)
 
         command(retry, "REDEPLOY", UiTheme.TEXT_PRIMARY)
         command(menu, "MAIN MENU", UiTheme.TEXT_PRIMARY)
@@ -67,7 +67,6 @@ class GameOverRenderer(
     private fun command(rect: Rectangle, title: String, color: Color) {
         val cx = rect.x + rect.width / 2f
         text.fitWithin(titleFont, title, rect.width - 52f, rect.height * 0.44f, 0.80f, 0.54f)
-        val h = text.height(titleFont, title)
         text.centeredVertically(titleFont, title, cx, rect.y + rect.height / 2f, color)
     }
 }
