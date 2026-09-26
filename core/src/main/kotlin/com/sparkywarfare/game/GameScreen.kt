@@ -903,7 +903,7 @@ class GameScreen : Screen, InputAdapter() {
             font,
             "GOT IT",
             cx,
-            tutorialButton.y + tutorialButton.height / 2f + uiText.height(font, "GOT IT") / 2f,
+            tutorialButton.y + tutorialButton.height / 2f,
             UiTheme.TEXT_PRIMARY
         )
 
