@@ -1,5 +1,19 @@
 # Sparky Warfare
 
+## Changelog / this pass
+
+This pass keeps the Android-only LibGDX architecture and Soft Neon Arcade identity while tightening the mobile loop:
+- Kenney Future is now wired into body/data typography while Orbitron remains the display voice.
+- The non-functional Multiplayer menu action was removed and the main menu was rebalanced around two real actions.
+- The settings volume slider now tracks touch-drag continuously and flushes persistence on release/pause instead of every drag frame.
+- GameScreen responsibilities were split into ArenaBuilder, UpgradeManager, and UiFontSet.
+- WallSpatialGrid narrows hot collision and line-of-sight queries to nearby tile cells.
+- Three authored arena variants are selected per run.
+- Enemy movement now adds lightweight role-based strafing/spacing while preserving the existing per-frame AI architecture.
+- Fire-rate upgrade stacking was softened and the combo grace window was increased slightly.
+- UI buttons now breathe subtly when idle and darken on press; lifecycle guards protect resize/dispose before initialization.
+
+
 Sparky Warfare is an Android-only, landscape-first top-down tank combat game built with LibGDX 1.12.1 + Kotlin.
 
 The game combines a deep atmospheric arena, a glassmorphic soft-neon arcade UI, glowing energy tanks, laser combat, destructible cover, wave-based enemies, upgrades, power-ups, particle debris, framebuffer bloom, and responsive Android multitouch controls.
@@ -72,7 +86,7 @@ The main menu is explicitly landscape-oriented:
 - A large central glass panel anchors the screen.
 - Layered glass cards sit behind the main panel to create depth.
 - The left side carries the title and persistent stats.
-- The right side contains large SINGLE PLAYER, MULTIPLAYER, and SETTINGS glass buttons.
+- The right side contains large SINGLE PLAYER and SETTINGS glass buttons.
 - A compact fallback arrangement remains available for unusual window sizes.
 
 ### Combat HUD
@@ -121,8 +135,8 @@ The combat controls are designed for landscape mobile play:
 The runtime now has an explicit game-session boundary before networking is introduced:
 - GameMode identifies the current simulation mode without adding multiplayer behavior.
 - GameSession owns mode/participant metadata and the local player slot.
-- Single-player remains the only active mode today, with the existing enemy AI unchanged.
-- Human-player slots are represented independently from AI enemies so a future local/LAN mode can reuse the same Tank, CombatSystem, CollisionSystem, WorldRenderer, and TankRenderer systems.
+- Single-player is the only active mode in this build; networking remains intentionally out of scope.
+- The session boundary remains available for a future network/input layer without shipping a fake multiplayer entry point.
 - No sockets, Bluetooth/Wi-Fi transport, lobby service, or multiplayer UI is included yet.
 
 This keeps networking as a future session/input layer rather than requiring a second combat implementation.
@@ -135,7 +149,11 @@ Important responsibilities are separated into focused systems:
 - GameScreen — lifecycle, state transitions, simulation coordination, persistence, resizing, and input routing.
 - UiLayout — centralized safe-area geometry and reusable interactive rectangles.
 - MenuRenderer — landscape tactical main console.
-- GameScreen — combat HUD drawing, gameplay state, and input routing.
+- GameScreen — lifecycle, input routing, combat orchestration, and HUD coordination.
+- ArenaBuilder — authored arena variants and collision geometry construction.
+- UpgradeManager — upgrade choice filtering, stack limits, and player effects.
+- UiFontSet — centralized Orbitron/Kenney Future font loading and disposal.
+- WallSpatialGrid — tile-based wall indexing for movement and line-of-sight queries.
 - PauseRenderer — pause console.
 - GameOverRenderer — combat-result screen.
 - SettingsRenderer — device/control configuration matrix.
@@ -197,7 +215,9 @@ Third-party assets are documented in assets/licenses/THIRD_PARTY_ASSETS.md.
 
 Current documented assets include:
 - Orbitron Medium — SIL Open Font License 1.1.
+- Kenney Future — CC0.
 - Kenney Sci-fi Sounds — CC0.
+- Kenney Interface Sounds — CC0.
 - Launcher icon graphics — project-authored vector XML.
 
 No proprietary game franchise assets are required by the project.
@@ -251,7 +271,7 @@ The current foundation is intentionally stable before adding larger gameplay fea
 5. Additional combat feedback and audio polish.
 6. Expanded multiplayer only if a real networking architecture is introduced.
 
-Multiplayer is currently presented as unavailable rather than exposing a non-functional fake mode.
+The main menu no longer exposes a dead-end multiplayer button. Networking is deferred rather than represented by a non-functional control.
 
 
 ## CI baseline
@@ -269,3 +289,11 @@ Sparky Warfare uses a shared **Soft Neon Arcade** UI system so screens remain vi
 - `UiLayout.kt` — safe-area-aware touch targets and enlarged multitouch hit regions.
 
 New UI should consume these shared primitives instead of introducing screen-specific colors, corner radii, or button treatments.
+
+
+## Known limitations / not yet implemented
+
+- Multiplayer networking, lobbies, LAN transport, and matchmaking are not implemented.
+- Enemy AI remains deliberately lightweight; it now adds role-aware strafing/spacing but does not perform full pathfinding or coordinated squad tactics.
+- Arena variety is limited to three authored layouts.
+- No new third-party assets were introduced in this pass.
