@@ -34,7 +34,7 @@ Current gameplay systems include:
 
 ## UI redesign
 
-The UI follows a **glassmorphic Soft Neon Arcade** direction inspired by polished mobile trivia/arcade interfaces rather than a tactical command console.
+The UI follows a **glassmorphic Soft Neon Arcade** direction inspired by polished mobile trivia/arcade interfaces: deep atmospheric navy, frosted translucent surfaces, layered depth, cyan↔violet gradients, soft bloom, and large rounded controls.
 
 ### Visual language
 - Translucent dark-glass surfaces with visible depth.
@@ -43,10 +43,10 @@ The UI follows a **glassmorphic Soft Neon Arcade** direction inspired by polishe
 - Rounded cards with luminous highlights and restrained shadows.
 - Layered background cards on the main menu for depth.
 - Large, airy typography with measured fitting so labels do not clip or overlap.
-- Atmospheric neon pools in the arena instead of a tactical grid.
-- Large translucent MOVE and FIRE touch controls with cyan/magenta rims.
+- Atmospheric cyan/violet pools in the arena instead of a tactical grid.
+- Large translucent MOVE and FIRE touch controls with shared cyan/magenta rims and alpha blending.
 
-The shared primitives live in UiShapes.kt: glassPanel, glassCard, softButton, glassCircle, gradientRoundedRect, and ambientGlow. Screen renderers consume these primitives so the visual language remains consistent and inexpensive to maintain.
+The shared primitives live in UiShapes.kt: glassPanel, glassCard, softButton, glassCircle, gradientRoundedRect, ambientGlow, plus centralized begin/end helpers for alpha blending. Screen renderers and gameplay HUD passes consume the same primitives so translucency, gradients, glow, and geometry remain consistent across the entire app.
 
 ### Typography
 
@@ -98,7 +98,7 @@ Settings uses a landscape glass control matrix:
 - Volume receives its own full-width slider.
 - `SWAP: LEFT / RIGHT` explicitly moves the MOVE joystick and FIRE control to the opposite sides.
 - Back occupies its own command card.
-- Secondary descriptions use the body font instead of the condensed display font.
+- Secondary descriptions use the shared futuristic display font and measured text fitting.
 
 ### Upgrade screen
 
