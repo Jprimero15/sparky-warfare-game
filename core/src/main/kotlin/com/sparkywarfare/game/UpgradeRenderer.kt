@@ -26,24 +26,35 @@ class UpgradeRenderer(
         val panelX = cx - panelW / 2f
         val panelY = height / 2f - panelH / 2f
 
-        val gap = (width * 0.018f).coerceIn(12f, 24f)
-        val cardW = ((panelW - 56f - gap * 2f) / 3f).coerceIn(185f, 330f)
-        val cardH = (panelH * 0.52f).coerceIn(210f, 300f)
-        val totalW = cardW * 3f + gap * 2f
+        val wide = width >= height * 1.30f
+        val gap = (if (wide) width * 0.018f else height * 0.018f).coerceIn(10f, 22f)
+        val usableW = (panelW - 48f).coerceAtLeast(240f)
+        val cardW = if (wide) {
+            ((usableW - gap * 2f) / 3f).coerceIn(185f, 330f)
+        } else {
+            usableW
+        }
+        val cardH = if (wide) {
+            (panelH * 0.52f).coerceIn(210f, 300f)
+        } else {
+            ((panelH - 150f - gap * 2f) / 3f).coerceIn(120f, 170f)
+        }
+        val totalW = if (wide) cardW * 3f + gap * 2f else cardW
         val left = cx - totalW / 2f
-        val bottom = panelY + 48f
+        val bottom = panelY + 30f
 
         UiShapes.begin(shape)
         UiShapes.overlay(shape, width, height)
         UiShapes.glassPanel(shape, panelX, panelY, panelW, panelH)
 
         for (i in 0 until 3) {
-            val x = left + i * (cardW + gap)
-            buttons[i].set(x, bottom, cardW, cardH)
+            val x = if (wide) left + i * (cardW + gap) else left
+            val y = if (wide) bottom else bottom + (2 - i) * (cardH + gap)
+            buttons[i].set(x, y, cardW, cardH)
             UiShapes.glassCard(
                 shape,
                 x,
-                bottom,
+                y,
                 cardW,
                 cardH,
                 UiTheme.Metrics.CARD_RADIUS,
@@ -52,7 +63,7 @@ class UpgradeRenderer(
             UiShapes.roundedRect(
                 shape,
                 x + 14f,
-                bottom + cardH - 7f,
+                y + cardH - 7f,
                 cardW - 28f,
                 3f,
                 1.5f,
