@@ -36,7 +36,7 @@ class SettingsRenderer(
         val x = cx - panelW / 2f
         val y = cy - panelH / 2f
 
-        shape.begin(ShapeRenderer.ShapeType.Filled)
+        UiShapes.begin(shape)
         UiShapes.overlay(shape, width, height)
         UiShapes.glassPanel(shape, x, y, panelW, panelH)
 
@@ -63,7 +63,7 @@ class SettingsRenderer(
 
         drawButton(swap, UiTheme.PANEL_DARK)
         drawButton(menu, UiTheme.PANEL_DARK)
-        shape.end()
+        UiShapes.end(shape)
 
         batch.begin()
         text.fitWithin(titleFont, "SETTINGS", panelW - 90f, 54f, 1.15f, 0.72f)
