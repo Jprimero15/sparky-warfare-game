@@ -63,10 +63,10 @@ class UpgradeRenderer(
 
         batch.begin()
         text.fitWithin(titleFont, "CHOOSE AN UPGRADE", panelW - 100f, 52f, 1.08f, 0.70f)
-        text.centered(titleFont, "CHOOSE AN UPGRADE", cx, panelY + panelH - 56f, UiTheme.TEXT_PRIMARY)
+        text.centeredVertically(titleFont, "CHOOSE AN UPGRADE", cx, panelY + panelH - 56f, UiTheme.TEXT_PRIMARY)
 
         text.fitWithin(bodyFont, "WAVE  $wave  •  PICK ONE", panelW - 100f, 26f, 0.62f, 0.44f)
-        text.centered(bodyFont, "WAVE  $wave  •  PICK ONE", cx, panelY + panelH - 92f, UiTheme.CYAN)
+        text.centeredVertically(bodyFont, "WAVE  $wave  •  PICK ONE", cx, panelY + panelH - 92f, UiTheme.CYAN)
 
         for (i in 0 until minOf(3, choices.size)) {
             val r = buttons[i]
