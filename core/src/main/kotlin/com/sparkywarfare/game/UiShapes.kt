@@ -226,7 +226,7 @@ object UiShapes {
         roundedRect(shape, rect.x + 7f, rect.y + rect.height - 6f, rect.width * 0.40f, 1f, 0.5f, UiTheme.GLASS_HIGHLIGHT)
     }
 
-    /** Circular glass touch control with a soft neon rim. */
+    /** Circular frosted-glass touch control with a true neon rim, not a filled color disc. */
     fun glassCircle(
         shape: ShapeRenderer,
         cx: Float,
@@ -234,15 +234,33 @@ object UiShapes {
         radius: Float,
         accent: Color
     ) {
-        glowColor.set(accent.r, accent.g, accent.b, 0.045f)
+        glowColor.set(accent.r, accent.g, accent.b, 0.035f)
         shape.color = glowColor
-        shape.circle(cx, cy, radius + 12f, 56)
-        shape.color = UiTheme.TOUCH_BASE
-        shape.circle(cx, cy, radius, 56)
-        shape.color = UiTheme.TOUCH_INNER
-        shape.circle(cx, cy, radius - 10f, 56)
-        accentColor.set(accent.r, accent.g, accent.b, 0.24f)
+        shape.circle(cx, cy, radius + 11f, 56)
+
+        accentColor.set(accent.r, accent.g, accent.b, 0.18f)
         shape.color = accentColor
-        shape.circle(cx, cy, radius - 3f, 56)
+        shape.circle(cx, cy, radius, 56)
+
+        shape.color = UiTheme.TOUCH_BASE
+        shape.circle(cx, cy, radius - 2f, 56)
+
+        shape.color = UiTheme.TOUCH_INNER
+        shape.circle(cx, cy, (radius - 10f).coerceAtLeast(2f), 56)
+
+        accentColor.set(accent.r, accent.g, accent.b, 0.075f)
+        shape.color = accentColor
+        shape.circle(cx, cy, (radius - 13f).coerceAtLeast(2f), 56)
+
+        roundedRect(
+            shape,
+            cx - radius * 0.42f,
+            cy + radius * 0.52f,
+            radius * 0.84f,
+            2f,
+            1f,
+            UiTheme.GLASS_HIGHLIGHT
+        )
+    }
     }
 }
