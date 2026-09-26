@@ -51,7 +51,7 @@ object UiShapes {
         shape.circle(x + width - r, y + height - r, r, 20)
     }
 
-    /** Smooth vertical gradient with the rounded silhouette retained. */
+    /** True non-overlapping vertical gradient clipped to a rounded silhouette. */
     fun gradientRoundedRect(
         shape: ShapeRenderer,
         x: Float,
@@ -61,22 +61,49 @@ object UiShapes {
         radius: Float,
         topColor: Color,
         bottomColor: Color,
-        steps: Int = 8
+        steps: Int = 10
     ) {
         if (width <= 0f || height <= 0f) return
-        val count = steps.coerceIn(4, 20)
-        roundedRect(shape, x, y, width, height, radius, bottomColor)
+        val r = radius.coerceAtMost(minOf(width, height) * 0.5f).coerceAtLeast(0f)
+        val count = steps.coerceIn(4, 16)
         val bandHeight = height / count
+
         for (i in 0 until count) {
-            val t = (i + 0.5f) / count
+            val bandY = y + i * bandHeight
+            val centerY = bandY + bandHeight * 0.5f
+            val t = ((centerY - y) / height).coerceIn(0f, 1f)
             gradientColor.set(
                 topColor.r + (bottomColor.r - topColor.r) * t,
                 topColor.g + (bottomColor.g - topColor.g) * t,
                 topColor.b + (bottomColor.b - topColor.b) * t,
                 topColor.a + (bottomColor.a - topColor.a) * t
             )
-            val bandY = y + height - (i + 1) * bandHeight
-            roundedRect(shape, x, bandY, width, bandHeight + 1.4f, radius, gradientColor)
+
+            val inset = if (r <= 0.5f) {
+                0f
+            } else {
+                val distanceFromTop = centerY - y
+                val distanceFromBottom = y + height - centerY
+                when {
+                    distanceFromTop < r -> {
+                        val d = r - distanceFromTop
+                        r - kotlin.math.sqrt((r * r - d * d).coerceAtLeast(0f))
+                    }
+                    distanceFromBottom < r -> {
+                        val d = r - distanceFromBottom
+                        r - kotlin.math.sqrt((r * r - d * d).coerceAtLeast(0f))
+                    }
+                    else -> 0f
+                }
+            }
+
+            shape.color = gradientColor
+            shape.rect(
+                x + inset,
+                bandY,
+                (width - inset * 2f).coerceAtLeast(0f),
+                bandHeight + 0.02f
+            )
         }
     }
 
@@ -102,7 +129,7 @@ object UiShapes {
         roundedRect(shape, x - 9f, y - 9f, width + 18f, height + 18f, radius + 9f, glowColor)
     }
 
-    /** Glass panel: translucent depth, soft bloom, luminous edge, and inner highlight. */
+    /** Frosted glass panel: translucent fill, restrained glow, and a thin luminous edge. */
     fun glassPanel(
         shape: ShapeRenderer,
         x: Float,
@@ -112,53 +139,35 @@ object UiShapes {
         radius: Float = UiTheme.Metrics.PANEL_RADIUS
     ) {
         ambientGlow(shape, x, y, width, height, radius)
-        roundedRect(shape, x - 5f, y - 5f, width + 10f, height + 10f, radius + 5f, UiTheme.CYAN_GLOW)
-        roundedRect(shape, x - 2f, y - 2f, width + 4f, height + 4f, radius + 2f, UiTheme.PANEL_EDGE)
 
-        topColor.set(UiTheme.INNER).lerp(UiTheme.CYAN, 0.035f)
-        bottomColor.set(UiTheme.PANEL_DARK).lerp(UiTheme.MAGENTA, 0.035f)
-        gradientRoundedRect(shape, x, y, width, height, radius, topColor, bottomColor, 9)
-
-        val inset = UiTheme.Metrics.PANEL_INSET
+        // A restrained halo instead of a heavy neon slab.
         roundedRect(
-            shape,
-            x + inset,
-            y + inset,
-            (width - inset * 2f).coerceAtLeast(0f),
-            (height - inset * 2f).coerceAtLeast(0f),
-            (radius - inset).coerceAtLeast(0f),
-            UiTheme.GLASS_SHADOW
+            shape, x - 2.5f, y - 2.5f, width + 5f, height + 5f,
+            radius + 2.5f, UiTheme.PANEL_EDGE
         )
+
+        topColor.set(UiTheme.INNER).lerp(UiTheme.CYAN, 0.025f)
+        topColor.a = 0.46f
+        bottomColor.set(UiTheme.PANEL_DARK).lerp(UiTheme.MAGENTA, 0.025f)
+        bottomColor.a = 0.54f
+        gradientRoundedRect(shape, x, y, width, height, radius, topColor, bottomColor, 10)
+
+        // Frosted top reflection and two tiny accent glints.
         roundedRect(
-            shape,
-            x + 2f,
-            y + height - 5f,
-            width - 4f,
-            2f,
-            1f,
+            shape, x + 3f, y + height - 4f, width - 6f, 1.5f, 0.75f,
             UiTheme.GLASS_HIGHLIGHT
         )
         roundedRect(
-            shape,
-            x + 5f,
-            y + height - 8f,
-            width * 0.40f,
-            3f,
-            1.5f,
+            shape, x + 7f, y + height - 7f, width * 0.34f, 2f, 1f,
             UiTheme.CYAN_SOFT
         )
         roundedRect(
-            shape,
-            x + width * 0.60f,
-            y + 5f,
-            width * 0.35f,
-            2f,
-            1f,
+            shape, x + width * 0.68f, y + 4f, width * 0.24f, 1.5f, 0.75f,
             UiTheme.MAGENTA_SOFT
         )
     }
 
-    /** Smaller glass card used for stats and upgrade choices. */
+    /** Frosted glass card used for stats, choices and secondary surfaces. */
     fun glassCard(
         shape: ShapeRenderer,
         x: Float,
@@ -168,19 +177,21 @@ object UiShapes {
         radius: Float = UiTheme.Metrics.CARD_RADIUS,
         accent: Color = UiTheme.CYAN
     ) {
-        glowColor.set(accent.r, accent.g, accent.b, 0.045f)
-        roundedRect(shape, x - 4f, y - 4f, width + 8f, height + 8f, radius + 4f, glowColor)
-        topColor.set(UiTheme.CARD).lerp(accent, 0.06f)
-        topColor.a = 0.78f
-        bottomColor.set(UiTheme.PANEL_DARK).lerp(UiTheme.MAGENTA, 0.04f)
-        bottomColor.a = 0.76f
-        gradientRoundedRect(shape, x, y, width, height, radius, topColor, bottomColor, 7)
-        accentColor.set(accent.r, accent.g, accent.b, 0.30f)
-        roundedRect(shape, x + 1.5f, y + height - 3.5f, width - 3f, 2f, 1f, accentColor)
-        roundedRect(shape, x + 4f, y + 4f, width - 8f, 1.5f, 0.75f, UiTheme.GLASS_HIGHLIGHT)
+        glowColor.set(accent.r, accent.g, accent.b, 0.025f)
+        roundedRect(shape, x - 3f, y - 3f, width + 6f, height + 6f, radius + 3f, glowColor)
+
+        topColor.set(UiTheme.CARD).lerp(accent, 0.035f)
+        topColor.a = 0.43f
+        bottomColor.set(UiTheme.PANEL_DARK).lerp(accent, 0.02f)
+        bottomColor.a = 0.48f
+        gradientRoundedRect(shape, x, y, width, height, radius, topColor, bottomColor, 8)
+
+        accentColor.set(accent.r, accent.g, accent.b, 0.22f)
+        roundedRect(shape, x + 2f, y + height - 3f, width - 4f, 1.5f, 0.75f, accentColor)
+        roundedRect(shape, x + 6f, y + 5f, width - 12f, 1f, 0.5f, UiTheme.GLASS_HIGHLIGHT)
     }
 
-    /** Glass button with dark translucent fill and cyan-to-violet edge glow. */
+    /** Translucent punchy button: glass body + restrained dual-neon edge. */
     fun softButton(
         shape: ShapeRenderer,
         rect: Rectangle,
@@ -189,32 +200,30 @@ object UiShapes {
     ) {
         if (rect.width <= 0f || rect.height <= 0f) return
 
-        val dark = color.r < 0.12f && color.g < 0.16f && color.b < 0.22f
-        glowColor.set(color.r, color.g, color.b, if (dark) 0.045f else 0.10f)
-        roundedRect(shape, rect.x - 7f, rect.y - 7f, rect.width + 14f, rect.height + 14f, radius + 7f, glowColor)
-        glowColor.set(UiTheme.MAGENTA.r, UiTheme.MAGENTA.g, UiTheme.MAGENTA.b, if (dark) 0.035f else 0.065f)
-        roundedRect(shape, rect.x - 3f, rect.y - 3f, rect.width + 6f, rect.height + 6f, radius + 3f, glowColor)
+        glowColor.set(color.r, color.g, color.b, 0.035f)
+        roundedRect(shape, rect.x - 5f, rect.y - 5f, rect.width + 10f, rect.height + 10f, radius + 5f, glowColor)
 
+        val dark = color.r < 0.12f && color.g < 0.16f && color.b < 0.22f
         if (dark) {
-            topColor.set(UiTheme.INNER).lerp(UiTheme.CYAN, 0.035f)
-            topColor.a = 0.84f
-            bottomColor.set(UiTheme.PANEL_DARK).lerp(UiTheme.MAGENTA, 0.045f)
-            bottomColor.a = 0.90f
+            topColor.set(UiTheme.INNER).lerp(UiTheme.CYAN, 0.025f)
+            topColor.a = 0.40f
+            bottomColor.set(UiTheme.PANEL_DARK).lerp(UiTheme.MAGENTA, 0.025f)
+            bottomColor.a = 0.50f
         } else {
             val alternate = if (color.g > color.r) UiTheme.MAGENTA else UiTheme.CYAN
-            topColor.set(color).lerp(UiTheme.WHITE, 0.14f)
-            topColor.a = 0.94f
-            bottomColor.set(color).lerp(alternate, 0.34f)
-            bottomColor.a = 0.90f
+            topColor.set(color).lerp(UiTheme.WHITE, 0.08f)
+            topColor.a = 0.66f
+            bottomColor.set(color).lerp(alternate, 0.24f)
+            bottomColor.a = 0.58f
         }
         gradientRoundedRect(shape, rect.x, rect.y, rect.width, rect.height, radius, topColor, bottomColor, 10)
 
-        // Thin luminous edge accents, intentionally softer than a hard sci-fi console.
-        accentColor.set(UiTheme.CYAN.r, UiTheme.CYAN.g, UiTheme.CYAN.b, 0.26f)
-        roundedRect(shape, rect.x + 2f, rect.y + rect.height - 3f, rect.width * 0.56f, 2f, 1f, accentColor)
-        accentColor.set(UiTheme.MAGENTA.r, UiTheme.MAGENTA.g, UiTheme.MAGENTA.b, 0.22f)
-        roundedRect(shape, rect.x + rect.width * 0.58f, rect.y + 2f, rect.width * 0.40f, 2f, 1f, accentColor)
-        roundedRect(shape, rect.x + 6f, rect.y + rect.height - 8f, rect.width - 12f, 2f, 1f, UiTheme.GLASS_HIGHLIGHT)
+        // Thin edge accents; no thick sci-fi frame.
+        accentColor.set(UiTheme.CYAN.r, UiTheme.CYAN.g, UiTheme.CYAN.b, dark && color == UiTheme.PANEL_DARK ? 0.16f : 0.30f)
+        roundedRect(shape, rect.x + 2f, rect.y + rect.height - 2.5f, rect.width * 0.52f, 1.5f, 0.75f, accentColor)
+        accentColor.set(UiTheme.MAGENTA.r, UiTheme.MAGENTA.g, UiTheme.MAGENTA.b, 0.18f)
+        roundedRect(shape, rect.x + rect.width * 0.66f, rect.y + 2f, rect.width * 0.30f, 1.5f, 0.75f, accentColor)
+        roundedRect(shape, rect.x + 7f, rect.y + rect.height - 6f, rect.width * 0.40f, 1f, 0.5f, UiTheme.GLASS_HIGHLIGHT)
     }
 
     /** Circular glass touch control with a soft neon rim. */
