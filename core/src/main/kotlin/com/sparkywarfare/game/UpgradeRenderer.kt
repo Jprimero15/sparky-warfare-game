@@ -33,7 +33,7 @@ class UpgradeRenderer(
         val left = cx - totalW / 2f
         val bottom = panelY + 48f
 
-        shape.begin(ShapeRenderer.ShapeType.Filled)
+        UiShapes.begin(shape)
         UiShapes.overlay(shape, width, height)
         UiShapes.glassPanel(shape, panelX, panelY, panelW, panelH)
 
@@ -59,7 +59,7 @@ class UpgradeRenderer(
                 if (i == 1) UiTheme.MAGENTA_SOFT else UiTheme.CYAN_SOFT
             )
         }
-        shape.end()
+        UiShapes.end(shape)
 
         batch.begin()
         text.fitWithin(titleFont, "CHOOSE AN UPGRADE", panelW - 100f, 52f, 1.08f, 0.70f)
