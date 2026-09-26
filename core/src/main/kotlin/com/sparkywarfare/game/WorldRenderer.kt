@@ -29,25 +29,14 @@ class WorldRenderer(
     private val idleTankColor = Color(0.2f, 0.9f, 1f, 1f)
     private val idleTank = Tank(scratchUi, angle = 45f, isPlayer = true, color = idleTankColor, radius = 14f)
 
-    private val backdropColor = Color(0.003f, 0.005f, 0.008f, 1f)
-    private val floorAccentColor = Color(0.018f, 0.028f, 0.036f, 1f)
+    private val backdropColor = UiTheme.WORLD_BACKDROP
+    private val floorAccentColor = UiTheme.WORLD_FLOOR
     private val wallHighlight = Color(1f, 1f, 1f, 0.045f)
     private val wallShadow = Color(0f, 0f, 0f, 0.14f)
-    private val hudTextColor = Color(0.85f, 0.95f, 1f, 0.85f)
-    private val fireTextColor = Color(1f, 0.86f, 0.9f, 0.95f)
     private val steelLine = Color(0.35f, 0.85f, 0.95f, 0.30f)
     private val brickLine = Color(0.72f, 0.34f, 1f, 0.24f)
     private val concreteLine = Color(0.45f, 0.70f, 0.95f, 0.22f)
     private val metalLine = Color(0.22f, 0.86f, 0.98f, 0.28f)
-    private val touchBase = Color(0.015f, 0.02f, 0.025f, 0.72f)
-    private val touchAccent = Color(0.18f, 0.72f, 1f, 0.12f)
-    private val touchKnobIdle = Color(0.25f, 0.85f, 1f, 0.42f)
-    private val touchKnobActive = Color(0.25f, 0.85f, 1f, 0.7f)
-    private val fireBase = Color(0.02f, 0.008f, 0.012f, 0.72f)
-    private val fireIdle = Color(1f, 0.25f, 0.34f, 0.4f)
-    private val fireActive = Color(1f, 0.22f, 0.3f, 0.76f)
-    private val moveOutline = Color(0.65f, 0.9f, 1f, 0.55f)
-    private val fireOutline = Color(1f, 0.65f, 0.7f, 0.65f)
     private val healthBack = Color(0f, 0f, 0f, 0.65f)
     private val healthElite = Color(1f, 0.72f, 0.16f, 0.95f)
     private val healthNormal = Color(0.35f, 0.9f, 1f, 0.9f)
@@ -154,22 +143,22 @@ class WorldRenderer(
     }
 
     private fun drawArenaBackdrop() {
-        shapeRenderer.begin(ShapeRenderer.ShapeType.Filled)
+        UiShapes.begin(shapeRenderer)
         shapeRenderer.color = backdropColor
         shapeRenderer.rect(0f, 0f, GameConfig.WORLD_WIDTH, GameConfig.WORLD_HEIGHT)
 
         // Very soft atmospheric pools replace the old tactical grid.
-        shapeRenderer.color = Color(0.02f, 0.42f, 0.50f, 0.045f)
+        shapeRenderer.color = UiTheme.WORLD_CYAN_POOL
         shapeRenderer.circle(GameConfig.WORLD_WIDTH * 0.12f, GameConfig.WORLD_HEIGHT * 0.78f, 210f, 48)
-        shapeRenderer.color = Color(0.44f, 0.10f, 0.52f, 0.035f)
+        shapeRenderer.color = UiTheme.WORLD_VIOLET_POOL
         shapeRenderer.circle(GameConfig.WORLD_WIDTH * 0.86f, GameConfig.WORLD_HEIGHT * 0.30f, 250f, 48)
         shapeRenderer.color = floorAccentColor
         shapeRenderer.rect(GameConfig.TILE, GameConfig.TILE, GameConfig.WORLD_WIDTH - GameConfig.TILE * 2f, 3f)
-        shapeRenderer.end()
+        UiShapes.end(shapeRenderer)
     }
 
     private fun drawWalls(walls: List<Wall>) {
-        shapeRenderer.begin(ShapeRenderer.ShapeType.Filled)
+        UiShapes.begin(shapeRenderer)
         for (wall in walls) {
             shapeRenderer.color = wall.color
             shapeRenderer.rect(wall.bounds.x, wall.bounds.y, wall.bounds.width, wall.bounds.height)
@@ -182,9 +171,9 @@ class WorldRenderer(
             shapeRenderer.color = wallShadow
             shapeRenderer.rect(x + 2f, y + 2f, w - 4f, 2f)
         }
-        shapeRenderer.end()
+        UiShapes.end(shapeRenderer)
 
-        shapeRenderer.begin(ShapeRenderer.ShapeType.Line)
+        UiShapes.begin(shapeRenderer, ShapeRenderer.ShapeType.Line)
         for (wall in walls) {
             val x = wall.bounds.x
             val y = wall.bounds.y
@@ -198,12 +187,12 @@ class WorldRenderer(
             }
             shapeRenderer.rect(x + 1f, y + 1f, w - 2f, h - 2f)
         }
-        shapeRenderer.end()
+        UiShapes.end(shapeRenderer)
     }
 
     private fun drawEnemyHealthBars(enemies: List<Tank>) {
         shapeRenderer.projectionMatrix = camera.combined
-        shapeRenderer.begin(ShapeRenderer.ShapeType.Filled)
+        UiShapes.begin(shapeRenderer)
         for (enemy in enemies) {
             if (!enemy.alive || enemy.health <= 0) continue
             val width = enemy.radius * 2.4f
@@ -214,7 +203,7 @@ class WorldRenderer(
             val ratio = (enemy.health.toFloat() / enemy.maxHealth.coerceAtLeast(1)).coerceIn(0f, 1f)
             shapeRenderer.rect(enemy.position.x - width / 2f, y, width * ratio, 3f)
         }
-        shapeRenderer.end()
+        UiShapes.end(shapeRenderer)
     }
 
     private fun clear(r: Float, g: Float, b: Float) {
