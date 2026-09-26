@@ -18,7 +18,6 @@ class MenuRenderer(
         height: Float,
         safe: SafeArea,
         single: Rectangle,
-        multi: Rectangle,
         settings: Rectangle,
         highScore: Int,
         bestWave: Int,
@@ -47,7 +46,6 @@ class MenuRenderer(
         UiShapes.overlay(shape, width, height)
         UiShapes.glassPanel(shape, panelX, panelY, panelW, panelH)
         drawButton(single, UiTheme.CYAN)
-        drawButton(multi, UiTheme.MAGENTA)
         drawButton(settings, UiTheme.PANEL_DARK)
 
         if (wide) {
@@ -124,7 +122,6 @@ class MenuRenderer(
         }
 
         command(single, "SINGLE PLAYER", UiTheme.TEXT_PRIMARY)
-        command(multi, "MULTIPLAYER", UiTheme.TEXT_PRIMARY)
         command(settings, "SETTINGS", UiTheme.TEXT_PRIMARY)
 
         text.reset(titleFont, bodyFont)
