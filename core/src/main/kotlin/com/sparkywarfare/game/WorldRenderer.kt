@@ -110,11 +110,8 @@ class WorldRenderer(
         val controlRadius = touch.radius
         val knobRadius = (controlRadius * 0.34f).coerceIn(48f, 60f)
 
-        Gdx.gl.glEnable(GL20.GL_BLEND)
-        Gdx.gl.glBlendFunc(GL20.GL_SRC_ALPHA, GL20.GL_ONE_MINUS_SRC_ALPHA)
         shapeRenderer.projectionMatrix = hudCamera.combined
-
-        shapeRenderer.begin(ShapeRenderer.ShapeType.Filled)
+        UiShapes.begin(shapeRenderer)
         UiShapes.glassCircle(shapeRenderer, baseX, baseY, controlRadius, UiTheme.CYAN)
         UiShapes.glassCircle(shapeRenderer, fireX, baseY, controlRadius, UiTheme.MAGENTA)
 
@@ -137,15 +134,14 @@ class WorldRenderer(
         shapeRenderer.circle(fireX, baseY, controlRadius * 0.52f, 44)
         shapeRenderer.color = Color(1f, 1f, 1f, if (input.firing) 0.30f else 0.12f)
         shapeRenderer.circle(fireX, baseY, controlRadius * 0.19f, 32)
-        shapeRenderer.end()
+        UiShapes.end(shapeRenderer)
 
-        shapeRenderer.begin(ShapeRenderer.ShapeType.Line)
+        UiShapes.begin(shapeRenderer, ShapeRenderer.ShapeType.Line)
         shapeRenderer.color = UiTheme.MOVE_OUTLINE
         shapeRenderer.circle(baseX, baseY, controlRadius, 56)
         shapeRenderer.color = UiTheme.FIRE_OUTLINE
         shapeRenderer.circle(fireX, baseY, controlRadius, 56)
-        shapeRenderer.end()
-        Gdx.gl.glDisable(GL20.GL_BLEND)
+        UiShapes.end(shapeRenderer)
 
         batch.projectionMatrix = hudCamera.combined
         batch.begin()
