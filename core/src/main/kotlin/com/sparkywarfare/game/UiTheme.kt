@@ -54,13 +54,13 @@ object UiTheme {
         const val BUTTON_TEXT_MIN_SCALE = 0.56f
     }
 
-    val TOUCH_BASE = Color(0.025f, 0.04f, 0.085f, 0.62f)
-    val TOUCH_INNER = Color(0.055f, 0.085f, 0.15f, 0.60f)
-    val TOUCH_KNOB_IDLE = Color(0.24f, 0.92f, 1f, 0.42f)
-    val TOUCH_KNOB_ACTIVE = Color(0.24f, 0.92f, 1f, 0.72f)
-    val MOVE_OUTLINE = Color(0.55f, 0.94f, 1f, 0.52f)
-    val FIRE_BASE = Color(0.07f, 0.025f, 0.10f, 0.60f)
-    val FIRE_IDLE = Color(0.92f, 0.34f, 1f, 0.34f)
-    val FIRE_ACTIVE = Color(1f, 0.28f, 0.62f, 0.72f)
-    val FIRE_OUTLINE = Color(1f, 0.58f, 0.92f, 0.56f)
+    val TOUCH_BASE = Color(0.025f, 0.04f, 0.085f, 0.38f)
+    val TOUCH_INNER = Color(0.055f, 0.085f, 0.15f, 0.28f)
+    val TOUCH_KNOB_IDLE = Color(0.24f, 0.92f, 1f, 0.34f)
+    val TOUCH_KNOB_ACTIVE = Color(0.24f, 0.92f, 1f, 0.58f)
+    val MOVE_OUTLINE = Color(0.55f, 0.94f, 1f, 0.38f)
+    val FIRE_BASE = Color(0.07f, 0.025f, 0.10f, 0.38f)
+    val FIRE_IDLE = Color(0.92f, 0.34f, 1f, 0.24f)
+    val FIRE_ACTIVE = Color(1f, 0.28f, 0.62f, 0.58f)
+    val FIRE_OUTLINE = Color(1f, 0.58f, 0.92f, 0.40f)
 }
