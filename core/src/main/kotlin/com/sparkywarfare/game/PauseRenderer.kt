@@ -30,12 +30,12 @@ class PauseRenderer(
         val x = cx - panelW / 2f
         val y = cy - panelH / 2f
 
-        shape.begin(ShapeRenderer.ShapeType.Filled)
+        UiShapes.begin(shape)
         UiShapes.overlay(shape, width, height)
         UiShapes.glassPanel(shape, x, y, panelW, panelH)
         drawButton(resume, UiTheme.CYAN)
         drawButton(menu, UiTheme.PANEL_DARK)
-        shape.end()
+        UiShapes.end(shape)
 
         batch.begin()
         text.fitWithin(titleFont, "PAUSED", panelW - 90f, 62f, 1.2f, 0.74f)
