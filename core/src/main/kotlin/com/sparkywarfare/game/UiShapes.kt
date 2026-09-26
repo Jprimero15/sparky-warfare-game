@@ -262,5 +262,4 @@ object UiShapes {
             UiTheme.GLASS_HIGHLIGHT
         )
     }
-    }
 }
