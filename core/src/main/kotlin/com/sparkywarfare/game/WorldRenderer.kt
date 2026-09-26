@@ -160,32 +160,24 @@ class WorldRenderer(
     private fun drawWalls(walls: List<Wall>) {
         UiShapes.begin(shapeRenderer)
         for (wall in walls) {
-            shapeRenderer.color = wall.color
-            shapeRenderer.rect(wall.bounds.x, wall.bounds.y, wall.bounds.width, wall.bounds.height)
-            val x = wall.bounds.x
-            val y = wall.bounds.y
-            val w = wall.bounds.width
-            val h = wall.bounds.height
-            shapeRenderer.color = wallHighlight
-            shapeRenderer.rect(x + 2f, y + h - 4f, w - 4f, 2f)
-            shapeRenderer.color = wallShadow
-            shapeRenderer.rect(x + 2f, y + 2f, w - 4f, 2f)
-        }
-        UiShapes.end(shapeRenderer)
-
-        UiShapes.begin(shapeRenderer, ShapeRenderer.ShapeType.Line)
-        for (wall in walls) {
-            val x = wall.bounds.x
-            val y = wall.bounds.y
-            val w = wall.bounds.width
-            val h = wall.bounds.height
-            shapeRenderer.color = when (wall.type) {
+            val x = wall.bounds.x + 2f
+            val y = wall.bounds.y + 2f
+            val w = wall.bounds.width - 4f
+            val h = wall.bounds.height - 4f
+            UiShapes.roundedRect(
+                shapeRenderer,
+                x, y, w, h,
+                7f,
+                wall.color
+            )
+            val accent = when (wall.type) {
                 WallType.STEEL -> steelLine
                 WallType.BRICK, WallType.RED_BRICK -> brickLine
                 WallType.CONCRETE -> concreteLine
                 WallType.METAL -> metalLine
             }
-            shapeRenderer.rect(x + 1f, y + 1f, w - 2f, h - 2f)
+            shapeRenderer.color = accent
+            UiShapes.roundedRect(shapeRenderer, x + 3f, y + h - 3.5f, w - 6f, 1.5f, 0.75f, accent)
         }
         UiShapes.end(shapeRenderer)
     }
