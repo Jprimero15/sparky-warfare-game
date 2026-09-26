@@ -201,7 +201,7 @@ object UiShapes {
             bottomColor.set(UiTheme.PANEL_DARK).lerp(UiTheme.MAGENTA, 0.045f)
             bottomColor.a = 0.90f
         } else {
-            val alternate = if (color.r > color.b) UiTheme.CYAN else UiTheme.MAGENTA
+            val alternate = if (color.g > color.r) UiTheme.MAGENTA else UiTheme.CYAN
             topColor.set(color).lerp(UiTheme.WHITE, 0.14f)
             topColor.a = 0.94f
             bottomColor.set(color).lerp(alternate, 0.34f)
